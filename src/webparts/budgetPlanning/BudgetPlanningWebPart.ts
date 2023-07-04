@@ -1,25 +1,23 @@
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
+import * as React from "react";
+import * as ReactDom from "react-dom";
+import { Version } from "@microsoft/sp-core-library";
 import {
   IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
-
-import * as strings from 'BudgetPlanningWebPartStrings';
-import BudgetPlanning from './components/BudgetPlanning';
-import { IBudgetPlanningProps } from './components/IBudgetPlanningProps';
+  PropertyPaneTextField,
+} from "@microsoft/sp-property-pane";
+import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
+import { IReadonlyTheme } from "@microsoft/sp-component-base";
+import * as strings from "BudgetPlanningWebPartStrings";
+import BudgetPlanning from "./components/BudgetPlanning";
+import { IBudgetPlanningProps } from "./components/IBudgetPlanningProps";
 
 export interface IBudgetPlanningWebPartProps {
   description: string;
 }
 
 export default class BudgetPlanningWebPart extends BaseClientSideWebPart<IBudgetPlanningWebPartProps> {
-
   private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
+  private _environmentMessage: string = "";
 
   protected onInit(): Promise<void> {
     this._environmentMessage = this._getEnvironmentMessage();
@@ -28,26 +26,30 @@ export default class BudgetPlanningWebPart extends BaseClientSideWebPart<IBudget
   }
 
   public render(): void {
-    const element: React.ReactElement<IBudgetPlanningProps> = React.createElement(
-      BudgetPlanning,
-      {
+    const element: React.ReactElement<IBudgetPlanningProps> =
+      React.createElement(BudgetPlanning, {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
-      }
-    );
+        userDisplayName: this.context.pageContext.user.displayName,
+        context: this.context,
+      });
 
     ReactDom.render(element, this.domElement);
   }
 
   private _getEnvironmentMessage(): string {
-    if (!!this.context.sdks.microsoftTeams) { // running in Teams
-      return this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
+    if (!!this.context.sdks.microsoftTeams) {
+      // running in Teams
+      return this.context.isServedFromLocalhost
+        ? strings.AppLocalEnvironmentTeams
+        : strings.AppTeamsTabEnvironment;
     }
 
-    return this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment;
+    return this.context.isServedFromLocalhost
+      ? strings.AppLocalEnvironmentSharePoint
+      : strings.AppSharePointEnvironment;
   }
 
   protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
@@ -56,13 +58,13 @@ export default class BudgetPlanningWebPart extends BaseClientSideWebPart<IBudget
     }
 
     this._isDarkTheme = !!currentTheme.isInverted;
-    const {
-      semanticColors
-    } = currentTheme;
-    this.domElement.style.setProperty('--bodyText', semanticColors.bodyText);
-    this.domElement.style.setProperty('--link', semanticColors.link);
-    this.domElement.style.setProperty('--linkHovered', semanticColors.linkHovered);
-
+    const { semanticColors } = currentTheme;
+    this.domElement.style.setProperty("--bodyText", semanticColors.bodyText);
+    this.domElement.style.setProperty("--link", semanticColors.link);
+    this.domElement.style.setProperty(
+      "--linkHovered",
+      semanticColors.linkHovered
+    );
   }
 
   protected onDispose(): void {
@@ -70,7 +72,7 @@ export default class BudgetPlanningWebPart extends BaseClientSideWebPart<IBudget
   }
 
   protected get dataVersion(): Version {
-    return Version.parse('1.0');
+    return Version.parse("1.0");
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
@@ -78,20 +80,20 @@ export default class BudgetPlanningWebPart extends BaseClientSideWebPart<IBudget
       pages: [
         {
           header: {
-            description: strings.PropertyPaneDescription
+            description: strings.PropertyPaneDescription,
           },
           groups: [
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
-                })
-              ]
-            }
-          ]
-        }
-      ]
+                PropertyPaneTextField("description", {
+                  label: strings.DescriptionFieldLabel,
+                }),
+              ],
+            },
+          ],
+        },
+      ],
     };
   }
 }
