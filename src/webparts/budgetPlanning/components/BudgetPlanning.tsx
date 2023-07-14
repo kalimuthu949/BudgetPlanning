@@ -2,6 +2,7 @@ import * as React from "react";
 import { IBudgetPlanningProps } from "./IBudgetPlanningProps";
 import App from "./App";
 import { sp } from "@pnp/sp/presets/all";
+import { QueryCache } from "react-query";
 
 import "../../../ExternalRef/styleSheets/Styles.css";
 
@@ -14,6 +15,8 @@ export default class BudgetPlanning extends React.Component<
     sp.setup({
       spfxContext: this.props.context,
     });
+
+    new QueryCache().clear();
   }
 
   public render(): React.ReactElement<IBudgetPlanningProps> {
