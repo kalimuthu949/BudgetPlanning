@@ -10,6 +10,9 @@ import {
   Icon,
   Modal,
   TextField,
+  IDropdownStyles,
+  IDetailsListStyles,
+  ITextFieldStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -27,6 +30,7 @@ import SPServices from "../../../CommonServices/SPServices";
 import Loader from "./Loader";
 import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
+import styles from "./BudgetPlanning.module.scss";
 
 let propDropValue: IDropdowns;
 let _curYear: string = moment().format("YYYY");
@@ -34,6 +38,7 @@ let _Items: ICurBudgetItem[] = [];
 let _groupItem: IOverAllItem[] = [];
 let alertifyMSG: string = "";
 let _isBack: boolean = false;
+let _isCurYear: boolean = true;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
@@ -44,8 +49,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       key: "column1",
       name: "Category",
       fieldName: Config.BudgetListColumns.CategoryId.toString(),
-      minWidth: 100,
-      maxWidth: 200,
+      minWidth: 200,
+      maxWidth: _isCurYear ? 300 : 350,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Category : item.isEdit && item.Category;
       },
@@ -54,8 +59,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       key: "column2",
       name: "Country",
       fieldName: Config.BudgetListColumns.CountryId.toString(),
-      minWidth: 100,
-      maxWidth: 200,
+      minWidth: 150,
+      maxWidth: _isCurYear ? 200 : 250,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Country : item.isEdit && item.Country;
       },
@@ -64,16 +69,51 @@ const BudgetPlan = (props: any): JSX.Element => {
       key: "column3",
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
-      minWidth: 100,
-      maxWidth: 200,
+      minWidth: 300,
+      maxWidth: _isCurYear ? 350 : 450,
       onRender: (item: ICurBudgetItem): any => {
-        return !item.isEdit ? (
-          item.Description
+        return item.isDummy && !item.isEdit ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "end",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                background: "#4d546a",
+                display: "inline",
+                padding: 4,
+                color: "#fff",
+                borderRadius: 4,
+              }}
+              onClick={() => {
+                if (!_isBack) {
+                  _isBack = !item.isEdit;
+                  _getEditItem(item);
+                } else {
+                  _getPageErrorMSG(item, "Add");
+                }
+              }}
+            >
+              Click here to create a subcategory
+            </div>
+          </div>
+        ) : !item.isEdit ? (
+          <div title={item.Description} style={{ cursor: "pointer" }}>
+            {item.Description}
+          </div>
         ) : (
           <div>
             <TextField
               value={curData.Description ? curData.Description : ""}
-              styles={isValidation.isDescription ? {} : {}}
+              styles={
+                isValidation.isDescription ? errtxtFieldStyle : textFieldStyle
+              }
               placeholder="Enter Here"
               onChange={(e: any) => {
                 curData.Description = e.target.value;
@@ -88,30 +128,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       key: "column4",
       name: "Budget",
       fieldName: Config.BudgetListColumns.BudgetAllocated,
-      minWidth: 100,
-      maxWidth: 250,
+      minWidth: 150,
+      maxWidth: 200,
       onRender: (item: ICurBudgetItem): any => {
-        return item.isDummy && !item.isEdit ? (
-          <div
-            style={{
-              cursor: "pointer",
-              color: "#202945",
-              fontWeight: "600",
-              fontSize: "14px",
-            }}
-            onClick={() => {
-              if (!_isBack) {
-                _isBack = !item.isEdit;
-                _getEditItem(item);
-              } else {
-                _getPageErrorMSG(item, "Add");
-              }
-            }}
-          >
-            Click here to create a subcategory
-          </div>
-        ) : !item.isEdit ? (
-          item.BudgetAllocated
+        return !item.isEdit ? (
+          <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
         ) : (
           <div>
             <TextField
@@ -121,7 +142,11 @@ const BudgetPlan = (props: any): JSX.Element => {
                   : ""
               }
               placeholder="Enter Here"
-              styles={isValidation.isBudgetAllocated ? {} : {}}
+              styles={
+                isValidation.isBudgetAllocated
+                  ? errtxtFieldStyle
+                  : textFieldStyle
+              }
               onChange={(e: any, value: any) => {
                 if (/^[0-9]+$|^$/.test(value)) {
                   curData.BudgetAllocated = value;
@@ -136,16 +161,39 @@ const BudgetPlan = (props: any): JSX.Element => {
     {
       key: "column5",
       name: "Used",
-      fieldName: Config.BudgetListColumns.Used,
       minWidth: 100,
       maxWidth: 200,
+      onRender: (item: any) => {
+        return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
+      },
     },
     {
       key: "column6",
       name: "Remaining",
-      fieldName: Config.BudgetListColumns.RemainingCost,
       minWidth: 100,
       maxWidth: 200,
+      onRender: (item: any) => {
+        return (
+          <div
+            style={
+              item.Year != _curYear
+                ? {
+                    padding: "4px 12px",
+                    backgroundImage:
+                      "linear-gradient(to right, #59e27f, #f1f1f1)",
+                    display: "inline",
+                    borderRadius: 4,
+                    color: "#000",
+                  }
+                : {
+                    padding: 0,
+                  }
+            }
+          >
+            {item.RemainingCost}
+          </div>
+        );
+      },
     },
     {
       key: "column7",
@@ -160,18 +208,17 @@ const BudgetPlan = (props: any): JSX.Element => {
               <div
                 style={{
                   display: "flex",
-                  gap: "3%",
+                  gap: "6%",
                 }}
               >
                 <Icon
                   iconName="CheckMark"
                   style={{
                     color: "green",
-                    fontSize: "14px",
+                    fontSize: "20px",
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    _isBack = !item.isEdit;
                     _getPrepareDatas();
                   }}
                 />
@@ -179,7 +226,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   iconName="Cancel"
                   style={{
                     color: "red",
-                    fontSize: "14px",
+                    fontSize: "20px",
                     cursor: "pointer",
                   }}
                   onClick={() => {
@@ -194,14 +241,14 @@ const BudgetPlan = (props: any): JSX.Element => {
                 <div
                   style={{
                     display: "flex",
-                    gap: "3%",
+                    gap: "6%",
                   }}
                 >
                   <Icon
                     iconName="Edit"
                     style={{
                       color: "blue",
-                      fontSize: "14px",
+                      fontSize: "16px",
                       cursor: "pointer",
                     }}
                     onClick={() => {
@@ -217,7 +264,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     iconName="Delete"
                     style={{
                       color: "red",
-                      fontSize: "14px",
+                      fontSize: "16px",
                       cursor: "pointer",
                     }}
                     onClick={() => {
@@ -260,8 +307,8 @@ const BudgetPlan = (props: any): JSX.Element => {
     Config.budgetValidation
   );
 
-  /* Style creation */
-  const _DetailsListStyle = {
+  /* Style Section */
+  const _DetailsListStyle: Partial<IDetailsListStyles> = {
     root: {
       marginTop: "20px",
       ".ms-DetailsHeader": {
@@ -277,10 +324,46 @@ const BudgetPlan = (props: any): JSX.Element => {
           backgroundColor: "#ededed",
         },
       },
-      ".ms-DetailsHeader-cellTitle .cellName-139": {
+      ".ms-DetailsHeader-cellName": {
         color: "#202945",
         fontWeight: "700 !important",
         fontSize: "16px !important",
+      },
+      ".ms-GroupHeader-title": {
+        "span:nth-child(2)": {
+          display: "none",
+        },
+      },
+      "[data-automationid=DetailsRowFields]": {
+        alignItems: "center !important",
+      },
+      ".ms-DetailsRow-cell": {
+        fontSize: 14,
+      },
+    },
+  };
+  const DropdownStyle: Partial<IDropdownStyles> = {
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+  const textFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      "::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+  const errtxtFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      border: "1px solid red",
+      "::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+      ":hover": {
+        border: "1px solid red",
       },
     },
   };
@@ -296,6 +379,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       let dialogText =
         "You have unsaved changes, are you sure you want to leave?";
       e.returnValue = dialogText;
+      isValidation.isBudgetAllocated = false;
+      isValidation.isDescription = false;
+      setIsValidation({ ...isValidation });
       return dialogText;
     }
   };
@@ -469,25 +555,26 @@ const BudgetPlan = (props: any): JSX.Element => {
           _arrCateDatas[i].subCategory.push(_arrBudget[j]);
         }
         if (!isDatas && j + 1 == _arrBudget.length) {
-          _arrCateDatas[i].subCategory.push({
-            Category: _arrCateDatas[i].CategoryAcc,
-            Year: _arrCateDatas[i].YearAcc,
-            Type: _arrCateDatas[i].Type,
-            Country: _arrCateDatas[i].CountryAcc,
-            ApproveStatus: "",
-            Description: "",
-            ID: null,
-            CateId: _arrCateDatas[i].ID,
-            CounId: _arrCateDatas[i].countryID,
-            YearId: _arrCateDatas[i].yearID,
-            BudgetAllocated: null,
-            BudgetProposed: null,
-            Used: null,
-            RemainingCost: null,
-            isDeleted: false,
-            isEdit: false,
-            isDummy: true,
-          });
+          _arrCateDatas[i].YearAcc == _curYear &&
+            _arrCateDatas[i].subCategory.push({
+              Category: _arrCateDatas[i].CategoryAcc,
+              Year: _arrCateDatas[i].YearAcc,
+              Type: _arrCateDatas[i].Type,
+              Country: _arrCateDatas[i].CountryAcc,
+              ApproveStatus: "",
+              Description: "",
+              ID: null,
+              CateId: _arrCateDatas[i].ID,
+              CounId: _arrCateDatas[i].countryID,
+              YearId: _arrCateDatas[i].yearID,
+              BudgetAllocated: null,
+              BudgetProposed: null,
+              Used: null,
+              RemainingCost: null,
+              isDeleted: false,
+              isEdit: false,
+              isDummy: true,
+            });
           _arrOfMaster.push(_arrCateDatas[i]);
         }
       }
@@ -511,7 +598,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           isEdit: false,
           isDummy: true,
         };
-        _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+        _arrCateDatas[i].YearAcc == _curYear &&
+          _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
         _arrOfMaster.push(_arrCateDatas[i]);
       }
       i + 1 == _arrCateDatas.length && groups([..._arrOfMaster]);
@@ -631,6 +719,9 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getCancelItems = (): void => {
+    isValidation.isBudgetAllocated = false;
+    isValidation.isDescription = false;
+    setIsValidation({ ...isValidation });
     setCurData({ ...Config.curBudgetItem });
     for (let i: number = 0; _Items.length > i; i++) {
       _Items[i].isEdit = false;
@@ -642,6 +733,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     let data: any = {};
     const columns: IBudgetListColumn = Config.BudgetListColumns;
     if (curData.ID) {
+      _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       _getEditData({ ...data }, "Updated");
@@ -667,9 +759,12 @@ const BudgetPlan = (props: any): JSX.Element => {
       isValidation.isBudgetAllocated = true;
     }
     if (_isValid) {
+      _isBack = !curData.isEdit;
       setIsLoader(true);
       _getAddData({ ...data });
-      setIsValidation({ ...Config.budgetValidation });
+      isValidation.isBudgetAllocated = false;
+      isValidation.isDescription = false;
+      setIsValidation({ ...isValidation });
     } else {
       setIsValidation({ ...isValidation });
     }
@@ -734,6 +829,9 @@ const BudgetPlan = (props: any): JSX.Element => {
         if (
           confirm("You have unsaved changes, are you sure you want to leave?")
         ) {
+          isValidation.isBudgetAllocated = false;
+          isValidation.isDescription = false;
+          setIsValidation({ ...isValidation });
           _isBack = false;
           setIsLoader(true);
           let data: any = {};
@@ -746,6 +844,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       } else if (
         confirm("You have unsaved changes, are you sure you want to leave?")
       ) {
+        isValidation.isBudgetAllocated = false;
+        isValidation.isDescription = false;
+        setIsValidation({ ...isValidation });
         _getEditItem(_item);
       } else null;
     } else {
@@ -757,9 +858,13 @@ const BudgetPlan = (props: any): JSX.Element => {
   useEffect(() => {
     alertifyMSG = "";
     _isBack = false;
-    setIsValidation({ ...Config.budgetValidation });
+    isValidation.isBudgetAllocated = false;
+    isValidation.isDescription = false;
+    setIsValidation({ ...isValidation });
     setIsLoader(true);
-    filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
+    filPeriodDrop == _curYear
+      ? ((_isCurYear = false), _budgetPlanColumns)
+      : ((_isCurYear = true), _budgetPlanColumns.pop());
     setDetailColumn([..._budgetPlanColumns]);
     _getCategoryDatas();
   }, [filCountryDrop, filPeriodDrop, filTypeDrop]);
@@ -769,16 +874,17 @@ const BudgetPlan = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <Label className="HeaderLable">Budget Planning</Label>
+      <Label className={styles.HeaderLable}>Budget Planning</Label>
 
       {/* Filter section */}
-      <div className="filterSection">
+      <div className={styles.filterSection}>
         {/* Left side section */}
-        <div className="filters">
+        <div className={styles.filters}>
           {/* Period section */}
           <div style={{ width: "16%" }}>
             <Label>Period</Label>
             <Dropdown
+              styles={DropdownStyle}
               options={[...propDropValue.Period]}
               selectedKey={_getFilterDropValues(
                 "Period",
@@ -795,6 +901,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           <div style={{ width: "16%" }}>
             <Label>Country</Label>
             <Dropdown
+              styles={DropdownStyle}
               options={[...propDropValue.Country]}
               selectedKey={_getFilterDropValues(
                 "Country",
@@ -813,6 +920,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           <div style={{ width: "16%" }}>
             <Label>Type</Label>
             <Dropdown
+              styles={DropdownStyle}
               options={[...propDropValue.Type]}
               selectedKey={_getFilterDropValues(
                 "Type",
@@ -827,8 +935,9 @@ const BudgetPlan = (props: any): JSX.Element => {
 
           {/* Over all refresh section */}
           <div
-            className="refIcon"
+            className={styles.refIcon}
             onClick={() => {
+              _isCurYear = true;
               _getCancelItems();
               setFilPeriodDrop(moment().format("YYYY"));
               setFilCountryDrop("All");
@@ -841,15 +950,15 @@ const BudgetPlan = (props: any): JSX.Element => {
 
         {/* Right side section */}
         {filPeriodDrop == _curYear && (
-          <div className="btnSection">
+          <div className={styles.btnSection}>
             <button
-              className="btns"
+              className={styles.btns}
               style={{ background: "#c5c5c5", display: "none" }}
             >
               Cancel
             </button>
             <button
-              className="btns"
+              className={styles.btns}
               style={{ background: "#f6db55" }}
               onClick={() => {
                 setIsModal(true);
@@ -871,6 +980,9 @@ const BudgetPlan = (props: any): JSX.Element => {
         layoutMode={DetailsListLayoutMode.justified}
         selectionMode={SelectionMode.none}
       />
+      {items.length == 0 && (
+        <div className={styles.noRecords}>No data found !!!</div>
+      )}
 
       {/* New Form Modal section */}
       <Modal
@@ -885,7 +997,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           },
         }}
       >
-        <div className="_newForm">
+        <div className={styles._newForm}>
           <Label>New Category Form</Label>
           <div
             style={{
