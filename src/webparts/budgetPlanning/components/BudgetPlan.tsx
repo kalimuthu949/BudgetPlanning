@@ -301,7 +301,6 @@ const BudgetPlan = (props: any): JSX.Element => {
   );
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
-  const [isModal, setIsModal] = useState<boolean>(false);
   const [curData, setCurData] = useState<ICurBudgetItem>(Config.curBudgetItem);
   const [isValidation, setIsValidation] = useState<IBudgetValidation>(
     Config.budgetValidation
@@ -342,6 +341,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
   };
+
   const DropdownStyle: Partial<IDropdownStyles> = {
     dropdown: {
       ":focus::after": {
@@ -349,6 +349,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
   };
+
   const textFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       "::after": {
@@ -356,11 +357,12 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
   };
+
   const errtxtFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       border: "1px solid red",
       "::after": {
-        border: "1px solid rgb(96, 94, 92)",
+        border: "1px solid red",
       },
       ":hover": {
         border: "1px solid red",
@@ -384,6 +386,20 @@ const BudgetPlan = (props: any): JSX.Element => {
       setIsValidation({ ...isValidation });
       return dialogText;
     }
+  };
+
+  const _getDefaultFunction = (): void => {
+    alertifyMSG = "";
+    _isBack = false;
+    isValidation.isBudgetAllocated = false;
+    isValidation.isDescription = false;
+    setIsValidation({ ...isValidation });
+    setIsLoader(true);
+    filPeriodDrop == _curYear
+      ? ((_isCurYear = false), _budgetPlanColumns)
+      : ((_isCurYear = true), _budgetPlanColumns.pop());
+    setDetailColumn([..._budgetPlanColumns]);
+    _getCategoryDatas();
   };
 
   const _getCategoryDatas = (): void => {
@@ -555,55 +571,46 @@ const BudgetPlan = (props: any): JSX.Element => {
           _arrCateDatas[i].subCategory.push(_arrBudget[j]);
         }
         if (!isDatas && j + 1 == _arrBudget.length) {
-          _arrCateDatas[i].YearAcc == _curYear &&
-            _arrCateDatas[i].subCategory.push({
-              Category: _arrCateDatas[i].CategoryAcc,
-              Year: _arrCateDatas[i].YearAcc,
-              Type: _arrCateDatas[i].Type,
-              Country: _arrCateDatas[i].CountryAcc,
-              ApproveStatus: "",
-              Description: "",
-              ID: null,
-              CateId: _arrCateDatas[i].ID,
-              CounId: _arrCateDatas[i].countryID,
-              YearId: _arrCateDatas[i].yearID,
-              BudgetAllocated: null,
-              BudgetProposed: null,
-              Used: null,
-              RemainingCost: null,
-              isDeleted: false,
-              isEdit: false,
-              isDummy: true,
-            });
+          _curEmptyItem =
+            _arrCateDatas[i].YearAcc == _curYear &&
+            _getPrepareArrangedDatas(_arrCateDatas[i]);
+          _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
           _arrOfMaster.push(_arrCateDatas[i]);
         }
       }
-      if (isDatas) {
-        _curEmptyItem = {
-          Category: _arrCateDatas[i].CategoryAcc,
-          Year: _arrCateDatas[i].YearAcc,
-          Type: _arrCateDatas[i].Type,
-          Country: _arrCateDatas[i].CountryAcc,
-          ApproveStatus: "",
-          Description: "",
-          ID: null,
-          CateId: _arrCateDatas[i].ID,
-          CounId: _arrCateDatas[i].countryID,
-          YearId: _arrCateDatas[i].yearID,
-          BudgetAllocated: null,
-          BudgetProposed: null,
-          Used: null,
-          RemainingCost: null,
-          isDeleted: false,
-          isEdit: false,
-          isDummy: true,
-        };
-        _arrCateDatas[i].YearAcc == _curYear &&
-          _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+      if (isDatas && _arrCateDatas[i].YearAcc == _curYear) {
+        _curEmptyItem = _getPrepareArrangedDatas({ ..._arrCateDatas[i] });
+        _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
         _arrOfMaster.push(_arrCateDatas[i]);
       }
       i + 1 == _arrCateDatas.length && groups([..._arrOfMaster]);
     }
+  };
+
+  const _getPrepareArrangedDatas = (
+    _arrCateDatas: IOverAllItem
+  ): ICurBudgetItem => {
+    let _curSampleData: ICurBudgetItem;
+    _curSampleData = {
+      Category: _arrCateDatas.CategoryAcc,
+      Year: _arrCateDatas.YearAcc,
+      Type: _arrCateDatas.Type,
+      Country: _arrCateDatas.CountryAcc,
+      ApproveStatus: "",
+      Description: "",
+      ID: null,
+      CateId: _arrCateDatas.ID,
+      CounId: _arrCateDatas.countryID,
+      YearId: _arrCateDatas.yearID,
+      BudgetAllocated: null,
+      BudgetProposed: null,
+      Used: null,
+      RemainingCost: null,
+      isDeleted: false,
+      isEdit: false,
+      isDummy: true,
+    };
+    return _curSampleData;
   };
 
   const groups = (_filRecord: IOverAllItem[]): void => {
@@ -612,38 +619,46 @@ const BudgetPlan = (props: any): JSX.Element => {
     let matches: ICurBudgetItem[] = [];
     let _overAllCategoryArr: ICurBudgetItem[] = [];
 
-    for (let i: number = 0; _filRecord.length > i; i++) {
-      if (_filRecord[i].subCategory.length) {
-        Uniquelessons = _filRecord[i].subCategory.reduce(
-          (item: any, e1: any) => {
-            matches = item.filter((e2: any) => {
-              return (
-                e1.Category === e2.CategoryAcc &&
-                e1.Year === e2.YearAcc &&
-                e1.Country === e2.CountryAcc
-              );
-            });
-            if (matches.length == 0) {
-              _overAllCategoryArr.push(e1);
-            }
-            return _overAllCategoryArr;
-          },
-          []
-        );
+    if (_filRecord.length == 0) {
+      setItems([]);
+      setGroup([]);
+      setIsLoader(false);
+    } else {
+      for (let i: number = 0; _filRecord.length > i; i++) {
+        if (_filRecord[i].subCategory.length) {
+          Uniquelessons = _filRecord[i].subCategory.reduce(
+            (item: any, e1: any) => {
+              matches = item.filter((e2: any) => {
+                return (
+                  e1.Category === e2.CategoryAcc &&
+                  e1.Year === e2.YearAcc &&
+                  e1.Country === e2.CountryAcc
+                );
+              });
+              if (matches.length == 0) {
+                _overAllCategoryArr.push(e1);
+              }
+              return _overAllCategoryArr;
+            },
+            []
+          );
+        }
       }
-    }
-    _filRecord.forEach((ul: any) => {
-      let FilteredData: ICurBudgetItem[] = Uniquelessons.filter((arr: any) => {
-        return (
-          arr.Category === ul.CategoryAcc &&
-          arr.Year === ul.YearAcc &&
-          arr.Country === ul.CountryAcc
+      _filRecord.forEach((ul: any) => {
+        let FilteredData: ICurBudgetItem[] = Uniquelessons.filter(
+          (arr: any) => {
+            return (
+              arr.Category === ul.CategoryAcc &&
+              arr.Year === ul.YearAcc &&
+              arr.Country === ul.CountryAcc
+            );
+          }
         );
+        let sortingRecord = reOrderedRecords.concat(FilteredData);
+        reOrderedRecords = sortingRecord;
       });
-      let sortingRecord = reOrderedRecords.concat(FilteredData);
-      reOrderedRecords = sortingRecord;
-    });
-    groupsforDL([...reOrderedRecords], [..._filRecord]);
+      groupsforDL([...reOrderedRecords], [..._filRecord]);
+    }
   };
 
   const groupsforDL = (records: ICurBudgetItem[], arrCate: IOverAllItem[]) => {
@@ -736,7 +751,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      _getEditData({ ...data }, "Updated");
+      _getValidation({ ...data }, "Updated");
     } else {
       data[columns.CategoryId] = curData.CateId;
       data[columns.CountryId] = curData.CounId;
@@ -744,24 +759,28 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.Description] = curData.Description;
       data[columns.CategoryType] = curData.Type;
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      _getValidation({ ...data });
+      _getValidation({ ...data }, "");
     }
   };
 
-  const _getValidation = (data: any): void => {
+  const _getValidation = (data: any, type: string): void => {
     let _isValid: boolean = true;
     if (!curData.Description) {
       _isValid = false;
       isValidation.isDescription = true;
+      isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
     }
     if (!curData.BudgetAllocated) {
       _isValid = false;
       isValidation.isBudgetAllocated = true;
+      isValidation.isDescription = curData.Description ? false : true;
     }
     if (_isValid) {
       _isBack = !curData.isEdit;
       setIsLoader(true);
-      _getAddData({ ...data });
+      type != "Updated"
+        ? _getAddData({ ...data })
+        : _getEditData({ ...data }, type);
       isValidation.isBudgetAllocated = false;
       isValidation.isDescription = false;
       setIsValidation({ ...isValidation });
@@ -856,17 +875,7 @@ const BudgetPlan = (props: any): JSX.Element => {
 
   /* Life cycle of onload */
   useEffect(() => {
-    alertifyMSG = "";
-    _isBack = false;
-    isValidation.isBudgetAllocated = false;
-    isValidation.isDescription = false;
-    setIsValidation({ ...isValidation });
-    setIsLoader(true);
-    filPeriodDrop == _curYear
-      ? ((_isCurYear = false), _budgetPlanColumns)
-      : ((_isCurYear = true), _budgetPlanColumns.pop());
-    setDetailColumn([..._budgetPlanColumns]);
-    _getCategoryDatas();
+    _getDefaultFunction();
   }, [filCountryDrop, filPeriodDrop, filTypeDrop]);
 
   return isLoader ? (
@@ -947,27 +956,6 @@ const BudgetPlan = (props: any): JSX.Element => {
             <Icon iconName="Refresh" style={{ color: "#ffff" }} />
           </div>
         </div>
-
-        {/* Right side section */}
-        {filPeriodDrop == _curYear && (
-          <div className={styles.btnSection}>
-            <button
-              className={styles.btns}
-              style={{ background: "#c5c5c5", display: "none" }}
-            >
-              Cancel
-            </button>
-            <button
-              className={styles.btns}
-              style={{ background: "#f6db55" }}
-              onClick={() => {
-                setIsModal(true);
-              }}
-            >
-              New
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Dashboard Detail list section */}
@@ -983,50 +971,6 @@ const BudgetPlan = (props: any): JSX.Element => {
       {items.length == 0 && (
         <div className={styles.noRecords}>No data found !!!</div>
       )}
-
-      {/* New Form Modal section */}
-      <Modal
-        isOpen={isModal}
-        isBlocking={false}
-        styles={{
-          main: {
-            width: "25%",
-            minHeight: 75,
-            borderRadius: 4,
-            padding: "10px",
-          },
-        }}
-      >
-        <div className={styles._newForm}>
-          <Label>New Category Form</Label>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Icon
-              iconName="Cancel"
-              style={{
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-              onClick={() => {
-                setIsModal(false);
-              }}
-            />
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            color: "red",
-          }}
-        >
-          Develop comming soon...
-        </div>
-      </Modal>
     </div>
   );
 };

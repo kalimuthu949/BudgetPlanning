@@ -1,0 +1,24 @@
+.HeaderLable {
+  font-size: 28px;
+  color: #202945;
+  margin-bottom: 20px;
+}
+
+.btns {
+  width: 8%;
+  height: 28px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  background: #f6db55;
+  cursor: pointer;
+}
+
+.noRecords {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  font-weight: 600;
+  font-size: 16px;
+  color: #4d546a;
+}

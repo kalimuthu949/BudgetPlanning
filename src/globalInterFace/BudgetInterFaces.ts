@@ -1,6 +1,7 @@
 /* Interface of List Names */
 export interface IList {
   YearList: string;
+  MasterCategoryList: string;
   CategoryList: string;
   CountryList: string;
   BudgetList: string;
@@ -10,6 +11,11 @@ export interface IList {
 
 /* Interface of Year List Column */
 export interface IYearListColumn {
+  Title: string;
+}
+
+/* Interface of master category List Column */
+export interface IMasCategoryListColumn {
   Title: string;
 }
 
@@ -74,6 +80,8 @@ export interface IDistributionLibraryColumn {
 /* Interface of Navigation Names */
 export interface INave {
   Dashboard: string;
+  BudgetCategory: string;
+  CategoryConfig: string;
   BudgetPlanning: string;
   BudgetAnalysis: string;
   BudgetDistribution: string;
