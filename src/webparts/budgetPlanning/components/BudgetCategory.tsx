@@ -24,11 +24,13 @@ import {
   IDrop,
   IDropdowns,
   IMasCategoryListColumn,
+  IPaginationObj,
 } from "../../../globalInterFace/BudgetInterFaces";
 import * as Excel from "exceljs/dist/exceljs.min.js";
 import * as FileSaver from "file-saver";
 import * as moment from "moment";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
+import Pagination from "office-ui-fabric-react-pagination";
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;

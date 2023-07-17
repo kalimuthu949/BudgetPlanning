@@ -154,3 +154,9 @@ export interface IBudgetValidation {
   isDescription: boolean;
   isBudgetAllocated: boolean;
 }
+
+/* Interface of Pagination items */
+export interface IPaginationObj {
+  displayitems: any[];
+  currentPage: number;
+}
