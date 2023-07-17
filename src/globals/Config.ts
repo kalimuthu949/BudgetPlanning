@@ -10,12 +10,14 @@ import {
   IDropdowns,
   ICurBudgetItem,
   IBudgetValidation,
+  IMasCategoryListColumn,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
   /* Global List Names */
   export const ListNames: IList = {
     YearList: "Year List",
+    MasterCategoryList: "Master Category List",
     CategoryList: "Category List",
     CountryList: "Country List",
     BudgetList: "Budget List",
@@ -25,6 +27,11 @@ export namespace Config {
 
   /* Global Year List Column Names */
   export const YearListColumns: IYearListColumn = {
+    Title: "Title",
+  };
+
+  /* Global Year List Column Names */
+  export const masCategoryListColumns: IMasCategoryListColumn = {
     Title: "Title",
   };
 
@@ -89,6 +96,8 @@ export namespace Config {
   /* Global Navigation Names */
   export const Navigation: INave = {
     Dashboard: "Dashboard",
+    BudgetCategory: "BudgetCategory",
+    CategoryConfig: "CategoryConfig",
     BudgetPlanning: "Budget Planning",
     BudgetAnalysis: "Budget Analysis",
     BudgetDistribution: "Budget Distribution",

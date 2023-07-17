@@ -2,24 +2,29 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Config } from "../../../globals/Config";
 import { IDrop, IDropdowns } from "../../../globalInterFace/BudgetInterFaces";
+import BudgetCategory from "./BudgetCategory";
 import BudgetPlan from "./BudgetPlan";
 import Dashboard from "./Dashboard";
 import BudgetAnalysis from "./BudgetAnalysis";
 import BudgetDistribution from "./BudgetDistribution";
 import BudgetTrackingList from "./BudgetTrackingList";
+import CategoryConfig from "./CategoryConfig";
 import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
+import alertify from "alertifyjs";
+import "alertifyjs/build/css/alertify.css";
 
 const App = (props: any): JSX.Element => {
   /* State creation */
   const [pageNave, setPageNave] = useState<string>(
-    Config.Navigation.BudgetPlanning
+    Config.Navigation.BudgetCategory
   );
   const [dropValue, setDropValue] = useState<IDropdowns>(Config.dropdownValues);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
     console.log(errMsg);
+    alertify.error("Error message");
   };
 
   const _getDropDownValues = (): void => {
@@ -100,6 +105,10 @@ const App = (props: any): JSX.Element => {
 
   return pageNave == Config.Navigation.Dashboard ? (
     <Dashboard />
+  ) : pageNave == Config.Navigation.BudgetCategory ? (
+    <BudgetCategory dropValue={dropValue} />
+  ) : pageNave == Config.Navigation.CategoryConfig ? (
+    <CategoryConfig dropValue={dropValue} />
   ) : pageNave == Config.Navigation.BudgetPlanning ? (
     <BudgetPlan dropValue={dropValue} />
   ) : pageNave == Config.Navigation.BudgetAnalysis ? (
