@@ -11,10 +11,12 @@ import {
   IDetailsListStyles,
   Dropdown,
   IDropdownStyles,
+  IColumn,
 } from "@fluentui/react";
 import styles from "./CategoryConfig.module.scss";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import { IDrop, IDropdowns } from "../../../globalInterFace/BudgetInterFaces";
+import { Config } from "../../../globals/Config";
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
@@ -23,9 +25,41 @@ const CategoryConfig = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
 
+  const _categoryListColumns: IColumn[] = [
+    {
+      key: "column1",
+      name: "Category",
+      fieldName: Config.masCategoryListColumns.Title,
+      minWidth: 200,
+      maxWidth: 600,
+    },
+    {
+      key: "column2",
+      name: "Country",
+      fieldName: Config.masCategoryListColumns.Title,
+      minWidth: 200,
+      maxWidth: 500,
+    },
+    {
+      key: "column3",
+      name: "Category Type",
+      fieldName: Config.masCategoryListColumns.Title,
+      minWidth: 200,
+      maxWidth: 400,
+    },
+    {
+      key: "column4",
+      name: "Action",
+      fieldName: Config.masCategoryListColumns.Title,
+      minWidth: 100,
+      maxWidth: 150,
+    },
+  ];
+
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
+  const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -61,7 +95,7 @@ const CategoryConfig = (props: any): JSX.Element => {
       },
       ".ms-DetailsHeader-cellTitle": {
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "start",
       },
     },
   };
@@ -107,11 +141,22 @@ const CategoryConfig = (props: any): JSX.Element => {
       <Label className={styles.HeaderLable}>Category Config</Label>
 
       {/* Dropdown section */}
-      <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Dropdown section */}
-        <div>
+        <div
+          style={{
+            display: "flex",
+            gap: "2%",
+            width: "95%",
+          }}
+        >
           {/* Country dropdown section */}
-          <div>
+          <div style={{ width: "15%" }}>
             <Label>Country</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -130,23 +175,76 @@ const CategoryConfig = (props: any): JSX.Element => {
           </div>
 
           {/* Category type dropdown section */}
-          <div></div>
+          <div style={{ width: "15%" }}>
+            <Label>Category Type</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Type]}
+              selectedKey={_getFilterDropValues(
+                "Type",
+                {
+                  ...propDropValue,
+                },
+                filTypeDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                setFilTypeDrop(text.text as string);
+              }}
+            />
+          </div>
 
           {/* Year dropdown section */}
-          <div></div>
+          <div style={{ width: "8%" }}>
+            <Label>Year</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              disabled={true}
+              options={[...propDropValue.Country]}
+              selectedKey={_getFilterDropValues(
+                "Country",
+                {
+                  ...propDropValue,
+                },
+                filCountryDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                setFilCountryDrop(text.text as string);
+              }}
+            />
+          </div>
 
           {/* Category dropdown section */}
-          <div></div>
+          <div style={{ width: "15%" }}>
+            <Label>Category</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Country]}
+              selectedKey={_getFilterDropValues(
+                "Country",
+                {
+                  ...propDropValue,
+                },
+                filCountryDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                setFilCountryDrop(text.text as string);
+              }}
+            />
+          </div>
         </div>
 
         {/* btn section */}
-        <button disabled={true}>Save</button>
+        <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+          <button disabled={true} className={styles.btns}>
+            Save
+          </button>
+        </div>
       </div>
 
       {/* Details list section */}
       <DetailsList
         items={[]}
-        columns={[]}
+        columns={[..._categoryListColumns]}
         styles={_DetailsListStyle}
         setKey="set"
         layoutMode={DetailsListLayoutMode.justified}
