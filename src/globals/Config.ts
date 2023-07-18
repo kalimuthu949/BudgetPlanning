@@ -37,13 +37,15 @@ export namespace Config {
 
   /* Global Category List Column Names */
   export const CategoryListColumns: ICategoryListColumn = {
+    ID: "ID",
     Title: "Title",
-    Year: "Year",
-    Country: "Country",
+    Year: "YearId",
+    Country: "CountryId",
     CategoryType: "CategoryType",
     OverAllBudgetCost: "OverAllBudgetCost",
     OverAllPOIssuedCost: "OverAllPOIssuedCost",
     OverAllRemainingCost: "OverAllRemainingCost",
+    isDeleted: "isDeleted",
   };
 
   /* Global Country List Column Names */
@@ -109,6 +111,7 @@ export namespace Config {
     Period: [],
     Country: [],
     Type: [],
+    masterCate: [],
   };
 
   /* Global of current budget items names */

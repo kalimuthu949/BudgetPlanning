@@ -15,6 +15,9 @@ const _getFilterDropValues = (
   if (type == "Type" && value.Type.length) {
     key = value.Type.filter((e: IDrop) => e.text == filValue)[0].key;
   }
+  if (type == "Master Category" && value.masterCate.length) {
+    key = value.masterCate.filter((e: IDrop) => e.text == filValue)[0].key;
+  }
   return key;
 };
 

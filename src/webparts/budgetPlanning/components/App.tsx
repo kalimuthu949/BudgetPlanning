@@ -17,7 +17,7 @@ import "alertifyjs/build/css/alertify.css";
 const App = (props: any): JSX.Element => {
   /* State creation */
   const [pageNave, setPageNave] = useState<string>(
-    Config.Navigation.BudgetCategory
+    Config.Navigation.CategoryConfig
   );
   const [dropValue, setDropValue] = useState<IDropdowns>(Config.dropdownValues);
 
@@ -39,6 +39,7 @@ const App = (props: any): JSX.Element => {
         if (resType.length) {
           resType.forEach((e: any, i: number) => {
             _yearDrop.push({
+              ID: e.ID,
               key: i,
               text: e.Title,
             });
@@ -59,6 +60,7 @@ const App = (props: any): JSX.Element => {
             if (resType.length) {
               resType.forEach((e: any, i: number) => {
                 _countryDrop.push({
+                  ID: e.ID,
                   key: i + 1,
                   text: e.Title,
                 });
@@ -83,7 +85,39 @@ const App = (props: any): JSX.Element => {
                   });
                 }
                 dropValue.Type = _typeDrop;
-                setDropValue({ ...dropValue });
+
+                // get master category datas function
+                SPServices.SPReadItems({
+                  Listname: Config.ListNames.MasterCategoryList,
+                  Topcount: 5000,
+                })
+                  .then((resMasCategory: any) => {
+                    let _strMasCateArray: IDrop[] = [];
+                    let _typeMasterCate: IDrop[] = [];
+
+                    resMasCategory.length &&
+                      resMasCategory.forEach((e: any, i: number) => {
+                        _strMasCateArray.push({
+                          key: i + 1,
+                          text: e.Title,
+                        });
+                      });
+
+                    if (resMasCategory.length == _strMasCateArray.length) {
+                      _typeMasterCate = _strMasCateArray.sort((a, b) => {
+                        let _firstText: string = a.text.toLowerCase();
+                        let _secondText: string = b.text.toLowerCase();
+                        if (_firstText < _secondText) return -1;
+                        if (_firstText > _secondText) return 1;
+                      });
+                    }
+
+                    dropValue.masterCate = [..._typeMasterCate];
+                    setDropValue({ ...dropValue });
+                  })
+                  .catch((err: any) => {
+                    _getErrorFunction(err);
+                  });
               })
               .catch((err: any) => {
                 _getErrorFunction(err);

@@ -21,6 +21,7 @@ export interface IMasCategoryListColumn {
 
 /* Interface of Category List Column */
 export interface ICategoryListColumn {
+  ID: string;
   Title: string;
   Year: string;
   Country: string;
@@ -28,6 +29,7 @@ export interface ICategoryListColumn {
   OverAllBudgetCost: string;
   OverAllPOIssuedCost: string;
   OverAllRemainingCost: string;
+  isDeleted: string;
 }
 
 /* Interface of Country List Column */
@@ -90,6 +92,7 @@ export interface INave {
 
 /* Interface of Dropdown */
 export interface IDrop {
+  ID?: number;
   key: number;
   text: string;
 }
@@ -99,6 +102,7 @@ export interface IDropdowns {
   Period: IDrop[];
   Country: IDrop[];
   Type: IDrop[];
+  masterCate: IDrop[];
 }
 
 /* Interface of lookup obj */
@@ -159,4 +163,22 @@ export interface IBudgetValidation {
 export interface IPaginationObj {
   displayitems: any[];
   currentPage: number;
+}
+
+/* Interface of Master category items */
+export interface ICategory {
+  Title: string;
+  Year: string;
+  Country: string;
+  CategoryType: string;
+  ID: number;
+}
+
+/* Interface of category insert items */
+export interface INewCate {
+  Title: string;
+  CategoryType: string;
+  ID?: number;
+  CountryId: number;
+  YearId: number;
 }
