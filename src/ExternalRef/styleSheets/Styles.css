@@ -124,3 +124,23 @@ div {
   }
 }
 /* Loader Design end */
+
+/* pagination design start */
+.pagination {
+  text-align: center;
+}
+.pagination .ms-Button {
+  border: none !important;
+  background: none !important;
+  min-width: 0 !important;
+  padding: 5px !important;
+  color: #000;
+  margin: 12px 0px;
+}
+
+.pagination .ms-Button.ms-Button--primary .ms-Button-label {
+  color: #fff;
+  background: #202945;
+  padding: 10px 14px;
+  border-radius: 50%;
+}

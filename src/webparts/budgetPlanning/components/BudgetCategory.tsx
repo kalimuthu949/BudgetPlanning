@@ -19,6 +19,9 @@ import {
   IIconProps,
   IContextualMenuProps,
   IconButton,
+  ISearchBoxStyles,
+  IButtonStyles,
+  IModalStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import Loader from "./Loader";
@@ -37,7 +40,6 @@ import * as moment from "moment";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import commonServices from "../../../CommonServices/CommonServices";
 import Pagination from "office-ui-fabric-react-pagination";
-import { Flag20Filled } from "@fluentui/react-icons";
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
@@ -116,6 +118,89 @@ const BudgetCategory = (props: any): JSX.Element => {
         display: "flex",
         justifyContent: "center",
       },
+    },
+  };
+  const searchStyle: Partial<ISearchBoxStyles> = {
+    root: {
+      width: 240,
+      "::after": {
+        border: "1px solid rgb(96, 94, 92) !important",
+      },
+    },
+  };
+  const btnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: "#f6db55 !important",
+      height: 28,
+      borderRadius: 5,
+    },
+    label: {
+      fontWeight: 500,
+      color: "#000",
+      cursor: "pointer",
+    },
+    icon: {
+      fontSize: 14,
+      color: "#000",
+    },
+  };
+  const NewmodalStyle: Partial<IModalStyles> = {
+    main: {
+      padding: "10px 20px",
+      borderRadius: 4,
+      width: "18%",
+      height: "auto !important",
+      minHeight: "none",
+    },
+  };
+  const inputStyle: Partial<ITextFieldStyles> = {
+    root: {
+      width: "75%",
+      marginRight: 6,
+    },
+    fieldGroup: {
+      "::after": {
+        border: "1px solid rgb(96, 94, 92) !important",
+      },
+    },
+  };
+  const iconStyle: Partial<IButtonStyles> = {
+    rootHovered: {
+      background: "transparent !important",
+    },
+  };
+  const saveBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: "#f6db55 !important",
+      borderRadius: 5,
+      marginRight: 10,
+      width: "30%",
+    },
+    // rootHovered:{
+    //   background:""
+    // }
+  };
+  const cancelBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "1px solid",
+      background: "transparent !important",
+      borderRadius: 5,
+      marginRight: 10,
+      width: "30%",
+    },
+    // rootHovered:{
+    //   background:""
+    // }
+  };
+  const importModalStyle: Partial<IModalStyles> = {
+    main: {
+      padding: "10px 20px",
+      borderRadius: 4,
+      width: "18%",
+      height: "auto !important",
+      minHeight: "none",
     },
   };
 
@@ -395,114 +480,279 @@ const BudgetCategory = (props: any): JSX.Element => {
       <Label className={styles.HeaderLable}>Budget Category</Label>
 
       {/* btn section */}
-      <SearchBox
-        placeholder="Search"
-        onChange={(val, text) => searchData(text)}
-      />
-      <div
-        style={{
-          gap: "2%",
-          display: "flex",
-          justifyContent: "end",
-        }}
-      >
-        <DefaultButton
-          text="New item"
-          iconProps={addIcon}
-          onClick={() => setcategoryPopup(true)}
+      <div className={styles.btnContainer}>
+        <SearchBox
+          styles={searchStyle}
+          placeholder="Search"
+          onChange={(val, text) => searchData(text)}
         />
-        <Modal isOpen={categoryPopup}>
-          <div>
-            <h3>Categories</h3>
+        <div className={styles.rightBtns}>
+          <DefaultButton
+            text="New item"
+            styles={btnStyle}
+            iconProps={addIcon}
+            onClick={() => setcategoryPopup(true)}
+          />
+          {/* <Modal isOpen={categoryPopup} styles={NewmodalStyle}>
+            <div className={styles.modalHeader}>
+              <h3>Categories</h3>
+              <IconButton
+                iconProps={{
+                  iconName: "Cancel",
+                }}
+                title="Cancel"
+                ariaLabel="Cancel"
+                onClick={() => setcategoryPopup(false)}
+              />
+            </div>
+            <div>
+              {newCategoryData.map((val, index) => {
+                return (
+                  <div key={index}>
+                    <TextField
+                      type="text"
+                      value={val.Title}
+                      onChange={(e, text) => addCategoryData(index, text)}
+                    ></TextField>
+                    {newCategoryData.length > 1 &&
+                    newCategoryData.length != index + 1 ? (
+                      <IconButton
+                        iconProps={{
+                          iconName: "Delete",
+                        }}
+                        title="Delete"
+                        ariaLabel="Delete"
+                        onClick={() => deleteCategory(index)}
+                      />
+                    ) : (
+                      <div>
+                        {newCategoryData.length > 1 && (
+                          <IconButton
+                            iconProps={{
+                              iconName: "Delete",
+                            }}
+                            title="Delete"
+                            ariaLabel="Delete"
+                            onClick={() => deleteCategory(index)}
+                          />
+                        )}
+                        <IconButton
+                          iconProps={{
+                            iconName: "Add",
+                          }}
+                          title="Add"
+                          ariaLabel="Add"
+                          onClick={() => addCategory(index)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {error}
+            <DefaultButton
+              text={"Save"}
+              onClick={() =>
+                addMasterCategoryData(newCategoryData, "ImportFiles")
+              }
+            />
+          </Modal> */}
+          <input
+            id="fileUpload"
+            type="file"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              gblImportExcel = e.target.files[0];
+            }}
+          />
+          <button className={styles.uploadBtn}>
+            <label htmlFor="fileUpload">File</label>
+          </button>
+          <button
+            className={styles.btns}
+            onClick={() => {
+              _getFileImport(gblImportExcel);
+              setImportFilePopup(true);
+              // setcategoryPopup(true);
+            }}
+          >
+            Import
+          </button>
+          {/* <Modal isOpen={importFilePopup}>
             <IconButton
               iconProps={{
                 iconName: "Cancel",
               }}
               title="Cancel"
               ariaLabel="Cancel"
-              onClick={() => setcategoryPopup(false)}
+              onClick={() => setImportFilePopup(false)}
             />
+            <div>
+              <div>
+                <div>
+                  <h4>New Datas</h4>
+                  {importExcelDataView.addExcelData.map((value, index) => {
+                    return (
+                      <div>
+                        <div key={index}>
+                          <TextField type="text" value={value.Title} />
+                          {importExcelDataView.addExcelData.length > 1 &&
+                          importExcelDataView.addExcelData.length !=
+                            index + 1 ? (
+                            <IconButton
+                              iconProps={{
+                                iconName: "Delete",
+                              }}
+                              title="Delete"
+                              ariaLabel="Delete"
+                              onClick={() => deleteImportExcelData(index)}
+                            />
+                          ) : (
+                            <div>
+                              <IconButton
+                                iconProps={{
+                                  iconName: "Add",
+                                }}
+                                title="Add"
+                                ariaLabel="Add"
+                                onClick={(index) => addImportExcelData(index)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <div>
+                  <h4>Duplicate Datas</h4>
+                  {importExcelDataView.removeExcelData.map((value, index) => {
+                    return (
+                      <div>
+                        <div key={index}>
+                          <p>{value.Title}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {error}
+            <div>
+              <DefaultButton
+                text="Save"
+                onClick={() => {
+                  addMasterCategoryData(importExcelDataView.addExcelData, "");
+                }}
+              />
+            </div>
+          </Modal> */}
+          <button className={styles.btns} onClick={() => _getGenerateExcel()}>
+            Export
+          </button>
+        </div>
+        {/* new modal */}
+        <Modal isOpen={categoryPopup} styles={NewmodalStyle}>
+          <div className={styles.modalHeader}>
+            <h3>New Categories</h3>
+            {/* <IconButton
+              styles={iconStyle}
+              iconProps={{
+                iconName: "Cancel",
+              }}
+              title="Cancel"
+              ariaLabel="Cancel"
+              onClick={() => setcategoryPopup(false)}
+            /> */}
           </div>
           <div>
             {newCategoryData.map((val, index) => {
               return (
-                <div key={index}>
-                  <TextField
-                    type="text"
-                    value={val.Title}
-                    onChange={(e, text) => addCategoryData(index, text)}
-                  ></TextField>
-                  {newCategoryData.length > 1 &&
-                  newCategoryData.length != index + 1 ? (
-                    <IconButton
-                      iconProps={{
-                        iconName: "Delete",
-                      }}
-                      title="Delete"
-                      ariaLabel="Delete"
-                      onClick={() => deleteCategory(index)}
-                    />
-                  ) : (
-                    <div>
-                      {newCategoryData.length > 1 && (
-                        <IconButton
-                          iconProps={{
-                            iconName: "Delete",
-                          }}
-                          title="Delete"
-                          ariaLabel="Delete"
-                          onClick={() => deleteCategory(index)}
-                        />
-                      )}
+                <>
+                  <div key={index} className={styles.modalTextAndIconFlex}>
+                    <TextField
+                      styles={inputStyle}
+                      type="text"
+                      value={val.Title}
+                      onChange={(e, text) => addCategoryData(index, text)}
+                    ></TextField>
+
+                    {newCategoryData.length > 1 &&
+                    newCategoryData.length != index + 1 ? (
                       <IconButton
+                        styles={iconStyle}
                         iconProps={{
-                          iconName: "Add",
+                          iconName: "Delete",
                         }}
-                        title="Add"
-                        ariaLabel="Add"
-                        onClick={() => addCategory(index)}
+                        style={{ color: "red" }}
+                        title="Delete"
+                        ariaLabel="Delete"
+                        onClick={() => deleteCategory(index)}
                       />
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <div>
+                        {newCategoryData.length > 1 && (
+                          <IconButton
+                            styles={iconStyle}
+                            iconProps={{
+                              iconName: "Delete",
+                            }}
+                            style={{ color: "red" }}
+                            title="Delete"
+                            ariaLabel="Delete"
+                            onClick={() => deleteCategory(index)}
+                          />
+                        )}
+                        <IconButton
+                          styles={iconStyle}
+                          iconProps={{
+                            iconName: "Add",
+                          }}
+                          style={{ color: "#000" }}
+                          title="Add"
+                          ariaLabel="Add"
+                          onClick={() => addCategory(index)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.errMsg}>{error}</div>
+                </>
               );
             })}
           </div>
-
-          {error}
-          <DefaultButton
-            text={"Save"}
-            onClick={() =>
-              addMasterCategoryData(newCategoryData, "ImportFiles")
-            }
-          />
+          <div style={{ textAlign: "center", marginTop: 20 }}>
+            <DefaultButton
+              styles={saveBtnStyle}
+              text={"Save"}
+              onClick={() =>
+                addMasterCategoryData(newCategoryData, "ImportFiles")
+              }
+            />
+            <DefaultButton
+              styles={cancelBtnStyle}
+              text={"Cancel"}
+              onClick={() => setcategoryPopup(false)}
+            />
+          </div>
         </Modal>
-        <input
-          id="fileUpload"
-          type="file"
-          onChange={(e) => {
-            gblImportExcel = e.target.files[0];
-          }}
-        />
-        <button
-          className={styles.btns}
-          onClick={() => {
-            _getFileImport(gblImportExcel);
-            setImportFilePopup(true);
-            // setcategoryPopup(true);
-          }}
-        >
-          Import
-        </button>
-        <Modal isOpen={importFilePopup}>
-          <IconButton
+
+        {/* import modal */}
+        <Modal isOpen={importFilePopup} styles={importModalStyle}>
+          {/* <IconButton
             iconProps={{
               iconName: "Cancel",
             }}
+            className={styles.cancelIconBtn}
             title="Cancel"
             ariaLabel="Cancel"
             onClick={() => setImportFilePopup(false)}
-          />
+          /> */}
           <div>
             <div>
               <div>
@@ -555,21 +805,25 @@ const BudgetCategory = (props: any): JSX.Element => {
               </div>
             </div>
           </div>
-          {error}
-          <div>
+          <div className={styles.errMsg}>{error}</div>
+          <div style={{ textAlign: "center", marginTop: 20 }}>
             <DefaultButton
+              styles={saveBtnStyle}
               text="Save"
               onClick={() => {
                 addMasterCategoryData(importExcelDataView.addExcelData, "");
               }}
             />
+            <DefaultButton
+              styles={cancelBtnStyle}
+              text="Cancel"
+              onClick={() => {
+                setImportFilePopup(false);
+              }}
+            />
           </div>
         </Modal>
-        <button className={styles.btns} onClick={() => _getGenerateExcel()}>
-          Export
-        </button>
       </div>
-
       {/* Details list section */}
       <DetailsList
         items={[...items]}
