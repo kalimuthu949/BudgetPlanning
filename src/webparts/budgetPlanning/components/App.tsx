@@ -135,22 +135,31 @@ const App = (props: any): JSX.Element => {
   /* Life cycle of onload */
   useEffect(() => {
     _getDropDownValues();
+    console.log("version - 0.01");
   }, []);
 
-  return pageNave == Config.Navigation.Dashboard ? (
-    <Dashboard />
-  ) : pageNave == Config.Navigation.BudgetCategory ? (
-    <BudgetCategory dropValue={dropValue} />
-  ) : pageNave == Config.Navigation.CategoryConfig ? (
-    <CategoryConfig dropValue={dropValue} />
-  ) : pageNave == Config.Navigation.BudgetPlanning ? (
-    <BudgetPlan dropValue={dropValue} />
-  ) : pageNave == Config.Navigation.BudgetAnalysis ? (
-    <BudgetAnalysis />
-  ) : pageNave == Config.Navigation.BudgetDistribution ? (
-    <BudgetDistribution />
-  ) : (
-    <BudgetTrackingList />
+  return (
+    <div
+      style={{
+        padding: "0px 30px",
+      }}
+    >
+      {pageNave == Config.Navigation.Dashboard ? (
+        <Dashboard />
+      ) : pageNave == Config.Navigation.BudgetCategory ? (
+        <BudgetCategory dropValue={dropValue} />
+      ) : pageNave == Config.Navigation.CategoryConfig ? (
+        <CategoryConfig dropValue={dropValue} />
+      ) : pageNave == Config.Navigation.BudgetPlanning ? (
+        <BudgetPlan dropValue={dropValue} />
+      ) : pageNave == Config.Navigation.BudgetAnalysis ? (
+        <BudgetAnalysis />
+      ) : pageNave == Config.Navigation.BudgetDistribution ? (
+        <BudgetDistribution />
+      ) : (
+        <BudgetTrackingList />
+      )}
+    </div>
   );
 };
 

@@ -70,7 +70,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
       minWidth: 300,
-      maxWidth: _isCurYear ? 350 : 450,
+      maxWidth: _isCurYear ? 380 : 450,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? (
           <div
@@ -200,7 +200,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Action",
       fieldName: "",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 150,
       onRender: (item: any) => {
         return (
           <div>
@@ -339,6 +339,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       ".ms-DetailsRow-cell": {
         fontSize: 14,
       },
+      ".ms-DetailsList-contentWrapper": {
+        height: "58vh",
+        overflowY: "auto",
+        overflowX: "hidden",
+      },
     },
   };
 
@@ -395,9 +400,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     isValidation.isDescription = false;
     setIsValidation({ ...isValidation });
     setIsLoader(true);
-    filPeriodDrop == _curYear
-      ? ((_isCurYear = false), _budgetPlanColumns)
-      : ((_isCurYear = true), _budgetPlanColumns.pop());
+    filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
     setDetailColumn([..._budgetPlanColumns]);
     _getCategoryDatas();
   };
@@ -406,6 +409,13 @@ const BudgetPlan = (props: any): JSX.Element => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CategoryList,
       Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+      ],
       Expand: "Year, Country",
       Topcount: 5000,
     })
@@ -566,7 +576,13 @@ const BudgetPlan = (props: any): JSX.Element => {
       let isDatas: boolean = true;
       _arrCateDatas[i].subCategory = [];
       for (let j: number = 0; _arrBudget.length > j; j++) {
-        if (_arrCateDatas[i].ID == _arrBudget[j].CateId) {
+        if (
+          _arrCateDatas[i].ID == _arrBudget[j].CateId &&
+          _arrCateDatas[i].YearAcc == _arrBudget[j].Year &&
+          _arrCateDatas[i].CategoryAcc == _arrBudget[j].Category &&
+          _arrCateDatas[i].CountryAcc == _arrBudget[j].Country &&
+          _arrCateDatas[i].Type == _arrBudget[j].Type
+        ) {
           isDatas = false;
           _arrCateDatas[i].subCategory.push(_arrBudget[j]);
         }
@@ -592,19 +608,19 @@ const BudgetPlan = (props: any): JSX.Element => {
   ): ICurBudgetItem => {
     let _curSampleData: ICurBudgetItem;
     _curSampleData = {
+      ID: null,
       Category: _arrCateDatas.CategoryAcc,
+      Country: _arrCateDatas.CountryAcc,
       Year: _arrCateDatas.YearAcc,
       Type: _arrCateDatas.Type,
-      Country: _arrCateDatas.CountryAcc,
-      ApproveStatus: "",
-      Description: "",
-      ID: null,
       CateId: _arrCateDatas.ID,
       CounId: _arrCateDatas.countryID,
       YearId: _arrCateDatas.yearID,
       BudgetAllocated: null,
       BudgetProposed: null,
       Used: null,
+      ApproveStatus: "",
+      Description: "",
       RemainingCost: null,
       isDeleted: false,
       isEdit: false,
@@ -670,7 +686,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         Category: arr.CategoryAcc ? arr.CategoryAcc : "",
         Country: arr.CountryAcc ? arr.CountryAcc : "",
         Year: arr.YearAcc ? arr.YearAcc : "",
-        indexValue: i == 0 ? i : _recordsLength,
+        indexValue: _recordsLength,
       });
       _recordsLength += arr.subCategory.length;
     });
@@ -765,7 +781,7 @@ const BudgetPlan = (props: any): JSX.Element => {
 
   const _getValidation = (data: any, type: string): void => {
     let _isValid: boolean = true;
-    if (!curData.Description) {
+    if (!curData.Description.trim()) {
       _isValid = false;
       isValidation.isDescription = true;
       isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
@@ -773,7 +789,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     if (!curData.BudgetAllocated) {
       _isValid = false;
       isValidation.isBudgetAllocated = true;
-      isValidation.isDescription = curData.Description ? false : true;
+      isValidation.isDescription = curData.Description.trim() ? false : true;
     }
     if (_isValid) {
       _isBack = !curData.isEdit;
@@ -901,6 +917,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 filPeriodDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                _isCurYear = (text.text as string) == _curYear ? true : false;
                 setFilPeriodDrop(text.text as string);
               }}
             />
@@ -920,6 +937,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 filCountryDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilCountryDrop(text.text as string);
               }}
             />
@@ -937,6 +955,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 filTypeDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilTypeDrop(text.text as string);
               }}
             />
