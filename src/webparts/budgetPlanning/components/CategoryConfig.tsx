@@ -29,17 +29,20 @@ import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import { Config } from "../../../globals/Config";
 import SPServices from "../../../CommonServices/SPServices";
 import { Modal } from "office-ui-fabric-react";
+import commonServices from "../../../CommonServices/CommonServices";
+import Pagination from "office-ui-fabric-react-pagination";
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
 let _preparCareArray: ICategory[] = [];
 let _strCountry: string = "All";
 let _strCateType: string = "All";
-let _numCate: number[] = [];
+let _numCate: any[] = [];
 let _masterCateOption: IDrop[] = [];
 let _isSubmit: boolean = false;
 let _preNewCate: INewCate[] = [];
 let _curItem: ICategory;
+let _isCateMulti: boolean = false;
 
 const CategoryConfig = (props: any): JSX.Element => {
   /* Variable creation */
@@ -99,10 +102,15 @@ const CategoryConfig = (props: any): JSX.Element => {
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
-  const [filMasCateKey, setFilMasCateKey] = useState<number[]>([]);
+  const [filMasCateKey, setFilMasCateKey] = useState<IDrop[]>([]);
   const [items, setItems] = useState<ICategory[]>([]);
+  const [master, setMaster] = useState<ICategory[]>([]);
   const [cateOpt, setCateOpt] = useState<IDrop[]>([]);
   const [isModal, setIsModal] = useState<boolean>(false);
+  const [pagination, setPagination] = useState<any>({
+    totalPageItems: 10,
+    pagenumber: 1,
+  });
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -292,6 +300,12 @@ const CategoryConfig = (props: any): JSX.Element => {
       }
     }
 
+    if (cunID && yearID && cateType != "All") {
+      _isCateMulti = true;
+    } else {
+      _isCateMulti = false;
+    }
+
     if (cunID && yearID && cateType != "All" && _strMasCate.length) {
       _isSubmit = true;
       for (let i: number = 0; _strMasCate.length > i; i++) {
@@ -306,6 +320,7 @@ const CategoryConfig = (props: any): JSX.Element => {
     } else {
       _isSubmit = false;
     }
+    console.log([..._preNewCate]);
   };
 
   const _getBulkInsert = (): void => {
@@ -352,6 +367,16 @@ const CategoryConfig = (props: any): JSX.Element => {
   useEffect(() => {
     props.dropValue.Period.length && _getDefaultFunction();
   }, [props.dropValue]);
+
+  useEffect(() => {
+    let masterData: any = commonServices.paginateFunction(
+      pagination.totalPageItems,
+      pagination.pagenumber,
+      items
+    );
+
+    setMaster(masterData.displayitems);
+  }, [pagination, items]);
 
   return isLoader ? (
     <Loader />
@@ -434,35 +459,41 @@ const CategoryConfig = (props: any): JSX.Element => {
           </div>
 
           {/* Category dropdown section */}
-          <div style={{ width: "15%" }}>
-            <Label>Category</Label>
-            <Autocomplete
-              options={cateOpt.length ? [...cateOpt] : [..._masterCateOption]}
-              getOptionLabel={(option) => option.text}
-              multiple={true}
-              defaultValue={[...filMasCateKey]}
-              onChange={(e: any, text: any) => {
-                let _filMasCateKeys: number[] = [];
-                if (text.length) {
-                  text.forEach((e: any) => {
-                    _filMasCateKeys.push(e.key);
-                  });
-                  if (text.length == _filMasCateKeys.length) {
-                    _numCate = [..._filMasCateKeys];
+          {_isCateMulti && (
+            <div style={{ width: "15%" }}>
+              <Label>Category</Label>
+              <Autocomplete
+                multiple
+                disableCloseOnSelect
+                options={cateOpt.length ? [...cateOpt] : [..._masterCateOption]}
+                getOptionLabel={(option) => option.text}
+                value={[...filMasCateKey]}
+                defaultValue={[...filMasCateKey]}
+                onChange={(e: any, text: any) => {
+                  let _filMasCateKeys: IDrop[] = [];
+                  _numCate = [];
+                  if (text.length) {
+                    text.forEach((e: any) => {
+                      _filMasCateKeys.push(e);
+                    });
+                    if (text.length == _filMasCateKeys.length) {
+                      _filMasCateKeys.forEach((data: IDrop, i: number) => {
+                        _numCate.push(data.key);
+                        i + 1 == _filMasCateKeys.length && _getOnChange();
+                      });
+                      setFilMasCateKey([..._filMasCateKeys]);
+                    }
+                  } else {
                     _getOnChange();
                     setFilMasCateKey([..._filMasCateKeys]);
                   }
-                } else {
-                  _numCate = [..._filMasCateKeys];
-                  _getOnChange();
-                  setFilMasCateKey([..._filMasCateKeys]);
-                }
-              }}
-              renderInput={(params) => (
-                <TextField {...params} variant="outlined" placeholder="All" />
-              )}
-            />
-          </div>
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} variant="outlined" placeholder="All" />
+                )}
+              />
+            </div>
+          )}
 
           {/* Over all refresh section */}
           <div style={{ display: "flex", alignItems: "end" }}>
@@ -472,11 +503,12 @@ const CategoryConfig = (props: any): JSX.Element => {
                 _strCountry = "All";
                 _strCateType = "All";
                 _numCate = [];
-                setFilMasCateKey([..._numCate]);
+                setFilMasCateKey([]);
                 setFilCountryDrop("All");
                 setFilTypeDrop("All");
                 _getOnChange();
                 _filterCategoryArray();
+                setPagination({ ...pagination, pagenumber: 1 });
               }}
             >
               <Icon iconName="Refresh" style={{ color: "#ffff" }} />
@@ -505,7 +537,7 @@ const CategoryConfig = (props: any): JSX.Element => {
 
       {/* Details list section */}
       <DetailsList
-        items={[...items]}
+        items={[...master]}
         columns={[..._categoryListColumns]}
         styles={_DetailsListStyle}
         setKey="set"
@@ -514,6 +546,17 @@ const CategoryConfig = (props: any): JSX.Element => {
       />
       {!items.length && (
         <div className={styles.noRecords}>No data found !!!</div>
+      )}
+      {items.length ? (
+        <Pagination
+          currentPage={pagination.pagenumber}
+          totalPages={Math.ceil(items.length / pagination.totalPageItems)}
+          onChange={(page: number) =>
+            setPagination({ ...pagination, pagenumber: page })
+          }
+        />
+      ) : (
+        ""
       )}
 
       {/* Modal section */}
@@ -541,8 +584,8 @@ const CategoryConfig = (props: any): JSX.Element => {
             <button
               style={{
                 width: "16%",
-                background: "#939598",
-                border: "none",
+                background: "#ffffff",
+                border: "1px solid",
                 borderRadius: "3px",
                 cursor: "pointer",
                 padding: "4px 0px",
