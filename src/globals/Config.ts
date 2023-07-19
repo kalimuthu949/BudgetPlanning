@@ -100,10 +100,10 @@ export namespace Config {
     Dashboard: "Dashboard",
     BudgetCategory: "BudgetCategory",
     CategoryConfig: "CategoryConfig",
-    BudgetPlanning: "Budget Planning",
-    BudgetAnalysis: "Budget Analysis",
-    BudgetDistribution: "Budget Distribution",
-    BudgetTrackingList: "Budget Tracking List",
+    BudgetPlanning: "BudgetPlanning",
+    BudgetAnalysis: "BudgetAnalysis",
+    BudgetDistribution: "BudgetDistribution",
+    BudgetTrackingList: "BudgetTrackingList",
   };
 
   /* Global Dropdowns Names */

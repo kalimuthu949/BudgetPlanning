@@ -16,9 +16,7 @@ import "alertifyjs/build/css/alertify.css";
 
 const App = (props: any): JSX.Element => {
   /* State creation */
-  const [pageNave, setPageNave] = useState<string>(
-    Config.Navigation.CategoryConfig
-  );
+  const [pageNave, setPageNave] = useState<string>("");
   const [dropValue, setDropValue] = useState<IDropdowns>(Config.dropdownValues);
 
   /* Function creation */
@@ -114,6 +112,7 @@ const App = (props: any): JSX.Element => {
 
                     dropValue.masterCate = [..._typeMasterCate];
                     setDropValue({ ...dropValue });
+                    _getPageName();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -132,34 +131,59 @@ const App = (props: any): JSX.Element => {
       });
   };
 
+  const _getPageName = (): void => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageName: string = urlParams.get("Page");
+
+    if (pageName == Config.Navigation.Dashboard) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.BudgetAnalysis) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.BudgetCategory) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.BudgetDistribution) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.BudgetPlanning) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.BudgetTrackingList) {
+      setPageNave(pageName);
+    } else if (pageName == Config.Navigation.CategoryConfig) {
+      setPageNave(pageName);
+    } else {
+      setPageNave(Config.Navigation.Dashboard);
+    }
+  };
+
   /* Life cycle of onload */
   useEffect(() => {
     _getDropDownValues();
-    console.log("version - 0.01");
+    console.log("version - 0.02");
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "0px 30px",
-      }}
-    >
-      {pageNave == Config.Navigation.Dashboard ? (
-        <Dashboard />
-      ) : pageNave == Config.Navigation.BudgetCategory ? (
-        <BudgetCategory dropValue={dropValue} />
-      ) : pageNave == Config.Navigation.CategoryConfig ? (
-        <CategoryConfig dropValue={dropValue} />
-      ) : pageNave == Config.Navigation.BudgetPlanning ? (
-        <BudgetPlan dropValue={dropValue} />
-      ) : pageNave == Config.Navigation.BudgetAnalysis ? (
-        <BudgetAnalysis />
-      ) : pageNave == Config.Navigation.BudgetDistribution ? (
-        <BudgetDistribution />
-      ) : (
-        <BudgetTrackingList />
-      )}
-    </div>
+    pageNave != "" && (
+      <div
+        style={{
+          padding: "0px 30px",
+        }}
+      >
+        {pageNave == Config.Navigation.Dashboard ? (
+          <Dashboard />
+        ) : pageNave == Config.Navigation.BudgetCategory ? (
+          <BudgetCategory dropValue={dropValue} />
+        ) : pageNave == Config.Navigation.CategoryConfig ? (
+          <CategoryConfig dropValue={dropValue} />
+        ) : pageNave == Config.Navigation.BudgetPlanning ? (
+          <BudgetPlan dropValue={dropValue} />
+        ) : pageNave == Config.Navigation.BudgetAnalysis ? (
+          <BudgetAnalysis />
+        ) : pageNave == Config.Navigation.BudgetDistribution ? (
+          <BudgetDistribution />
+        ) : (
+          <BudgetTrackingList />
+        )}
+      </div>
+    )
   );
 };
 
