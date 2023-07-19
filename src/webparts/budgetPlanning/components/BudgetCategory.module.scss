@@ -22,3 +22,59 @@
   font-size: 16px;
   color: #4d546a;
 }
+.btnContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  .rightBtns {
+    gap: 2%;
+    display: flex;
+    justify-content: end;
+    width: 100%;
+    .uploadBtn {
+      height: 28px;
+      background-color: #f6db55;
+      border-radius: 5px;
+      border: none;
+      width: 8%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      label {
+        font-weight: 500;
+        color: #000;
+        cursor: pointer;
+      }
+    }
+  }
+}
+.modalHeader {
+  margin-bottom: 20px;
+  h3 {
+    margin: 0;
+    color: #202945;
+  }
+  i {
+    color: #000;
+  }
+}
+.modalTextAndIconFlex {
+  display: flex;
+  // justify-content: space-between;
+  // align-items: center;
+  margin: 10px 0px;
+}
+.errMsg {
+  color: red;
+  font-weight: 600;
+  margin: 10px 0px;
+}
+// .cancelIconBtn {
+//   display: flex;
+//   justify-content: flex-end;
+//   width: 100%;
+//   i{
+//     color: #000 !important;
+//   }
+// }
