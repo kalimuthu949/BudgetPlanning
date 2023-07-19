@@ -306,8 +306,6 @@ const CategoryConfig = (props: any): JSX.Element => {
     } else {
       _isSubmit = false;
     }
-
-    console.log([..._preNewCate]);
   };
 
   const _getBulkInsert = (): void => {
@@ -360,7 +358,7 @@ const CategoryConfig = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <Label className={styles.HeaderLable}>Category Config</Label>
+      <Label className={styles.HeaderLable}>Category Config Region</Label>
 
       {/* Dropdown and btn section */}
       <div
