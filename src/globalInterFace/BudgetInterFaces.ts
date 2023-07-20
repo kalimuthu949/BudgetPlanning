@@ -156,7 +156,7 @@ export interface IOverAllItem {
 /* Interface of Budget planning validation items */
 export interface IBudgetValidation {
   isDescription: boolean;
-  isBudgetAllocated: boolean;
+  isBudgetProposed: boolean;
 }
 
 /* Interface of Pagination items */
