@@ -8,7 +8,6 @@ import {
   IColumn,
   DetailsListLayoutMode,
   Icon,
-  Modal,
   TextField,
   IDropdownStyles,
   IDetailsListStyles,
@@ -340,7 +339,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         fontSize: 14,
       },
       ".ms-DetailsList-contentWrapper": {
-        height: "58vh",
+        height: items.length ? "58vh" : 20,
         overflowY: "auto",
         overflowX: "hidden",
       },
