@@ -132,22 +132,23 @@ const App = (props: any): JSX.Element => {
 
   const _getPageName = (): void => {
     const urlParams = new URLSearchParams(window.location.search);
-    const pageName: string = urlParams.get("Page").toLowerCase();
+    const pageName: string = urlParams.get("Page");
+    let _pageNaveName: string = pageName ? pageName.toLowerCase() : "";
 
-    if (pageName == Config.Navigation.Dashboard.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetAnalysis.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetCategory.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetDistribution.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetPlanning.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetTrackingList.toLowerCase()) {
-      setPageNave(pageName);
-    } else if (pageName == Config.Navigation.CategoryConfig.toLowerCase()) {
-      setPageNave(pageName);
+    if (_pageNaveName == Config.Navigation.Dashboard.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.BudgetCategory.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.BudgetDistribution.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.BudgetPlanning.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.BudgetTrackingList.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.CategoryConfig.toLowerCase()) {
+      setPageNave(_pageNaveName);
     } else {
       setPageNave(Config.Navigation.Dashboard);
     }
