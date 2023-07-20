@@ -66,10 +66,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
-  const [error, setError] = useState({
-    importcatgryerror: "",
-    newcatgryError: "",
-  });
+  const [error, setError] = useState("");
   const [MData, setMData] = useState<IMasCategoryListColumn[]>([]);
   const [master, setMaster] = useState<IMasCategoryListColumn[]>([]);
   const [items, setItems] = useState<IMasCategoryListColumn[]>([]);
@@ -79,19 +76,16 @@ const BudgetCategory = (props: any): JSX.Element => {
   const [importExcelDataView, setImportExcelDataView] =
     useState<IimportExcelDataView>({
       removeExcelData: [],
-      addExcelData: [],
+      addExcelData: [
+        {
+          Title: "",
+        },
+      ],
     });
   const [pagination, setPagination] = useState<IPagination>({
     totalPageItems: 10,
     pagenumber: 1,
   });
-  const [newCategoryData, setNewCategoryData] = useState<
-    IMasCategoryListColumn[]
-  >([
-    {
-      Title: "",
-    },
-  ]);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -310,14 +304,15 @@ const BudgetCategory = (props: any): JSX.Element => {
       listItems = filteredData.map((row: any) => ({
         Title: row[1] ? row[1] : "",
       }));
+      //Reset the file
+      document.getElementById("fileUpload")["value"] = "";
       if (
         worksheet.name.toLowerCase() == "my sheet" &&
         listItems[0].Title.toLowerCase() == "categorys"
       ) {
         listItems.shift();
         setImportFilePopup(true);
-        setIsLoader(true);
-        validationImportCategoryData([...listItems]);
+        splitCategoryData([...listItems], "import");
       } else {
         alertify.error("Please import correct excel format");
       }
@@ -360,8 +355,9 @@ const BudgetCategory = (props: any): JSX.Element => {
       });
   };
 
-  const validationImportCategoryData = (
-    listItems: IMasCategoryListColumn[]
+  const splitCategoryData = (
+    listItems: IMasCategoryListColumn[],
+    type: string
   ) => {
     let newaddData = [];
     let DuplicateData = [];
@@ -369,7 +365,10 @@ const BudgetCategory = (props: any): JSX.Element => {
     for (let i = 0; i < listItems.length; i++) {
       let flag = false;
       for (let j = i + 1; j < listItems.length; j++) {
-        if (listItems[i].Title.trim() == listItems[j].Title.trim()) {
+        if (
+          listItems[i].Title.trim().toLowerCase() ==
+          listItems[j].Title.trim().toLowerCase()
+        ) {
           flag = true;
           break;
         }
@@ -378,12 +377,14 @@ const BudgetCategory = (props: any): JSX.Element => {
         dummyData.push(listItems[i]);
       }
     }
-    console.log("dummy", dummyData);
 
     for (let i = 0; i < dummyData.length; i++) {
       let flag = false;
       for (let j = 0; j < MData.length; j++) {
-        if (dummyData[i].Title.trim() == MData[j].Title.trim()) {
+        if (
+          dummyData[i].Title.trim().toLowerCase() ==
+          MData[j].Title.trim().toLowerCase()
+        ) {
           flag = true;
           break;
         }
@@ -392,13 +393,15 @@ const BudgetCategory = (props: any): JSX.Element => {
         newaddData.push(dummyData[i]);
       }
     }
-    console.log("new add", newaddData);
 
     if (newaddData.length > 0) {
       for (let k = 0; k < dummyData.length; k++) {
         let flags = false;
         for (let z = 0; z < newaddData.length; z++) {
-          if (dummyData[k].Title.trim() == newaddData[z].Title.trim()) {
+          if (
+            dummyData[k].Title.trim().toLowerCase() ==
+            newaddData[z].Title.trim().toLowerCase()
+          ) {
             flags = true;
             break;
           }
@@ -410,45 +413,15 @@ const BudgetCategory = (props: any): JSX.Element => {
     } else {
       DuplicateData = [...dummyData];
     }
+
     setImportExcelDataView({
-      ...importExcelDataView,
       removeExcelData: [...DuplicateData],
       addExcelData: [...newaddData],
     });
-    setIsLoader(false);
-  };
 
-  const validationNewCategoryData = (
-    listItems: IMasCategoryListColumn[]
-  ): IMasCategoryListColumn[] => {
-    let newaddData = [];
-    let duplicateData = [];
-    for (let i = 0; i < listItems.length; i++) {
-      let flag = false;
-      for (let j = i + 1; j < listItems.length; j++) {
-        if (listItems[i].Title.trim() == listItems[j].Title.trim()) {
-          flag = true;
-          break;
-        }
-      }
-      if (!flag) {
-        duplicateData.push(listItems[i]);
-      }
+    if (type !== "import") {
+      return newaddData;
     }
-    for (let i = 0; i < duplicateData.length; i++) {
-      let flag = false;
-      for (let j = 0; j < MData.length; j++) {
-        if (duplicateData[i].Title.trim() == MData[j].Title.trim()) {
-          flag = true;
-          break;
-        }
-      }
-      if (!flag) {
-        newaddData.push(duplicateData[i]);
-      }
-    }
-
-    return newaddData;
   };
 
   const addMasterCategoryData = (
@@ -459,88 +432,76 @@ const BudgetCategory = (props: any): JSX.Element => {
     let authentication = false;
     if (type == "ImportFiles") {
       mascatgryData = [...listItems];
-      authentication = validation([...listItems], "ImportFiles");
+      authentication = true;
     } else {
-      mascatgryData = validationNewCategoryData(listItems);
-      authentication = validation([...mascatgryData], "");
+      mascatgryData = splitCategoryData(listItems, "");
+      authentication = validation([...mascatgryData]);
     }
     if (authentication) {
       if (mascatgryData.length > 0) {
-        setIsLoader(true);
         SPServices.batchInsert({
           ListName: Config.ListNames.MasterCategoryList,
           responseData: mascatgryData,
         })
           .then((result) => {
             setImportExcelDataView({
+              addExcelData: [{ Title: "" }],
               removeExcelData: [],
-              addExcelData: [],
             });
-            setNewCategoryData([{ Title: "" }]);
-            setError({ ...error, importcatgryerror: "", newcatgryError: "" });
+            setError("");
             setIstrigger(!istrigger);
+            setcategoryPopup(false);
+            setImportFilePopup(false);
+            setIsLoader(false);
           })
           .catch((err) => _getErrorFunction(err));
-        // for (let i = 0; i < mascatgryData.length; i++) {
-        //   SPServices.SPAddItem({
-        //     Listname: Config.ListNames.MasterCategoryList,
-        //     RequestJSON: mascatgryData[i],
-        //   })
-        //     .then((result) => {
-        //       setImportExcelDataView({
-        //         removeExcelData: [],
-        //         addExcelData: [],
-        //       });
-        //       setNewCategoryData([{ Title: "" }]);
-        //       setError({ ...error, importcatgryerror: "", newcatgryError: "" });
-        //       setIstrigger(true);
-        //     })
-        //     .catch((err) => _getErrorFunction(err));
-        // }
-        setIsLoader(false);
-        setcategoryPopup(false);
-        setImportFilePopup(false);
       } else {
         setcategoryPopup(false);
-        setNewCategoryData([{ Title: "" }]);
+        setImportExcelDataView({
+          addExcelData: [{ Title: "" }],
+          removeExcelData: [],
+        });
+        setIsLoader(false);
       }
+    } else {
+      setIsLoader(false);
     }
   };
 
   const deleteCategory = (index: number) => {
-    let delcatgry = [...newCategoryData];
+    let delcatgry = [...importExcelDataView.addExcelData];
     delcatgry.splice(index, 1);
-    setNewCategoryData(delcatgry);
-    validation(delcatgry, "");
+    setImportExcelDataView({
+      ...importExcelDataView,
+      addExcelData: [...delcatgry],
+    });
+    validation(delcatgry);
   };
 
   const addCategory = (index: number) => {
-    let validate = validation(newCategoryData, "");
+    let validate = validation([...importExcelDataView.addExcelData]);
     if (validate) {
-      setNewCategoryData([...newCategoryData, { Title: "" }]);
+      let addcatcrydata = [...importExcelDataView.addExcelData];
+      addcatcrydata.push({ Title: "" });
+      setImportExcelDataView({
+        ...importExcelDataView,
+        addExcelData: [...addcatcrydata],
+      });
     }
   };
 
   const addCategoryData = (index: number, data: string) => {
-    let addData = [...newCategoryData];
+    let addData = [...importExcelDataView.addExcelData];
     addData[index].Title = data;
-    setNewCategoryData([...addData]);
+    setImportExcelDataView({ ...importExcelDataView, addExcelData: addData });
   };
 
-  const validation = (arr: IMasCategoryListColumn[], type: string): boolean => {
+  const validation = (arr: IMasCategoryListColumn[]): boolean => {
     if (!arr.some((val) => val.Title.trim() == "")) {
-      if (type == "ImportFiles") {
-        setError({ ...error, importcatgryerror: "" });
-      } else {
-        setError({ ...error, newcatgryError: "" });
-      }
+      setError("");
       return true;
     } else {
-      if (type == "ImportFiles") {
-        setError({ ...error, importcatgryerror: "Please Fill the Box" });
-      } else {
-        setError({ ...error, newcatgryError: "Please Fill the Box" });
-      }
+      setError("Please Fill the Box");
       return false;
     }
   };
@@ -641,7 +602,7 @@ const BudgetCategory = (props: any): JSX.Element => {
         </div>
 
         <div>
-          {newCategoryData.map((val, index) => {
+          {importExcelDataView.addExcelData.map((val, index) => {
             return (
               <>
                 <div key={index} className={styles.modalTextAndIconFlex}>
@@ -654,8 +615,8 @@ const BudgetCategory = (props: any): JSX.Element => {
                   />
 
                   <div>
-                    {newCategoryData.length > 1 &&
-                    newCategoryData.length != index + 1 ? (
+                    {importExcelDataView.addExcelData.length > 1 &&
+                    importExcelDataView.addExcelData.length != index + 1 ? (
                       <IconButton
                         styles={iconStyle}
                         iconProps={{
@@ -668,7 +629,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                       />
                     ) : (
                       <div>
-                        {newCategoryData.length > 1 && (
+                        {importExcelDataView.addExcelData.length > 1 && (
                           <IconButton
                             styles={iconStyle}
                             iconProps={{
@@ -698,20 +659,26 @@ const BudgetCategory = (props: any): JSX.Element => {
             );
           })}
         </div>
-        <div className={styles.errMsg}>{error.newcatgryError}</div>
+        <div className={styles.errMsg}>{error}</div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
             styles={saveBtnStyle}
             text={"Save"}
-            onClick={() => addMasterCategoryData(newCategoryData, "")}
+            onClick={() => {
+              setIsLoader(true);
+              addMasterCategoryData([...importExcelDataView.addExcelData], "");
+            }}
           />
           <DefaultButton
             styles={cancelBtnStyle}
             text={"Cancel"}
             onClick={() => {
+              setImportExcelDataView({
+                removeExcelData: [],
+                addExcelData: [{ Title: "" }],
+              });
+              setError("");
               setcategoryPopup(false);
-              setNewCategoryData([{ Title: "" }]);
-              setError({ ...error, newcatgryError: "" });
             }}
           />
         </div>
@@ -763,7 +730,6 @@ const BudgetCategory = (props: any): JSX.Element => {
             </div>
           </div>
         </div>
-        <div className={styles.errMsg}>{error.importcatgryerror}</div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
             styles={saveBtnStyle}
@@ -775,6 +741,7 @@ const BudgetCategory = (props: any): JSX.Element => {
             }}
             onClick={() => {
               if (importExcelDataView.addExcelData.length) {
+                setIsLoader(true);
                 addMasterCategoryData(
                   importExcelDataView.addExcelData,
                   "ImportFiles"
@@ -786,13 +753,11 @@ const BudgetCategory = (props: any): JSX.Element => {
             styles={cancelBtnStyle}
             text="Cancel"
             onClick={() => {
-              setImportFilePopup(false);
-              // gblImportExcel = {};
               setImportExcelDataView({
                 removeExcelData: [],
-                addExcelData: [],
+                addExcelData: [{ Title: "" }],
               });
-              setError({ ...error, importcatgryerror: "" });
+              setImportFilePopup(false);
             }}
           />
         </div>
