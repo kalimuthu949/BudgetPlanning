@@ -547,7 +547,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const searchData = (data: string) => {
     let searchdata = [...MData].filter((value) => {
-      return value.Title.toLowerCase().includes(data.trim());
+      return value.Title.toLowerCase().includes(data.trim().toLowerCase());
     });
     setMaster([...searchdata]);
   };
