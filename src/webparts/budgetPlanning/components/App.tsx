@@ -21,7 +21,6 @@ const App = (props: any): JSX.Element => {
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
-    console.log(errMsg);
     alertify.error("Error message");
   };
 
@@ -133,21 +132,21 @@ const App = (props: any): JSX.Element => {
 
   const _getPageName = (): void => {
     const urlParams = new URLSearchParams(window.location.search);
-    const pageName: string = urlParams.get("Page");
+    const pageName: string = urlParams.get("Page").toLowerCase();
 
-    if (pageName == Config.Navigation.Dashboard) {
+    if (pageName == Config.Navigation.Dashboard.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetAnalysis) {
+    } else if (pageName == Config.Navigation.BudgetAnalysis.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetCategory) {
+    } else if (pageName == Config.Navigation.BudgetCategory.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetDistribution) {
+    } else if (pageName == Config.Navigation.BudgetDistribution.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetPlanning) {
+    } else if (pageName == Config.Navigation.BudgetPlanning.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.BudgetTrackingList) {
+    } else if (pageName == Config.Navigation.BudgetTrackingList.toLowerCase()) {
       setPageNave(pageName);
-    } else if (pageName == Config.Navigation.CategoryConfig) {
+    } else if (pageName == Config.Navigation.CategoryConfig.toLowerCase()) {
       setPageNave(pageName);
     } else {
       setPageNave(Config.Navigation.Dashboard);
@@ -157,7 +156,6 @@ const App = (props: any): JSX.Element => {
   /* Life cycle of onload */
   useEffect(() => {
     _getDropDownValues();
-    console.log("version - 0.02");
   }, []);
 
   return (
@@ -182,6 +180,18 @@ const App = (props: any): JSX.Element => {
         ) : (
           <BudgetTrackingList />
         )}
+
+        {/* version section */}
+        <div
+          style={{
+            marginTop: 20,
+            fontWeight: 600,
+            fontSize: 16,
+            color: "#202945",
+          }}
+        >
+          V - 0.1
+        </div>
       </div>
     )
   );

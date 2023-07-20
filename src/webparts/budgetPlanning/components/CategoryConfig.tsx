@@ -208,6 +208,7 @@ const CategoryConfig = (props: any): JSX.Element => {
       ],
       Expand: "Year, Country",
       Topcount: 5000,
+      Orderbydecorasc: false,
     })
       .then((res: any) => {
         _preparCareArray = [];
@@ -463,6 +464,7 @@ const CategoryConfig = (props: any): JSX.Element => {
             <div style={{ width: "15%" }}>
               <Label>Category</Label>
               <Autocomplete
+                size="small"
                 multiple
                 disableCloseOnSelect
                 options={cateOpt.length ? [...cateOpt] : [..._masterCateOption]}

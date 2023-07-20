@@ -97,13 +97,13 @@ export namespace Config {
 
   /* Global Navigation Names */
   export const Navigation: INave = {
-    Dashboard: "Dashboard",
-    BudgetCategory: "BudgetCategory",
-    CategoryConfig: "CategoryConfig",
-    BudgetPlanning: "BudgetPlanning",
-    BudgetAnalysis: "BudgetAnalysis",
-    BudgetDistribution: "BudgetDistribution",
-    BudgetTrackingList: "BudgetTrackingList",
+    Dashboard: "dashboard",
+    BudgetCategory: "budgetcategory",
+    CategoryConfig: "categoryconfig",
+    BudgetPlanning: "budgetplanning",
+    BudgetAnalysis: "budgetanalysis",
+    BudgetDistribution: "budgetdistribution",
+    BudgetTrackingList: "budgettrackinglist",
   };
 
   /* Global Dropdowns Names */
