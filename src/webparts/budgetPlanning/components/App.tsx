@@ -175,7 +175,7 @@ const App = (props: any): JSX.Element => {
         ) : pageNave == Config.Navigation.BudgetPlanning ? (
           <BudgetPlan dropValue={dropValue} />
         ) : pageNave == Config.Navigation.BudgetAnalysis ? (
-          <BudgetAnalysis />
+          <BudgetAnalysis dropValue={dropValue} />
         ) : pageNave == Config.Navigation.BudgetDistribution ? (
           <BudgetDistribution />
         ) : (
