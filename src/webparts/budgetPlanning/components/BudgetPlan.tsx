@@ -49,7 +49,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Category",
       fieldName: Config.BudgetListColumns.CategoryId.toString(),
       minWidth: 200,
-      maxWidth: 300,
+      maxWidth: _isCurYear ? 300 : 380,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Category : item.isEdit && item.Category;
       },
@@ -59,7 +59,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Country",
       fieldName: Config.BudgetListColumns.CountryId.toString(),
       minWidth: 150,
-      maxWidth: 200,
+      maxWidth: _isCurYear ? 200 : 280,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Country : item.isEdit && item.Country;
       },
@@ -69,7 +69,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
       minWidth: 300,
-      maxWidth: _isCurYear ? 380 : 400,
+      maxWidth: _isCurYear ? 380 : 450,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? (
           <div
@@ -125,30 +125,30 @@ const BudgetPlan = (props: any): JSX.Element => {
     },
     {
       key: "column4",
-      name: "Budget Proposed",
-      fieldName: Config.BudgetListColumns.BudgetProposed,
+      name: "Budget Allocated",
+      fieldName: Config.BudgetListColumns.BudgetAllocated,
       minWidth: 100,
-      maxWidth: 150,
+      maxWidth: 170,
       onRender: (item: ICurBudgetItem): any => {
         return !item.isEdit ? (
-          <div style={{ color: "#E39C5A" }}>{item.BudgetProposed}</div>
+          <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
         ) : (
           <div>
             <TextField
               value={
-                curData.BudgetProposed
-                  ? curData.BudgetProposed.toString()
+                curData.BudgetAllocated
+                  ? curData.BudgetAllocated.toString()
                   : ""
               }
               placeholder="Enter Here"
               styles={
-                isValidation.isBudgetProposed
+                isValidation.isBudgetAllocated
                   ? errtxtFieldStyle
                   : textFieldStyle
               }
               onChange={(e: any, value: any) => {
                 if (/^[0-9]+$|^$/.test(value)) {
-                  curData.BudgetProposed = value;
+                  curData.BudgetAllocated = value;
                   setCurData({ ...curData });
                 }
               }}
@@ -159,27 +159,18 @@ const BudgetPlan = (props: any): JSX.Element => {
     },
     {
       key: "column5",
-      name: "Budget Allocated",
-      minWidth: 100,
-      maxWidth: 150,
-      onRender: (item: any) => {
-        return <div style={{ color: "#AC455E" }}>{item.BudgetAllocated}</div>;
-      },
-    },
-    {
-      key: "column6",
       name: "Used",
       minWidth: 100,
-      maxWidth: 150,
+      maxWidth: 170,
       onRender: (item: any) => {
         return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
       },
     },
     {
-      key: "column7",
+      key: "column6",
       name: "Remaining",
       minWidth: 100,
-      maxWidth: 150,
+      maxWidth: 170,
       onRender: (item: any) => {
         return (
           <div
@@ -204,9 +195,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
     {
-      key: "column8",
+      key: "column7",
       name: "Action",
-      fieldName: "",
       minWidth: 100,
       maxWidth: 150,
       onRender: (item: any) => {
@@ -394,7 +384,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       let dialogText =
         "You have unsaved changes, are you sure you want to leave?";
       e.returnValue = dialogText;
-      isValidation.isBudgetProposed = false;
+      isValidation.isBudgetAllocated = false;
       isValidation.isDescription = false;
       setIsValidation({ ...isValidation });
       return dialogText;
@@ -404,7 +394,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _getDefaultFunction = (): void => {
     alertifyMSG = "";
     _isBack = false;
-    isValidation.isBudgetProposed = false;
+    isValidation.isBudgetAllocated = false;
     isValidation.isDescription = false;
     setIsValidation({ ...isValidation });
     setIsLoader(true);
@@ -656,7 +646,9 @@ const BudgetPlan = (props: any): JSX.Element => {
                 return (
                   e1.Category === e2.CategoryAcc &&
                   e1.Year === e2.YearAcc &&
-                  e1.Country === e2.CountryAcc
+                  e1.Country === e2.CountryAcc &&
+                  e1.Type === e2.Type &&
+                  e1.CateId === e2.ID
                 );
               });
               if (matches.length == 0) {
@@ -671,11 +663,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       _filRecord.forEach((ul: any) => {
         let FilteredData: ICurBudgetItem[] = Uniquelessons.filter(
           (arr: any) => {
-            return (
-              arr.Category === ul.CategoryAcc &&
-              arr.Year === ul.YearAcc &&
-              arr.Country === ul.CountryAcc
-            );
+            return arr.CateId === ul.ID && arr.Type === ul.Type;
           }
         );
         let sortingRecord = reOrderedRecords.concat(FilteredData);
@@ -694,21 +682,21 @@ const BudgetPlan = (props: any): JSX.Element => {
         Category: arr.CategoryAcc ? arr.CategoryAcc : "",
         Country: arr.CountryAcc ? arr.CountryAcc : "",
         Year: arr.YearAcc ? arr.YearAcc : "",
+        Type: arr.Type ? arr.Type : "",
+        ID: arr.ID ? arr.ID : null,
         indexValue: _recordsLength,
       });
       _recordsLength += arr.subCategory.length;
     });
     newRecords.forEach((ur: any, index: number) => {
       let recordLength: number = records.filter((arr: ICurBudgetItem) => {
-        return (
-          arr.Category === ur.Category &&
-          arr.Country === ur.Country &&
-          arr.Year === ur.Year
-        );
+        return arr.CateId === ur.ID && arr.Type === ur.Type;
       }).length;
       varGroup.push({
         key: ur.Category,
-        name: ur.Country ? `${ur.Category + " - " + ur.Country}` : ur.Category,
+        name: ur.Country
+          ? `${ur.Category + " - " + ur.Country + " ( " + ur.Type + " ) "}`
+          : ur.Category,
         startIndex: ur.indexValue,
         count: recordLength,
       });
@@ -747,6 +735,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         _Items[i].Category === _curItem.Category &&
         _Items[i].Country === _curItem.Country &&
         _Items[i].Year === _curItem.Year &&
+        _Items[i].Type === _curItem.Type &&
         _Items[i].ID === _curItem.ID
       ) {
         _Items[i].isEdit = true;
@@ -758,7 +747,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getCancelItems = (): void => {
-    isValidation.isBudgetProposed = false;
+    isValidation.isBudgetAllocated = false;
     isValidation.isDescription = false;
     setIsValidation({ ...isValidation });
     setCurData({ ...Config.curBudgetItem });
@@ -774,7 +763,8 @@ const BudgetPlan = (props: any): JSX.Element => {
     if (curData.ID) {
       _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
-      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
+      data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       _getValidation({ ...data }, "Updated");
     } else {
       data[columns.CategoryId] = curData.CateId;
@@ -782,7 +772,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.YearId] = curData.YearId;
       data[columns.Description] = curData.Description;
       data[columns.CategoryType] = curData.Type;
-      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
+      data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       _getValidation({ ...data }, "");
     }
   };
@@ -792,11 +783,11 @@ const BudgetPlan = (props: any): JSX.Element => {
     if (!curData.Description.trim()) {
       _isValid = false;
       isValidation.isDescription = true;
-      isValidation.isBudgetProposed = curData.BudgetProposed ? false : true;
+      isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
     }
-    if (!curData.BudgetProposed) {
+    if (!curData.BudgetAllocated) {
       _isValid = false;
-      isValidation.isBudgetProposed = true;
+      isValidation.isBudgetAllocated = true;
       isValidation.isDescription = curData.Description.trim() ? false : true;
     }
     if (_isValid) {
@@ -805,7 +796,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       type != "Updated"
         ? _getAddData({ ...data })
         : _getEditData({ ...data }, type);
-      isValidation.isBudgetProposed = false;
+      isValidation.isBudgetAllocated = false;
       isValidation.isDescription = false;
       setIsValidation({ ...isValidation });
     } else {
@@ -872,7 +863,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         if (
           confirm("You have unsaved changes, are you sure you want to leave?")
         ) {
-          isValidation.isBudgetProposed = false;
+          isValidation.isBudgetAllocated = false;
           isValidation.isDescription = false;
           setIsValidation({ ...isValidation });
           _isBack = false;
@@ -887,7 +878,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       } else if (
         confirm("You have unsaved changes, are you sure you want to leave?")
       ) {
-        isValidation.isBudgetProposed = false;
+        isValidation.isBudgetAllocated = false;
         isValidation.isDescription = false;
         setIsValidation({ ...isValidation });
         _getEditItem(_item);
