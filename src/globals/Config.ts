@@ -138,6 +138,6 @@ export namespace Config {
   /* Global of Budget valiation items names */
   export const budgetValidation: IBudgetValidation = {
     isDescription: false,
-    isBudgetProposed: false,
+    isBudgetAllocated: false,
   };
 }
