@@ -156,7 +156,7 @@ export interface IOverAllItem {
 /* Interface of Budget planning validation items */
 export interface IBudgetValidation {
   isDescription: boolean;
-  isBudgetProposed: boolean;
+  isBudgetAllocated: boolean;
 }
 
 /* Interface of Pagination items */
@@ -181,4 +181,25 @@ export interface INewCate {
   ID?: number;
   CountryId: number;
   YearId: number;
+}
+
+/* Interface of current budget analysis */
+export interface ICurBudgetAnalysis {
+  Category: string;
+  Country: string;
+  Year: string;
+  Type: string;
+  ApproveStatus: string;
+  Description: string;
+  ID: number;
+  BudgetAllocated: number;
+  BudgetProposed: number;
+  isEdit: boolean;
+}
+
+/* Interface of edit budget analysis */
+export interface IEdit{
+  authendication:boolean;
+  id:number;
+  data:number;
 }
