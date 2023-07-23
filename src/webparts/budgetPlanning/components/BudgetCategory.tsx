@@ -176,7 +176,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
     fieldGroup: {
       "::after": {
-        border: "1px solid rgb(96, 94, 92) !important",
+        border: "none",
       },
     },
   };
@@ -193,11 +193,11 @@ const BudgetCategory = (props: any): JSX.Element => {
         border: "2px solid red !important",
       },
     },
-    // fieldGroup: {
-    //   "::after": {
-    //     border: "1px solid red !important",
-    //   },
-    // },
+    fieldGroup: {
+      "::after": {
+        border: "2px solid red !important",
+      },
+    },
   };
 
   const iconStyle: Partial<IButtonStyles> = {
@@ -498,6 +498,8 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const validation = (arr: any[]): any[] => {
     let newAddData = [];
+    let DuplicateData = [];
+
     arr.forEach((dData) => {
       if (
         dData.Title.trim() != "" &&
@@ -508,12 +510,28 @@ const BudgetCategory = (props: any): JSX.Element => {
         }).length == 0
       ) {
         let OriginalFlagChange = { ...dData, Validate: false };
-        newAddData.push(OriginalFlagChange);
+        DuplicateData.push(OriginalFlagChange);
       } else {
         let DuplicateFlagChange = { ...dData, Validate: true };
-        newAddData.push(DuplicateFlagChange);
+        DuplicateData.push(DuplicateFlagChange);
       }
     });
+
+    DuplicateData.forEach((item) => {
+      if (
+        newAddData.findIndex((items) => {
+          return (
+            items.Title.trim().toLowerCase() == item.Title.trim().toLowerCase()
+          );
+        }) == -1
+      ) {
+        newAddData.push(item);
+      } else {
+        let DuplicateDataFlagChange = { ...item, Validate: true };
+        newAddData.push(DuplicateDataFlagChange);
+      }
+    });
+
     setImportExcelDataView({
       removeExcelData: [],
       addExcelData: [...newAddData],
