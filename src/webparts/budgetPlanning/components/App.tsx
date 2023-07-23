@@ -137,17 +137,29 @@ const App = (props: any): JSX.Element => {
 
     if (_pageNaveName == Config.Navigation.Dashboard.toLowerCase()) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.BudgetCategory.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.BudgetCategory.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.BudgetDistribution.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.BudgetDistribution.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.BudgetPlanning.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.BudgetPlanning.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.BudgetTrackingList.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.BudgetTrackingList.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.CategoryConfig.toLowerCase()) {
+    } else if (
+      _pageNaveName == Config.Navigation.CategoryConfig.toLowerCase()
+    ) {
       setPageNave(_pageNaveName);
     } else {
       setPageNave(Config.Navigation.Dashboard);
@@ -177,7 +189,7 @@ const App = (props: any): JSX.Element => {
         ) : pageNave == Config.Navigation.BudgetAnalysis ? (
           <BudgetAnalysis dropValue={dropValue} />
         ) : pageNave == Config.Navigation.BudgetDistribution ? (
-          <BudgetDistribution />
+          <BudgetDistribution dropValue={dropValue} context={props.context} />
         ) : (
           <BudgetTrackingList />
         )}
@@ -191,7 +203,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 0.1
+          V - 0.3
         </div>
       </div>
     )
