@@ -780,15 +780,29 @@ const BudgetPlan = (props: any): JSX.Element => {
 
   const _getValidation = (data: any, type: string): void => {
     let _isValid: boolean = true;
-    if (!curData.Description.trim()) {
+    let _isDuplicate: boolean = false;
+    let _arrDuplicate: ICurBudgetItem[] = _Items.filter(
+      (e: ICurBudgetItem) => e.CateId === curData.CateId
+    );
+    _isDuplicate = [..._arrDuplicate].some(
+      (e: ICurBudgetItem) =>
+        e.Description.toLowerCase().trim() ===
+        curData.Description.toLowerCase().trim()
+    );
+
+    if (!curData.Description.trim() || _isDuplicate) {
       _isValid = false;
-      isValidation.isDescription = true;
+      isValidation.isDescription = _isDuplicate ? _isDuplicate : true;
       isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
     }
-    if (!curData.BudgetAllocated) {
+    if (!curData.BudgetAllocated || _isDuplicate) {
       _isValid = false;
       isValidation.isBudgetAllocated = true;
-      isValidation.isDescription = curData.Description.trim() ? false : true;
+      isValidation.isDescription = _isDuplicate
+        ? _isDuplicate
+        : curData.Description.trim()
+        ? false
+        : true;
     }
     if (_isValid) {
       _isBack = !curData.isEdit;
