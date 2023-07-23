@@ -112,6 +112,7 @@ export namespace Config {
     Country: [],
     Type: [],
     masterCate: [],
+    ctgryDropOptions: [],
   };
 
   /* Global of current budget items names */

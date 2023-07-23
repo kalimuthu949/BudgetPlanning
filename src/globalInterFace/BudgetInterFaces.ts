@@ -103,6 +103,7 @@ export interface IDropdowns {
   Country: IDrop[];
   Type: IDrop[];
   masterCate: IDrop[];
+  ctgryDropOptions: IDrop[];
 }
 
 /* Interface of lookup obj */
