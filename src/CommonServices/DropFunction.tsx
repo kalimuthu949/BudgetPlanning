@@ -18,6 +18,10 @@ const _getFilterDropValues = (
   if (type == "Master Category" && value.masterCate.length) {
     key = value.masterCate.filter((e: IDrop) => e.text == filValue)[0].key;
   }
+  if (type == "Category" && value.ctgryDropOptions.length) {
+    key = value.ctgryDropOptions.filter((e: IDrop) => e.text == filValue)[0]
+      .key;
+  }
   return key;
 };
 
