@@ -204,3 +204,19 @@ export interface IEdit{
   id:number;
   data:number;
 }
+export interface IVendorListColumn{
+  Vendor: string;
+  Description: string;
+  Pricing: string;
+  PaymentTerms: string;
+  LastYearCost: string;
+  StartingDate: string;
+  PO: string;
+  Supplier: string;
+  RequestedAmount: string;
+  EntryDate: string;
+  ToDate: string;
+  Cost: string;
+  PoCurrency: string;
+  InvoiceNo: string;
+}
