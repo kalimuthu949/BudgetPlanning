@@ -156,6 +156,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     },
   ];
 
+  console.log("test");
+
   // state creaction
   const [columns, setColumns] = useState<IColumn[]>([...budjetColums]);
   // const [flag,setFlag] = useState(true)
