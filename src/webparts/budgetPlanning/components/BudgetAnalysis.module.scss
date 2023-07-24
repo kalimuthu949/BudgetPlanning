@@ -2,5 +2,46 @@
     font-size: 28px;
     // font-weight: bold;
     color: #202945;
-    margin-bottom: 20px;
+    // margin-bottom: 20px;
+    padding: 10px 0px;
   }
+  
+.Header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  .HeaderFilters{
+    width: 80%;
+    display: "flex";
+    gap: 2%;
+    align-items: flex-end;
+    .dropdowns{
+      width: 13%;
+    }
+    .icon{
+      width: 5%;
+      padding-bottom: 2px;
+      .refresh{
+        color: white;
+        font-size: 16px;
+        cursor: "pointer";
+        background-color :#202945;
+        width:30px;
+        height:30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px;
+      }
+    }
+  }
+  .export{
+    background-color: #ffe300;
+    width: 10%;
+    height: 28px;
+    border: none;
+    border-radius: 3px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+}
