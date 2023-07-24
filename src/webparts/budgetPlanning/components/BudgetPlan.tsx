@@ -787,7 +787,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     _isDuplicate = [..._arrDuplicate].some(
       (e: ICurBudgetItem) =>
         e.Description.toLowerCase().trim() ===
-        curData.Description.toLowerCase().trim()
+          curData.Description.toLowerCase().trim() && e.isEdit === false
     );
 
     if (!curData.Description.trim() || _isDuplicate) {
@@ -795,15 +795,32 @@ const BudgetPlan = (props: any): JSX.Element => {
       isValidation.isDescription = _isDuplicate ? _isDuplicate : true;
       isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
     }
-    if (!curData.BudgetAllocated || _isDuplicate) {
+    if (!curData.BudgetAllocated) {
       _isValid = false;
-      isValidation.isBudgetAllocated = true;
-      isValidation.isDescription = _isDuplicate
-        ? _isDuplicate
-        : curData.Description.trim()
-        ? false
-        : true;
+      isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
+      isValidation.isDescription = curData.Description.trim() ? false : true;
     }
+
+    // if (!curData.Description.trim() && !curData.BudgetAllocated) {
+    //   alertify.error("Please enter description and budget allocated");
+    // } else if (
+    //   (!curData.Description.trim() || _isDuplicate) &&
+    //   !curData.BudgetAllocated
+    // ) {
+    //   _isDuplicate && !curData.BudgetAllocated
+    //     ? alertify.error(
+    //         "Already description exists and Please enter budget allocated"
+    //       )
+    //     : _isDuplicate
+    //     ? alertify.error("Already description exists")
+    //     : !curData.Description.trim() &&
+    //       alertify.error("Please enter description");
+    // } else if (_isDuplicate) {
+    //   alertify.error("Already description exists");
+    // } else {
+    //   alertify.error("Please enter budget allocated");
+    // }
+
     if (_isValid) {
       _isBack = !curData.isEdit;
       setIsLoader(true);
