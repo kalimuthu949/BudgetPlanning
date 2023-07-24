@@ -20,7 +20,7 @@ import {
   IDropdowns,
   INewCate,
 } from "../../../globalInterFace/BudgetInterFaces";
-import { TextField } from "@material-ui/core";
+import { TextField, makeStyles } from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
 import Loader from "./Loader";
 import alertify from "alertifyjs";
@@ -156,6 +156,13 @@ const CategoryConfig = (props: any): JSX.Element => {
       ":focus::after": {
         border: "1px solid rgb(96, 94, 92)",
       },
+    },
+  };
+
+  const disabledDropdownStyles: Partial<IDropdownStyles> = {
+    title: {
+      background: "#fff",
+      border: "1px solid #000",
     },
   };
 
@@ -449,7 +456,7 @@ const CategoryConfig = (props: any): JSX.Element => {
           <div style={{ width: "8%" }}>
             <Label>Year</Label>
             <Dropdown
-              styles={DropdownStyle}
+              styles={disabledDropdownStyles}
               disabled={true}
               options={[...propDropValue.Period]}
               selectedKey={
@@ -461,7 +468,8 @@ const CategoryConfig = (props: any): JSX.Element => {
 
           {/* Category dropdown section */}
           {_isCateMulti && (
-            <div style={{ width: "15%" }}>
+            // <div style={{ width: "15%" }}>
+            <div style={{ width: "40%" }}>
               <Label>Category</Label>
               <Autocomplete
                 size="small"

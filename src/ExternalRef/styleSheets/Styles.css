@@ -1,163 +1,164 @@
 #workbenchPageContent {
-    max-width: 100%;
+  max-width: 100%;
 }
 
 .content_3f3fd3c2,
 .CanvasZone {
-    padding: 0 !important;
-    max-width: 100% !important;
+  padding: 0 !important;
+  max-width: 100% !important;
 }
 
 .ms-List-page {
-    margin-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200&display=swap");
 label,
 div {
-    font-family: "Cairo", sans-serif !important;
+  font-family: "Cairo", sans-serif !important;
 }
-
 
 /* Loader Design start */
 
 .lds-roller {
-    display: inline-block;
-    position: relative;
-    width: 80px;
-    height: 80px;
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
 }
 
 .lds-roller div {
-    animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    transform-origin: 40px 40px;
+  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  transform-origin: 40px 40px;
 }
 
 .lds-roller div:after {
-    content: " ";
-    display: block;
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    /* background: #88dbdf; */
-    background: #202945;
-    margin: -4px 0 0 -4px;
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  /* background: #88dbdf; */
+  background: #202945;
+  margin: -4px 0 0 -4px;
 }
 
 .lds-roller div:nth-child(1) {
-    animation-delay: -0.036s;
+  animation-delay: -0.036s;
 }
 
 .lds-roller div:nth-child(1):after {
-    top: 63px;
-    left: 63px;
+  top: 63px;
+  left: 63px;
 }
 
 .lds-roller div:nth-child(2) {
-    animation-delay: -0.072s;
+  animation-delay: -0.072s;
 }
 
 .lds-roller div:nth-child(2):after {
-    top: 68px;
-    left: 56px;
+  top: 68px;
+  left: 56px;
 }
 
 .lds-roller div:nth-child(3) {
-    animation-delay: -0.108s;
+  animation-delay: -0.108s;
 }
 
 .lds-roller div:nth-child(3):after {
-    top: 71px;
-    left: 48px;
+  top: 71px;
+  left: 48px;
 }
 
 .lds-roller div:nth-child(4) {
-    animation-delay: -0.144s;
+  animation-delay: -0.144s;
 }
 
 .lds-roller div:nth-child(4):after {
-    top: 72px;
-    left: 40px;
+  top: 72px;
+  left: 40px;
 }
 
 .lds-roller div:nth-child(5) {
-    animation-delay: -0.18s;
+  animation-delay: -0.18s;
 }
 
 .lds-roller div:nth-child(5):after {
-    top: 71px;
-    left: 32px;
+  top: 71px;
+  left: 32px;
 }
 
 .lds-roller div:nth-child(6) {
-    animation-delay: -0.216s;
+  animation-delay: -0.216s;
 }
 
 .lds-roller div:nth-child(6):after {
-    top: 68px;
-    left: 24px;
+  top: 68px;
+  left: 24px;
 }
 
 .lds-roller div:nth-child(7) {
-    animation-delay: -0.252s;
+  animation-delay: -0.252s;
 }
 
 .lds-roller div:nth-child(7):after {
-    top: 63px;
-    left: 17px;
+  top: 63px;
+  left: 17px;
 }
 
 .lds-roller div:nth-child(8) {
-    animation-delay: -0.288s;
+  animation-delay: -0.288s;
 }
 
 .lds-roller div:nth-child(8):after {
-    top: 56px;
-    left: 12px;
+  top: 56px;
+  left: 12px;
+}
+
+.MuiAutocomplete-inputRoot {
+  padding: 3px !important;
 }
 
 @keyframes lds-roller {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-
 /* Loader Design end */
-
 
 /* pagination design start */
 
 .pagination {
-    text-align: center;
+  text-align: center;
 }
 
 .pagination .ms-Button {
-    border: none !important;
-    background: none !important;
-    min-width: 0 !important;
-    padding: 5px !important;
-    color: #000;
-    margin: 12px 0px;
+  border: none !important;
+  background: none !important;
+  min-width: 0 !important;
+  padding: 5px !important;
+  color: #000;
+  margin: 12px 0px;
 }
 
 .pagination .ms-Button.ms-Button--primary .ms-Button-label {
-    color: #fff;
-    background: #202945;
-    padding: 10px 14px;
-    border-radius: 50%;
+  color: #fff;
+  background: #202945;
+  padding: 10px 14px;
+  border-radius: 50%;
 }
 
 .ms-DetailsList-contentWrapper::-webkit-scrollbar {
-    width: 10px;
-    background-color: #f7f7f7;
+  width: 10px;
+  background-color: #f7f7f7;
 }
 
 .ms-DetailsList-contentWrapper::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background-color: #e7e7e7;
+  border-radius: 10px;
+  background-color: #e7e7e7;
 }

@@ -119,16 +119,17 @@ const BudgetCategory = (props: any): JSX.Element => {
       ".ms-DetailsRow-cell": {
         fontSize: 14,
       },
-      ".ms-DetailsHeader-cellTitle": {
-        display: "flex",
-        justifyContent: "center",
-      },
+      // ".ms-DetailsHeader-cellTitle": {
+      //   display: "flex",
+      //   justifyContent: "center",
+      // },
     },
   };
 
   const searchStyle: Partial<ISearchBoxStyles> = {
     root: {
       width: 240,
+      height: 33,
       "::after": {
         border: "1px solid rgb(96, 94, 92) !important",
       },
@@ -139,16 +140,17 @@ const BudgetCategory = (props: any): JSX.Element => {
     root: {
       border: "none",
       background: "#f6db55 !important",
-      height: 28,
+      height: 33,
       borderRadius: 5,
     },
     label: {
       fontWeight: 500,
       color: "#000",
       cursor: "pointer",
+      fontSize: 16,
     },
     icon: {
-      fontSize: 14,
+      fontSize: 16,
       color: "#000",
     },
   };
@@ -165,7 +167,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const inputStyle: Partial<ITextFieldStyles> = {
     root: {
-      width: "75%",
+      width: "82%",
       marginRight: 6,
       // ".ms-TextField-fieldGroup": {
       //   ":focus-visible": {
@@ -173,29 +175,21 @@ const BudgetCategory = (props: any): JSX.Element => {
       //   },
       // },
     },
-
     fieldGroup: {
       "::after": {
-        border: "none",
+        border: "1px solid rgb(96, 94, 92)",
       },
     },
   };
   const errorStyle = {
     root: {
-      width: "75%",
+      width: "82%",
       marginRight: 6,
-      // ".ms-TextField-fieldGroup": {
-      //   ":focus-visible": {
-      //     border: "none",
-      //   },
-      // },
-      ".ms-TextField-field": {
-        border: "2px solid red !important",
-      },
     },
     fieldGroup: {
+      border: "1px solid red !important",
       "::after": {
-        border: "2px solid red !important",
+        border: "1px solid red !important",
       },
     },
   };
@@ -258,7 +252,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   };
 
   const _getGenerateExcel = (): void => {
-    let _arrExport: IMasCategoryListColumn[] = [...items];
+    let _arrExport: IMasCategoryListColumn[] = [...master];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
 
@@ -512,8 +506,15 @@ const BudgetCategory = (props: any): JSX.Element => {
         let OriginalFlagChange = { ...dData, Validate: false };
         DuplicateData.push(OriginalFlagChange);
       } else {
-        let DuplicateFlagChange = { ...dData, Validate: true };
-        DuplicateData.push(DuplicateFlagChange);
+        if (dData.Title.trim() != "") {
+          let DuplicateFlagChange = { ...dData, Validate: true };
+          DuplicateData.push(DuplicateFlagChange);
+          alertify.error("Already category exists");
+        } else {
+          let EmptyData = { ...dData, Validate: true };
+          DuplicateData.push(EmptyData);
+          alertify.error("Please Enter The Category");
+        }
       }
     });
 
@@ -529,6 +530,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       } else {
         let DuplicateDataFlagChange = { ...item, Validate: true };
         newAddData.push(DuplicateDataFlagChange);
+        alertify.error("Already category exists");
       }
     });
 
@@ -570,15 +572,16 @@ const BudgetCategory = (props: any): JSX.Element => {
 
       {/* filter and btn section */}
       <div className={styles.btnContainer}>
-        {/* search section */}
-        <SearchBox
-          styles={searchStyle}
-          placeholder="Search"
-          onChange={(val, text) => searchData(text)}
-        />
-
         {/* btn sections */}
         <div className={styles.rightBtns}>
+          <div style={{ width: "15%" }}>
+            {/* search section */}
+            <SearchBox
+              styles={searchStyle}
+              placeholder="Search"
+              onChange={(val, text) => searchData(text)}
+            />
+          </div>
           {/* New btn section */}
           <DefaultButton
             text="New item"
@@ -632,7 +635,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       {/* new modal */}
       <Modal isOpen={categoryPopup} styles={NewmodalStyle}>
         <div className={styles.modalHeader}>
-          <h3>New Categories</h3>
+          <h3>Add New Category</h3>
         </div>
 
         <div>
@@ -720,28 +723,26 @@ const BudgetCategory = (props: any): JSX.Element => {
       <Modal isOpen={importFilePopup} styles={importModalStyle}>
         <div className={styles.importBoxView}>
           <div>
-            <h4>New Category Datas</h4>
-            <div className={styles.importDataView}>
-              {importExcelDataView.addExcelData.map((value, index) => {
-                return (
-                  <div>
-                    <div key={index}>
-                      <label className={styles.boxViewLabel}>
-                        {value.Title}
-                      </label>
-                    </div>
+            <h3>New Category</h3>
+            {/* <div className={styles.importDataView}> */}
+            {importExcelDataView.addExcelData.map((value, index) => {
+              return (
+                <div>
+                  <div key={index}>
+                    <label className={styles.boxViewLabel}>{value.Title}</label>
                   </div>
-                );
-              })}
-              {importExcelDataView.addExcelData.length == 0 && (
-                <div className={styles.nodatas}>
-                  <label>No Records</label>
                 </div>
-              )}
-            </div>
+              );
+            })}
+            {importExcelDataView.addExcelData.length == 0 && (
+              <div className={styles.nodatas}>
+                <label>No Records</label>
+              </div>
+            )}
+            {/* </div> */}
           </div>
           <div>
-            <h4>Duplicate Category Datas</h4>
+            <h3>Duplicate Category</h3>
             <div className={styles.importDataView}>
               {importExcelDataView.removeExcelData.map((value, index) => {
                 return (

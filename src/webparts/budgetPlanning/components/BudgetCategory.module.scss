@@ -1,100 +1,102 @@
 .HeaderLable {
-    font-size: 28px;
-    color: #202945;
-    margin-bottom: 20px;
+  font-size: 28px;
+  color: #202945;
+  margin-bottom: 20px;
 }
 
 .btns {
-    width: 8%;
-    height: 28px;
-    border: none;
-    border-radius: 5px;
-    font-weight: 500;
-    background: #f6db55;
-    cursor: pointer;
+  width: 8%;
+  height: 33px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  background: #f6db55;
+  cursor: pointer;
+  font-size: 16px;
 }
 
 .noRecords {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    font-weight: 600;
-    font-size: 16px;
-    color: #4d546a;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  font-weight: 600;
+  font-size: 16px;
+  color: #4d546a;
 }
 
 .btnContainer {
+  display: flex;
+  align-items: flex-end;
+  .rightBtns {
+    gap: 2%;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    .rightBtns {
-        gap: 2%;
-        display: flex;
-        justify-content: end;
-        width: 100%;
-        .uploadBtn {
-            height: 28px;
-            background-color: #f6db55;
-            border-radius: 5px;
-            border: none;
-            width: 8%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            label {
-                font-weight: 500;
-                color: #000;
-                cursor: pointer;
-            }
-        }
+    justify-content: end;
+    width: 100%;
+    .uploadBtn {
+      height: 33px;
+      background-color: #f6db55;
+      border-radius: 5px;
+      border: none;
+      width: 8%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      label {
+        font-weight: 500;
+        color: #000;
+        cursor: pointer;
+      }
     }
+  }
 }
 
 .modalHeader {
-    margin-bottom: 20px;
-    h3 {
-        margin: 0;
-        color: #202945;
-    }
-    i {
-        color: #000;
-    }
+  margin-bottom: 20px;
+  h3 {
+    margin: 0;
+    color: #202945;
+  }
+  i {
+    color: #000;
+  }
 }
 
 .importBoxView {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    .importDataView {
-        height: 180px;
-        overflow-y: auto;
-        .nodatas {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  .importDataView {
+    // height: 180px;
+    height: 100px;
+    overflow-y: auto;
+    .nodatas {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
     }
+  }
 }
 
 .boxViewLabel {
-    margin: 5px;
-    display: inline-block;
+  margin: 5px;
+  display: inline-block;
 }
 
 .modalTextAndIconFlex {
-    display: flex;
-    // justify-content: space-between;
-    // align-items: center;
-    margin: 10px 0px;
+  display: flex;
+  // justify-content: space-between;
+  // align-items: center;
+  margin: 10px 0px;
 }
 
 .errMsg {
-    color: red;
-    font-weight: 600;
-    margin: 10px 0px;
+  color: red;
+  font-weight: 600;
+  margin: 10px 0px;
 }
 
 // .cancelIconBtn {
@@ -105,3 +107,12 @@
 //     color: #000 !important;
 //   }
 // }
+
+.importDataView::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f7f7f7;
+}
+.importDataView::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #e7e7e7;
+}
