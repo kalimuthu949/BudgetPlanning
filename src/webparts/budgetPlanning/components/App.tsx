@@ -13,11 +13,15 @@ import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
 import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
+import { sp } from "@pnp/sp/presets/all";
+import { Icon, Label } from "@fluentui/react";
 
 const App = (props: any): JSX.Element => {
   /* State creation */
   const [pageNave, setPageNave] = useState<string>("");
   const [dropValue, setDropValue] = useState<IDropdowns>(Config.dropdownValues);
+  const [groupUsers, setGroupUsers] = useState({ ...Config.GroupUsers });
+  console.log("groupUsers", groupUsers);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -112,6 +116,7 @@ const App = (props: any): JSX.Element => {
                     dropValue.masterCate = [..._typeMasterCate];
                     setDropValue({ ...dropValue });
                     _getPageName();
+                    _getSuperAdminGroup();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -127,6 +132,16 @@ const App = (props: any): JSX.Element => {
       })
       .catch((err: any) => {
         _getErrorFunction(err);
+      });
+  };
+
+  const _getSuperAdminGroup = async () => {
+    await sp.web.siteGroups
+      .getByName(Config.GroupNames.SuperAdmin)
+      .users.get()
+      .then((data) => {})
+      .catch((error) => {
+        // handleError("get group Admin", error);
       });
   };
 
@@ -178,20 +193,57 @@ const App = (props: any): JSX.Element => {
           padding: "0px 30px",
         }}
       >
-        {pageNave == Config.Navigation.Dashboard ? (
-          <Dashboard />
-        ) : pageNave == Config.Navigation.BudgetCategory ? (
-          <BudgetCategory dropValue={dropValue} />
-        ) : pageNave == Config.Navigation.CategoryConfig ? (
-          <CategoryConfig dropValue={dropValue} />
-        ) : pageNave == Config.Navigation.BudgetPlanning ? (
-          <BudgetPlan dropValue={dropValue} />
-        ) : pageNave == Config.Navigation.BudgetAnalysis ? (
-          <BudgetAnalysis dropValue={dropValue} />
-        ) : pageNave == Config.Navigation.BudgetDistribution ? (
-          <BudgetDistribution dropValue={dropValue} context={props.context} />
+        {true ? (
+          <div>
+            {pageNave == Config.Navigation.Dashboard ? (
+              <Dashboard />
+            ) : pageNave == Config.Navigation.BudgetCategory ? (
+              <BudgetCategory dropValue={dropValue} />
+            ) : pageNave == Config.Navigation.CategoryConfig ? (
+              <CategoryConfig dropValue={dropValue} />
+            ) : pageNave == Config.Navigation.BudgetPlanning ? (
+              <BudgetPlan dropValue={dropValue} />
+            ) : pageNave == Config.Navigation.BudgetAnalysis ? (
+              <BudgetAnalysis dropValue={dropValue} />
+            ) : pageNave == Config.Navigation.BudgetDistribution ? (
+              <BudgetDistribution
+                dropValue={dropValue}
+                context={props.context}
+              />
+            ) : (
+              <BudgetTrackingList />
+            )}
+          </div>
         ) : (
-          <BudgetTrackingList />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "75vh",
+            }}
+          >
+            <div>
+              <Icon
+                iconName="ReportHacked"
+                style={{
+                  fontSize: "56px",
+                  color: "#ca001b",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              />
+              <Label
+                style={{
+                  fontSize: "26px",
+                  color: "#202945",
+                  marginTop: 20,
+                }}
+              >
+                You don't have access to the IT Budgeting System Application.
+              </Label>
+            </div>
+          </div>
         )}
 
         {/* version section */}
