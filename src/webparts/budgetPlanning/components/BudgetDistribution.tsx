@@ -79,106 +79,105 @@ const BudgetDistribution = (props: any): JSX.Element => {
   return isLoader ? (
     <Loader />
   ) : (
-    // <div style={{ width: "100%" }}>
-    //   {/* Heading section */}
-    //   <Label className={styles.HeaderLable}>Budget Distribution</Label>
+    <div style={{ width: "100%" }}>
+      {/* Heading section */}
+      <Label className={styles.HeaderLable}>Budget Distribution</Label>
 
-    //   {/* Dropdown and btn section */}
-    //   <div
-    //     style={{
-    //       display: "flex",
-    //       justifyContent: "space-between",
-    //     }}
-    //   >
-    //     {/* Left side section */}
-    //     <div
-    //       style={{
-    //         display: "flex",
-    //         gap: "2%",
-    //         width: "95%",
-    //       }}
-    //     >
-    //       {/* Period section */}
-    //       <div style={{ width: "16%" }}>
-    //         <Label>Period</Label>
-    //         <Dropdown
-    //           styles={DropdownStyle}
-    //           options={[...propDropValue.Period]}
-    //           selectedKey={_getFilterDropValues(
-    //             "Period",
-    //             { ...propDropValue },
-    //             filPeriodDrop
-    //           )}
-    //           onChange={(e: any, text: IDrop) => {
-    //             _isCurYear = (text.text as string) == _curYear ? true : false;
-    //             setFilPeriodDrop(text.text as string);
-    //           }}
-    //         />
-    //       </div>
+      {/* Dropdown and btn section */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Left side section */}
+        <div
+          style={{
+            display: "flex",
+            gap: "2%",
+            width: "95%",
+          }}
+        >
+          {/* Period section */}
+          <div style={{ width: "16%" }}>
+            <Label>Period</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Period]}
+              selectedKey={_getFilterDropValues(
+                "Period",
+                { ...propDropValue },
+                filPeriodDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = (text.text as string) == _curYear ? true : false;
+                setFilPeriodDrop(text.text as string);
+              }}
+            />
+          </div>
 
-    //       {/* Country section */}
-    //       <div style={{ width: "16%" }}>
-    //         <Label>Country</Label>
-    //         <Dropdown
-    //           styles={DropdownStyle}
-    //           options={[...propDropValue.Country]}
-    //           selectedKey={_getFilterDropValues(
-    //             "Country",
-    //             {
-    //               ...propDropValue,
-    //             },
-    //             filCountryDrop
-    //           )}
-    //           onChange={(e: any, text: IDrop) => {
-    //             _isCurYear = filPeriodDrop == _curYear ? true : false;
-    //             setFilCountryDrop(text.text as string);
-    //           }}
-    //         />
-    //       </div>
+          {/* Country section */}
+          <div style={{ width: "16%" }}>
+            <Label>Country</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Country]}
+              selectedKey={_getFilterDropValues(
+                "Country",
+                {
+                  ...propDropValue,
+                },
+                filCountryDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
+                setFilCountryDrop(text.text as string);
+              }}
+            />
+          </div>
 
-    //       {/* Type section */}
-    //       <div style={{ width: "16%" }}>
-    //         <Label>Type</Label>
-    //         <Dropdown
-    //           styles={DropdownStyle}
-    //           options={[...propDropValue.Type]}
-    //           selectedKey={_getFilterDropValues(
-    //             "Type",
-    //             { ...propDropValue },
-    //             filTypeDrop
-    //           )}
-    //           onChange={(e: any, text: IDrop) => {
-    //             _isCurYear = filPeriodDrop == _curYear ? true : false;
-    //             setFilTypeDrop(text.text as string);
-    //           }}
-    //         />
-    //       </div>
+          {/* Type section */}
+          <div style={{ width: "16%" }}>
+            <Label>Type</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Type]}
+              selectedKey={_getFilterDropValues(
+                "Type",
+                { ...propDropValue },
+                filTypeDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
+                setFilTypeDrop(text.text as string);
+              }}
+            />
+          </div>
 
-    //       {/* Over all refresh section */}
-    //       <div
-    //         className={styles.refIcon}
-    //         onClick={() => {
-    //           _isCurYear = true;
-    //           setFilPeriodDrop(
-    //             propDropValue.Period[propDropValue.Period.length - 1].text
-    //           );
-    //           setFilCountryDrop("All");
-    //           setFilTypeDrop("All");
-    //         }}
-    //       >
-    //         <Icon iconName="Refresh" style={{ color: "#ffff" }} />
-    //       </div>
-    //     </div>
+          {/* Over all refresh section */}
+          <div
+            className={styles.refIcon}
+            onClick={() => {
+              _isCurYear = true;
+              setFilPeriodDrop(
+                propDropValue.Period[propDropValue.Period.length - 1].text
+              );
+              setFilCountryDrop("All");
+              setFilTypeDrop("All");
+            }}
+          >
+            <Icon iconName="Refresh" style={{ color: "#ffff" }} />
+          </div>
+        </div>
 
-    //     {/* btn and people picker section */}
-    //     <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
-    //       <button className={styles.btns} onClick={() => {}}>
-    //         Send
-    //       </button>
-    //     </div>
-    //   </div>
-    // </div>
-    <Vendor />
+        {/* btn and people picker section */}
+        <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+          <button className={styles.btns} onClick={() => {}}>
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
