@@ -26,16 +26,12 @@ import {
   IDropdownStyles,
   IColumn,
   Icon,
-  IModalStyles,
-  IconButton,
   TextField,
   ITextFieldStyles,
-  IDropdownOption,
   DefaultButton,
 } from "@fluentui/react";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
-import { IDropdown } from "office-ui-fabric-react";
-import { sp } from "@pnp/sp/presets/all";
+import { IButtonStyles } from "office-ui-fabric-react";
 
 let _isCurYear: boolean = true;
 let listItems = [];
@@ -56,28 +52,28 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       key: "column1",
       name: "Category",
       fieldName: "Category",
-      minWidth: 250,
+      minWidth: _isCurYear ? 200 : 300,
       maxWidth: 400,
     },
     {
       key: "column2",
       name: "Country",
       fieldName: "Country",
-      minWidth: 250,
+      minWidth: _isCurYear ? 200 : 300,
       maxWidth: 400,
     },
     {
       key: "column3",
       name: "Type",
       fieldName: "Type",
-      minWidth: 250,
+      minWidth: _isCurYear ? 200 : 300,
       maxWidth: 400,
     },
     {
       key: "column4",
       name: "Total",
-      fieldName: "BudgetAllocated",
-      minWidth: 250,
+      fieldName: "Total",
+      minWidth: _isCurYear ? 200 : 300,
       maxWidth: 400,
       onRender: (item: ICurBudgetAnalysis, index: number) => {
         if (item.isEdit) {
@@ -99,7 +95,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             />
           );
         } else {
-          return item.BudgetAllocated;
+          return item.Total;
         }
       },
     },
@@ -156,12 +152,11 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     },
   ];
 
-  console.log("test");
+  const cols = [...budjetColums];
+  cols.pop();
 
   // state creaction
-  const [columns, setColumns] = useState<IColumn[]>([...budjetColums]);
-  // const [flag,setFlag] = useState(true)
-  const [isLoader,setIsLoader] = useState<boolean>(true)
+  const [isLoader, setIsLoader] = useState<boolean>(true);
   const [madterData, setMasterData] = useState<ICurBudgetAnalysis[]>([]);
   const [budgetItems, setBudgetItems] = useState<ICurBudgetAnalysis[]>([]);
   const [viewBudgetItems, setViewBudgetItems] = useState<ICurBudgetAnalysis[]>(
@@ -186,11 +181,6 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     perPage: 5,
     currentPage: 1,
   });
-  // console.log('madterData',madterData);
-  // console.log("budgetItems", budgetItems);
-  // console.log("viewBudgetItems", viewBudgetItems);
-  // console.log('edit',edit);
-  
 
   // style cteations
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -271,22 +261,29 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     },
   };
 
+  const buttonStyles: Partial<IButtonStyles> = {
+    root: {
+      ".ms-Button-label": {
+        fontWeight: "500",
+      },
+    },
+  };
+
   // functions creations
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error(errMsg);
     setIsLoader(false);
   };
 
-  const _getDefaultFunction = (): void => {    
+  const _getDefaultFunction = (): void => {
     getAllData(currentYear);
   };
 
-  const getAllData = (year:string): void => {
+  const getAllData = (year: string): void => {
     SPServices.SPReadItems({
-      Listname: Config.ListNames.BudgetList,
-      Select:
-        "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title",
-      Expand: "Category, Year, Country",
+      Listname: Config.ListNames.CategoryList,
+      Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
+      Expand: " Year, Country",
       Topcount: 5000,
       Filter: [
         {
@@ -299,50 +296,58 @@ const BudgetAnalysis = (props: any): JSX.Element => {
           FilterValue: year,
           Operator: "eq",
         },
+        {
+          FilterKey: "OverAllBudgetCost",
+          FilterValue: "0",
+          Operator: "ne",
+        },
+        {
+          FilterKey: "OverAllBudgetCost",
+          FilterValue: null,
+          Operator: "ne",
+        },
       ],
       Orderbydecorasc: false,
     })
       .then((data: any) => {
         let items: ICurBudgetAnalysis[] = [];
-        
+
         if (data.length) {
           data.forEach((value: any) => {
             items.push({
-              Category: value.Category.Title ? value.Category.Title : "",
+              Category: value.Title ? value.Title : "",
               Country: value.Country.Title ? value.Country.Title : "",
               Year: value.Year.Title ? value.Year.Title : "",
               Type: value.CategoryType ? value.CategoryType : "",
-              ApproveStatus: value.ApproveStatus ? value.ApproveStatus : "",
-              Description: value.Description ? value.Description : "",
               ID: value.ID ? value.ID : null,
-              BudgetAllocated: value.BudgetAllocated
-                ? value.BudgetAllocated
-                : null,
-              BudgetProposed: value.BudgetProposed
-                ? value.BudgetProposed
-                : null,
+              Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : null,
               isEdit: false,
+              Area: "",
             });
-          });
+          });          
           setMasterData(items);
-          setBudgetItems(items)
-          getCurrentYearData(items);
+          setBudgetItems(items);
+          getDropdownValues(items);
+        } else {
+          getDropdownValues(items);
+          setMasterData(items);
+          setBudgetItems(items);
         }
       })
       .catch((error: any) => _getErrorFunction("get budgjet data"));
   };
 
-  const getCurrentYearData = (items: ICurBudgetAnalysis[]) => {
-
+  const getDropdownValues = (items: ICurBudgetAnalysis[]) => {
     let allCategory: string[] = [...items].map((value) => value.Category);
     let categories: string[] = [...allCategory].filter(
       (value, index) => index === allCategory.indexOf(value)
     );
     let ctgryOptions: IDrop[] = [{ key: 0, text: "All" }];
 
-    categories.forEach((value, index) => {
-      ctgryOptions.push({ key: index + 1, text: value });
-    });
+    categories.length &&
+      categories.forEach((value, index) => {
+        ctgryOptions.push({ key: index + 1, text: value });
+      });
 
     ctgryDropOptions.ctgryDropOptions = [...ctgryOptions];
 
@@ -351,13 +356,12 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   };
 
   const setPaginationData = async (items: ICurBudgetAnalysis[]) => {
-
     let startIndex = (pagination.currentPage - 1) * pagination.perPage;
     let endIndex = startIndex + pagination.perPage;
     let bdgItems = [...items].slice(startIndex, endIndex);
 
     setViewBudgetItems([...bdgItems]);
-    setIsLoader(false)
+    setIsLoader(false);
   };
 
   const handelEdit = (
@@ -373,11 +377,10 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     if (type === "Edit") {
       setEdit({
         authendication: true,
-        data: item.BudgetAllocated,
+        data: item.Total,
         id: item.ID,
       });
-    } 
-    else {
+    } else {
       setEdit({ ...edit, authendication: false });
     }
 
@@ -385,31 +388,25 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   };
 
   const handleEditUpdate = (item: ICurBudgetAnalysis, index: number) => {
-    
     if (edit.data) {
-      let items: ICurBudgetAnalysis[] = [...viewBudgetItems];      
+      let items: ICurBudgetAnalysis[] = [...viewBudgetItems];
       items[index].isEdit = false;
-      items[index].BudgetAllocated = Number(edit.data)
-      
-      console.log('check',items[index]);
-      
-      setViewBudgetItems(items)
-      let json = {BudgetAllocated:edit.data}
+      items[index].Total = Number(edit.data);
+
+      setViewBudgetItems(items);
+      let json = { OverAllBudgetCost: edit.data };
 
       SPServices.SPUpdateItem({
-        Listname: Config.ListNames.BudgetList,
+        Listname: Config.ListNames.CategoryList,
         ID: edit.id,
         RequestJSON: json,
       })
-      .then((data)=>console.log('data added succesfully'))
-      .catch((error)=>console.log('err'))
-
+        .then((data) => console.log("data added succesfully"))
+        .catch((error) => console.log("err"));
     }
-
   };
 
-  const handleFilter = (type:string, country:string, category:string) => {
-
+  const handleFilter = (type: string, country: string, category: string) => {
     let filteredItems: ICurBudgetAnalysis[] = [...madterData].filter(
       (value) => {
         if (type !== "All" && country !== "All" && category !== "All") {
@@ -440,27 +437,14 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     setPaginationData(filteredItems);
   };
 
-  const setColumnValues = (year:string) =>{
-    if(currentYear === year){
-      setColumns(budjetColums)
-    }
-    else{
-      // let cols = [...budjetColums].filter(va)
-    }
-  }
-  // const readOnlyCellAddresses = [...headerRows]
-  // readOnlyCellAddresses.forEach((cellAddress) => {
-  //   const cell = worksheet.getCell(cellAddress);
-  //   cell.protection = {
-  //     locked: true, // Set the cell as read-only
-  //   };
-  // });
   const generateExcel = (items: ICurBudgetAnalysis[]) => {
     let _arrExport: ICurBudgetAnalysis[] = [...items];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
 
     worksheet.columns = [
+      { header: "ID", key: "ID", width: 15 },
+      { header: "Year", key: "Year", width: 25 },
       { header: "Category", key: "Category", width: 25 },
       { header: "Country", key: "Country", width: 25 },
       { header: "Type", key: "Type", width: 25 },
@@ -469,19 +453,21 @@ const BudgetAnalysis = (props: any): JSX.Element => {
 
     _arrExport.forEach((item: ICurBudgetAnalysis) => {
       worksheet.addRow({
-        Category: {value:item.Category,protection:{locked:true}},
+        ID: item.ID,
+        Year: item.Year,
+        Category: item.Category,
         Country: item.Country,
         Type: item.Type,
-        Total: item.BudgetAllocated,
+        Total: item.Total,
       });
     });
 
     worksheet.autoFilter = {
       from: "A1",
-      to: "D1",
+      to: "F1",
     };
 
-    const headerRows: string[] = ["A1", "B1", "C1", "D1"];
+    const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1"];
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {
         type: "pattern",
@@ -528,22 +514,26 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       const worksheet: any = workbook.worksheets[0];
       const rows: any = worksheet.getSheetValues();
       let _removeEmptyDatas: any[] = rows.slice(1);
-      const filteredData = _removeEmptyDatas.filter((row) =>
-        row.some((cell) => cell.trim() !== null && cell.trim() !== "")
-      );
+      const filteredData = _removeEmptyDatas.filter((row) => {
+        return row.some((cell) => cell !== null && cell !== "");
+      });
       listItems = [];
       listItems = filteredData.map((row: any) => ({
-        Title: row[1] ? row[1] : "",
+        ID: row[1] ? row[1] : null,
+        OverAllBudgetCost: row[6] ? row[6] : null,
       }));
       //Reset the file
       document.getElementById("fileUpload")["value"] = "";
       if (
         worksheet.name.toLowerCase() == "my sheet" &&
-        listItems[0].Title.toLowerCase() == "categorys"
+        listItems[0].ID.toLowerCase() == "id" &&
+        listItems[0].OverAllBudgetCost.toLowerCase() == "total"
       ) {
+        setIsLoader(true);
         listItems.shift();
-        // setImportFilePopup(true);
-        // splitCategoryData([...listItems]);
+        console.log("listItems", listItems);
+
+        getUpdateImportDatas(listItems);
       } else {
         alertify.error("Please import correct excel format");
       }
@@ -552,7 +542,18 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     }
   };
 
-  
+  const getUpdateImportDatas = (datas: any[]): void => {
+    SPServices.batchUpdate({
+      ListName: Config.ListNames.CategoryList,
+      responseData: [...datas],
+    })
+      .then((res: any) => {
+        getAllData(filPeriodDrop);
+      })
+      .catch((err: any) => {
+        _getErrorFunction("Error message");
+      });
+  };
 
   // useEffect
   useEffect(() => {
@@ -566,148 +567,155 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   // html binding
   return (
     <>
-    { isLoader ?
-    <Loader/> 
-    :
-    ctgryDropOptions.ctgryDropOptions.length && (
-      <div>
-        {/* Heading section */}
-        <Label className={styles.HeaderLable}>Budget Analysis</Label>
-        <div className={styles.Header}>
-          <div className={styles.HeaderFilters}>
-          <div className={styles.dropdowns}>
-              <Dropdown
-                styles={DropdownStyle}
-                label="Period"
-                options={[...propDropValue.Period]}
-                selectedKey={_getFilterDropValues(
-                  "Period",
-                  { ...propDropValue },
-                  filPeriodDrop
-                )}
-                onChange={(e: any, text: IDrop) => {
-                  _isCurYear = filPeriodDrop == currentYear ? true : false;
-                  setFilPeriodDrop(text.text as string);
-                  getAllData(text.text)   
-                  setIsLoader(true)
-                  setFilCountryDrop("All");
-                  setFilCtgryDrop("All");
-                  setFilTypeDrop("All"); 
-                  setColumnValues(text.text)              
-                }}
-              />
+      {isLoader ? (
+        <Loader />
+      ) : ctgryDropOptions.ctgryDropOptions.length ? (
+        <div>
+          {/* Heading section */}
+          <Label className={styles.HeaderLable}>Budget Analysis</Label>
+
+          <div className={styles.Header}>
+            <div className={styles.HeaderFilters}>
+              <div className={styles.dropdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Period"
+                  options={[...propDropValue.Period]}
+                  selectedKey={_getFilterDropValues(
+                    "Period",
+                    { ...propDropValue },
+                    filPeriodDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = text.text == currentYear ? true : false;
+                    setFilPeriodDrop(text.text as string);
+                    getAllData(text.text);
+                    setIsLoader(true);
+                    setFilCountryDrop("All");
+                    setFilCtgryDrop("All");
+                    setFilTypeDrop("All");
+                  }}
+                />
+              </div>
+              <div className={styles.dropdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Country"
+                  options={[...propDropValue.Country]}
+                  selectedKey={_getFilterDropValues(
+                    "Country",
+                    { ...propDropValue },
+                    filCountryDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = filPeriodDrop == currentYear ? true : false;
+                    setFilCountryDrop(text.text as string);
+                    handleFilter(filTypeDrop, text.text, filCtgryDrop);
+                  }}
+                />
+              </div>
+              <div className={styles.dropdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Category"
+                  options={ctgryDropOptions.ctgryDropOptions}
+                  selectedKey={_getFilterDropValues(
+                    "Category",
+                    { ...ctgryDropOptions },
+                    filCtgryDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = filPeriodDrop == currentYear ? true : false;
+                    setFilCtgryDrop(text.text as string);
+                    handleFilter(filTypeDrop, filCountryDrop, text.text);
+                  }}
+                />
+              </div>
+              <div className={styles.dropdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Type"
+                  options={[...propDropValue.Type]}
+                  selectedKey={_getFilterDropValues(
+                    "Type",
+                    { ...propDropValue },
+                    filTypeDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = filPeriodDrop == currentYear ? true : false;
+                    setFilTypeDrop(text.text as string);
+                    handleFilter(text.text, filCountryDrop, filCtgryDrop);
+                  }}
+                />
+              </div>
+              <div className={styles.icon}>
+                <Icon
+                  iconName="Refresh"
+                  className={styles.refresh}
+                  onClick={() => {
+                    _isCurYear = true;
+                    getAllData(currentYear);
+                    setIsLoader(true);
+                    setFilPeriodDrop(currentYear);
+                    setFilCountryDrop("All");
+                    setFilCtgryDrop("All");
+                    setFilTypeDrop("All");
+                  }}
+                />
+              </div>
             </div>
-            <div className={styles.dropdowns}>
-              <Dropdown
-                styles={DropdownStyle}
-                label="Country"
-                options={[...propDropValue.Country]}
-                selectedKey={_getFilterDropValues(
-                  "Country",
-                  { ...propDropValue },
-                  filCountryDrop
-                )}
-                onChange={(e: any, text: IDrop) => {
-                  _isCurYear = filPeriodDrop == currentYear ? true : false;
-                  setFilCountryDrop(text.text as string);
-                  handleFilter(filTypeDrop, text.text, filCtgryDrop);
-                }}
-              />
-            </div>
-            <div className={styles.dropdowns}>
-              <Dropdown
-                styles={DropdownStyle}
-                label="Category"
-                options={ctgryDropOptions.ctgryDropOptions}
-                selectedKey={_getFilterDropValues(
-                  "Category",
-                  { ...ctgryDropOptions },
-                  filCtgryDrop
-                )}
-                onChange={(e: any, text: IDrop) => {
-                  _isCurYear = filPeriodDrop == currentYear ? true : false;
-                  setFilCtgryDrop(text.text as string);
-                  handleFilter(filTypeDrop, filCountryDrop, text.text);
-                }}
-              />
-            </div>
-            <div className={styles.dropdowns}>
-              <Dropdown
-                styles={DropdownStyle}
-                label="Type"
-                options={[...propDropValue.Type]}
-                selectedKey={_getFilterDropValues(
-                  "Type",
-                  { ...propDropValue },
-                  filTypeDrop
-                )}
-                onChange={(e: any, text: IDrop) => {
-                  _isCurYear = filPeriodDrop == currentYear ? true : false;
-                  setFilTypeDrop(text.text as string);
-                  handleFilter(text.text, filCountryDrop, filCtgryDrop);
-                }}
-              />
-            </div>
-            <div className={styles.icon}>
-              <Icon
-                iconName="Refresh"
-                className={styles.refresh}
-                onClick={() => {
-                  getAllData(currentYear)
-                  setIsLoader(true)
-                  setFilPeriodDrop(currentYear)
-                  setFilCountryDrop("All");
-                  setFilCtgryDrop("All");
-                  setFilTypeDrop("All");
-                }}
+
+            {/* import btn section */}
+            <div className={styles.importExport}>
+              {_isCurYear && (
+                <div className={styles.import}>
+                  <input
+                    id="fileUpload"
+                    type="file"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      getFileImport(e.target.files[0]);
+                    }}
+                  />
+                  <label htmlFor="fileUpload" className={styles.uploadBtn}>
+                    Import
+                  </label>
+                </div>
+              )}
+
+              <DefaultButton
+                styles={buttonStyles}
+                className={styles.export}
+                text="Export"
+                onClick={() => generateExcel(budgetItems)}
               />
             </div>
           </div>
-          <div>
-            {/* <input
-            id="fileUpload"
-            type="file"
-            onChange={(e) => {
-              getFileImport(e.target.files[0]);
-            }}
-          /> */}
 
-            <DefaultButton
-              className={styles.export}
-              text="Export"
-              onClick={() => generateExcel(budgetItems)}
-            />
-          </div>
-        </div>
-
-        {/* Details List section */}
-        <DetailsList
-          columns={budjetColums}
-          items={viewBudgetItems}
-          styles={_DetailsListStyle}
-          setKey="set"
-          layoutMode={DetailsListLayoutMode.justified}
-          selectionMode={SelectionMode.none}
-        />
-        {viewBudgetItems.length ? (
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={Math.ceil(budgetItems.length / pagination.perPage)}
-            onChange={(page: number) =>
-              setPagination({ ...pagination, currentPage: page })
-            }
+          {/* Details List section */}
+          <DetailsList
+            columns={_isCurYear ? budjetColums : cols}
+            items={viewBudgetItems}
+            styles={_DetailsListStyle}
+            setKey="set"
+            layoutMode={DetailsListLayoutMode.justified}
+            selectionMode={SelectionMode.none}
           />
-        ) : (
-          <div className={""}>
-            <label>No Records</label>
-          </div>
-        )}
-      </div>
-      
-    )
-    
-        }
-       
+          {viewBudgetItems.length ? (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={Math.ceil(budgetItems.length / pagination.perPage)}
+              onChange={(page: number) =>
+                setPagination({ ...pagination, currentPage: page })
+              }
+            />
+          ) : (
+            <div className={""}>
+              <label>No data found !!!</label>
+            </div>
+          )}
+        </div>
+      ) : null}
     </>
   );
 };

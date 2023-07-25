@@ -190,12 +190,10 @@ export interface ICurBudgetAnalysis {
   Country: string;
   Year: string;
   Type: string;
-  ApproveStatus: string;
-  Description: string;
+  Area: string;
   ID: number;
-  BudgetAllocated: number;
-  BudgetProposed: number;
-  isEdit: boolean;
+  Total: number;
+  isEdit: boolean,
 }
 
 /* Interface of edit budget analysis */
@@ -219,4 +217,18 @@ export interface IVendorListColumn{
   Cost: string;
   PoCurrency: string;
   InvoiceNo: string;
+  isDummy:boolean;
+  isEdit:boolean;
+}
+
+// Interface for gruop authendication
+export interface IGroupUsers{
+  isSuperAdmin:boolean;
+  isOtherUser:boolean;
+  // isInfraAdmin:boolean;
+  // isInfra
+}
+
+export interface IGroupNames{
+  SuperAdmin:string;
 }

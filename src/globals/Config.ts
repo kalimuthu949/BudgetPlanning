@@ -11,6 +11,8 @@ import {
   ICurBudgetItem,
   IBudgetValidation,
   IMasCategoryListColumn,
+  IGroupUsers,
+  IGroupNames
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -141,4 +143,13 @@ export namespace Config {
     isDescription: false,
     isBudgetAllocated: false,
   };
+
+  export const GroupUsers:IGroupUsers = {
+    isSuperAdmin:false,
+    isOtherUser:false
+  }
+
+  export const GroupNames:IGroupNames = {
+    SuperAdmin:'Super Admin'
+  }
 }
