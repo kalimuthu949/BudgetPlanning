@@ -64,6 +64,12 @@ const BudgetCategory = (props: any): JSX.Element => {
     },
   ];
 
+  const options = [
+    { value: 0, label: "Option 1" },
+    { value: 1, label: "Option 2" },
+    { value: 2, label: "Option 3" },
+  ];
+
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IMasCategoryListColumn[]>([]);
@@ -181,6 +187,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       },
     },
   };
+
   const errorStyle = {
     root: {
       width: "82%",
@@ -255,21 +262,46 @@ const BudgetCategory = (props: any): JSX.Element => {
     let _arrExport: IMasCategoryListColumn[] = [...master];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
+    let headerRows: string[] = [];
+    let _isAdmin: boolean = true;
 
-    worksheet.columns = [{ header: "Categorys", key: "Category", width: 100 }];
-
-    _arrExport.forEach((item: IMasCategoryListColumn) => {
-      worksheet.addRow({
-        Category: item.Title,
+    if (_isAdmin) {
+      worksheet.columns = [
+        { header: "Categorys", key: "Category", width: 100 },
+        { header: "Areas", key: "Area", width: 50 },
+      ];
+      for (let i: number = 0; 1000 > i; i++) {
+        if (_arrExport.length > i) {
+          worksheet.addRow({
+            Category: _arrExport[i].Title,
+            Area: '',
+          });
+        }
+        worksheet.getCell(`B${i + 2}`).dataValidation = {
+          type: "list",
+          formulae: ['"One,Two,Three,Four"'],
+        };
+      }
+      worksheet.autoFilter = {
+        from: "A1",
+        to: "B1",
+      };
+      headerRows = ["A1", "B1"];
+    } else {
+      worksheet.columns = [
+        { header: "Categorys", key: "Category", width: 100 },
+      ];
+      _arrExport.forEach((item: IMasCategoryListColumn, i: number) => {
+        worksheet.addRow({
+          Category: item.Title,
+        });
       });
-    });
-
-    worksheet.autoFilter = {
-      from: "A1",
-      to: "A1",
-    };
-
-    const headerRows: string[] = ["A1"];
+      worksheet.autoFilter = {
+        from: "A1",
+        to: "A1",
+      };
+      headerRows = ["A1"];
+    }
 
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {

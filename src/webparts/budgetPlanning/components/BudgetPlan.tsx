@@ -782,12 +782,12 @@ const BudgetPlan = (props: any): JSX.Element => {
     let _isValid: boolean = true;
     let _isDuplicate: boolean = false;
     let _arrDuplicate: ICurBudgetItem[] = _Items.filter(
-      (e: ICurBudgetItem) => e.CateId === curData.CateId
+      (e: ICurBudgetItem) => e.CateId === curData.CateId && e.ID != curData.ID
     );
     _isDuplicate = [..._arrDuplicate].some(
       (e: ICurBudgetItem) =>
         e.Description.toLowerCase().trim() ===
-          curData.Description.toLowerCase().trim() && e.isEdit === false
+        curData.Description.toLowerCase().trim()
     );
 
     if (!curData.Description.trim() || _isDuplicate) {
@@ -795,31 +795,35 @@ const BudgetPlan = (props: any): JSX.Element => {
       isValidation.isDescription = _isDuplicate ? _isDuplicate : true;
       isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
     }
-    if (!curData.BudgetAllocated) {
+    if (!curData.BudgetAllocated || _isDuplicate) {
       _isValid = false;
       isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
-      isValidation.isDescription = curData.Description.trim() ? false : true;
+      isValidation.isDescription = _isDuplicate
+        ? _isDuplicate
+        : curData.Description.trim()
+        ? false
+        : true;
     }
 
-    // if (!curData.Description.trim() && !curData.BudgetAllocated) {
-    //   alertify.error("Please enter description and budget allocated");
-    // } else if (
-    //   (!curData.Description.trim() || _isDuplicate) &&
-    //   !curData.BudgetAllocated
-    // ) {
-    //   _isDuplicate && !curData.BudgetAllocated
-    //     ? alertify.error(
-    //         "Already description exists and Please enter budget allocated"
-    //       )
-    //     : _isDuplicate
-    //     ? alertify.error("Already description exists")
-    //     : !curData.Description.trim() &&
-    //       alertify.error("Please enter description");
-    // } else if (_isDuplicate) {
-    //   alertify.error("Already description exists");
-    // } else {
-    //   alertify.error("Please enter budget allocated");
-    // }
+    if (!curData.Description.trim() && !curData.BudgetAllocated) {
+      alertify.error("Please enter description and budget allocated");
+    } else if (
+      (!curData.Description.trim() || _isDuplicate) &&
+      !curData.BudgetAllocated
+    ) {
+      _isDuplicate && !curData.BudgetAllocated
+        ? alertify.error(
+            "Already description exists and Please enter budget allocated"
+          )
+        : _isDuplicate
+        ? alertify.error("Already description exists")
+        : !curData.Description.trim() &&
+          alertify.error("Please enter description");
+    } else if (_isDuplicate) {
+      alertify.error("Already description exists");
+    } else if (!curData.BudgetAllocated) {
+      alertify.error("Please enter budget allocated");
+    }
 
     if (_isValid) {
       _isBack = !curData.isEdit;
