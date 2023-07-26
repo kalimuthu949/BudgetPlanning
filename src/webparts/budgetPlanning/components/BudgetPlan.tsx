@@ -29,6 +29,7 @@ import Loader from "./Loader";
 import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetPlanning.module.scss";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 let propDropValue: IDropdowns;
 let _Items: ICurBudgetItem[] = [];
@@ -36,12 +37,14 @@ let _groupItem: IOverAllItem[] = [];
 let alertifyMSG: string = "";
 let _isBack: boolean = false;
 let _isCurYear: boolean = true;
+let isUserPermissions: any;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   let _curYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
+  isUserPermissions = { ...props };
 
   const _budgetPlanColumns: IColumn[] = [
     {
@@ -49,7 +52,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Category",
       fieldName: Config.BudgetListColumns.CategoryId.toString(),
       minWidth: 200,
-      maxWidth: _isCurYear ? 300 : 380,
+      maxWidth: _isCurYear ? 200 : 280,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Category : item.isEdit && item.Category;
       },
@@ -59,7 +62,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Country",
       fieldName: Config.BudgetListColumns.CountryId.toString(),
       minWidth: 150,
-      maxWidth: _isCurYear ? 200 : 280,
+      maxWidth: _isCurYear ? 150 : 230,
       onRender: (item: ICurBudgetItem): any => {
         return item.ID ? item.Country : item.isEdit && item.Country;
       },
@@ -69,7 +72,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
       minWidth: 300,
-      maxWidth: _isCurYear ? 380 : 450,
+      maxWidth: _isCurYear ? 330 : 400,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? (
           <div
@@ -125,10 +128,35 @@ const BudgetPlan = (props: any): JSX.Element => {
     },
     {
       key: "column4",
-      name: "Budget Allocated",
+      name: "Comment",
+      fieldName: Config.BudgetListColumns.Comments,
+      minWidth: 280,
+      maxWidth: 300,
+      onRender: (item: ICurBudgetItem): any => {
+        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
+          <div>{item.Comments.trim() ? item.Comments : "N/A"}</div>
+        ) : (
+          <div>
+            <TextField
+              multiline
+              value={curData.Comments ? curData.Comments : ""}
+              placeholder="Enter Here"
+              styles={textFieldStyle}
+              onChange={(e: any) => {
+                curData.Comments = e.target.value;
+                setCurData({ ...curData });
+              }}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      key: "column5",
+      name: "Budget Required",
       fieldName: Config.BudgetListColumns.BudgetAllocated,
       minWidth: 100,
-      maxWidth: 170,
+      maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
         return !item.isEdit ? (
           <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
@@ -158,19 +186,19 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
     {
-      key: "column5",
+      key: "column6",
       name: "Used",
       minWidth: 100,
-      maxWidth: 170,
+      maxWidth: 130,
       onRender: (item: any) => {
         return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
       },
     },
     {
-      key: "column6",
+      key: "column7",
       name: "Remaining",
       minWidth: 100,
-      maxWidth: 170,
+      maxWidth: 130,
       onRender: (item: any) => {
         return (
           <div
@@ -195,10 +223,10 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
     {
-      key: "column7",
+      key: "column8",
       name: "Action",
-      minWidth: 100,
-      maxWidth: 150,
+      minWidth: 50,
+      maxWidth: 80,
       onRender: (item: any) => {
         return (
           <div>
@@ -400,21 +428,26 @@ const BudgetPlan = (props: any): JSX.Element => {
     setIsLoader(true);
     filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
     setDetailColumn([..._budgetPlanColumns]);
-    _getCategoryDatas();
+    _getCategoryDatas(filPeriodDrop);
   };
 
-  const _getCategoryDatas = (): void => {
+  const _getCategoryDatas = (year: string): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CategoryList,
       Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
+      Expand: "Year, Country",
       Filter: [
         {
           FilterKey: "isDeleted",
           Operator: "ne",
           FilterValue: "1",
         },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: year,
+        },
       ],
-      Expand: "Year, Country",
       Topcount: 5000,
     })
       .then((resCate: any) => {
@@ -456,9 +489,10 @@ const BudgetPlan = (props: any): JSX.Element => {
 
   const _getFilterFunction = (_filData: ICurCategoryItem[]): void => {
     let tempArr: ICurCategoryItem[] = [..._filData];
-    tempArr = tempArr.filter((arr: ICurCategoryItem) => {
-      return arr.YearAcc.Text == filPeriodDrop;
-    });
+    let _filArray: ICurCategoryItem[] = [];
+    // tempArr = tempArr.filter((arr: ICurCategoryItem) => {
+    //   return arr.YearAcc.Text == filPeriodDrop;
+    // });
     if (filCountryDrop != "All" && tempArr.length) {
       tempArr = tempArr.filter((arr: ICurCategoryItem) => {
         return arr.CountryAcc.Text == filCountryDrop;
@@ -469,6 +503,9 @@ const BudgetPlan = (props: any): JSX.Element => {
         return arr.Type == filTypeDrop;
       });
     }
+    _filArray = _filterArray();
+    console.log("_filArray", _filArray);
+
     _getBudgetDatas(tempArr);
   };
 
@@ -516,6 +553,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               Description: resBudget[i].Description
                 ? resBudget[i].Description
                 : "",
+              Comments: resBudget[i].Comments ? resBudget[i].Comments : "",
               RemainingCost: resBudget[i].RemainingCost
                 ? resBudget[i].RemainingCost
                 : null,
@@ -617,9 +655,10 @@ const BudgetPlan = (props: any): JSX.Element => {
       BudgetAllocated: null,
       BudgetProposed: null,
       Used: null,
+      RemainingCost: null,
       ApproveStatus: "",
       Description: "",
-      RemainingCost: null,
+      Comments: "",
       isDeleted: false,
       isEdit: false,
       isDummy: true,
@@ -718,6 +757,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.Country = _curItem.Country;
     curData.ApproveStatus = _curItem.ApproveStatus;
     curData.Description = _curItem.Description;
+    curData.Comments = _curItem.Comments;
     curData.ID = _curItem.ID;
     curData.CateId = _curItem.CateId;
     curData.CounId = _curItem.CounId;
@@ -765,6 +805,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.Description] = curData.Description;
       data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.Comments] = curData.Comments;
       _getValidation({ ...data }, "Updated");
     } else {
       data[columns.CategoryId] = curData.CateId;
@@ -774,6 +815,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.CategoryType] = curData.Type;
       data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.Comments] = curData.Comments;
       _getValidation({ ...data }, "");
     }
   };
@@ -846,15 +888,30 @@ const BudgetPlan = (props: any): JSX.Element => {
     })
       .then((_resAdd: any) => {
         let _arrNewBudget: ICurBudgetItem[] = [];
+        let _TotalAmount: number = 0;
         curData.ID = _resAdd.data.ID;
         _Items.push({ ...curData });
         for (let i: number = 0; _Items.length > i; i++) {
+          if (
+            _Items[i].CateId == curData.CateId &&
+            _Items[i].Category == curData.Category &&
+            _Items[i].Country == curData.Country &&
+            _Items[i].Year == curData.Year &&
+            _Items[i].Type == curData.Type
+          ) {
+            _TotalAmount +=
+              _Items[i].ID == curData.ID
+                ? Number(curData.BudgetAllocated)
+                : _Items[i].BudgetAllocated
+                ? Number(_Items[i].BudgetAllocated)
+                : 0;
+          }
           if (_Items[i].ID) {
             _arrNewBudget.push(_Items[i]);
           }
           i + 1 == _Items.length &&
             ((alertifyMSG = "Added"),
-            _prepareArrMasterDatas([..._groupItem], [..._arrNewBudget]));
+            _getUpdateCategoryTotal(_TotalAmount, [..._arrNewBudget]));
         }
       })
       .catch((err: any) => {
@@ -870,8 +927,23 @@ const BudgetPlan = (props: any): JSX.Element => {
     })
       .then((_resEdit: any) => {
         let _arrNewBudget: ICurBudgetItem[] = [];
+        let _TotalAmount: number = 0;
         let _message: string = "";
         for (let i: number = 0; _Items.length > i; i++) {
+          if (
+            _Items[i].CateId == curData.CateId &&
+            _Items[i].Category == curData.Category &&
+            _Items[i].Country == curData.Country &&
+            _Items[i].Year == curData.Year &&
+            _Items[i].Type == curData.Type
+          ) {
+            _TotalAmount +=
+              _Items[i].ID == curData.ID
+                ? Number(curData.BudgetAllocated)
+                : _Items[i].BudgetAllocated
+                ? Number(_Items[i].BudgetAllocated)
+                : 0;
+          }
           if (_Items[i].ID) {
             if (type == "Updated" && _Items[i].ID == curData.ID) {
               _message = type;
@@ -884,8 +956,27 @@ const BudgetPlan = (props: any): JSX.Element => {
           }
           i + 1 == _Items.length &&
             ((alertifyMSG = _message),
-            _prepareArrMasterDatas([..._groupItem], [..._arrNewBudget]));
+            _getUpdateCategoryTotal(_TotalAmount, [..._arrNewBudget]));
         }
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const _getUpdateCategoryTotal = (
+    Total: number,
+    _arrNewBudget: ICurBudgetItem[]
+  ): void => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.CategoryList,
+      ID: curData.CateId,
+      RequestJSON: {
+        OverAllBudgetCost: Total,
+      },
+    })
+      .then((res: any) => {
+        _prepareArrMasterDatas([..._groupItem], [..._arrNewBudget]);
       })
       .catch((err: any) => {
         _getErrorFunction(err);
