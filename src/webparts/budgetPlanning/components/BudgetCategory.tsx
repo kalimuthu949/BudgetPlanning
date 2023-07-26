@@ -46,13 +46,19 @@ interface IPagination {
   pagenumber: number;
 }
 
+interface ICountryList {
+  Country: string;
+}
+
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
 let listItems: IMasCategoryListColumn[] = [];
 const addIcon: IIconProps = { iconName: "Add" };
+let areaExport = [];
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
+
   propDropValue = { ...props.dropValue };
 
   const _budgetPlanColumns: IColumn[] = [
@@ -71,34 +77,23 @@ const BudgetCategory = (props: any): JSX.Element => {
       maxWidth: 500,
     },
   ];
-  const area = [
-    {
-      key: "Infra Structure",
-      text: "Infra Structure",
-    },
-    {
-      key: "Enterprise Application",
-      text: "Enterprise Application",
-    },
-    {
-      key: "Special Project",
-      text: "Special Project",
-    },
-  ];
-  const options = [
-    { value: 0, label: "Option 1" },
-    { value: 1, label: "Option 2" },
-    { value: 2, label: "Option 3" },
-  ];
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IMasCategoryListColumn[]>([]);
   const [master, setMaster] = useState<IMasCategoryListColumn[]>([]);
   const [items, setItems] = useState<IMasCategoryListColumn[]>([]);
+  const [area, setArea] = useState([]);
   const [categoryPopup, setcategoryPopup] = useState<boolean>(false);
   const [importFilePopup, setImportFilePopup] = useState<boolean>(false);
+  const [countryPopup, setCountryPopup] = useState(false);
   const [istrigger, setIstrigger] = useState<boolean>(false);
+  const [countryMData, setCountryMData] = useState<ICountryList[]>([]);
+  const [newCountry, setNewCountry] = useState<ICountryList[]>([
+    {
+      Country: "",
+    },
+  ]);
   const [importExcelDataView, setImportExcelDataView] =
     useState<IimportExcelDataView>({
       removeExcelData: [],
@@ -106,7 +101,8 @@ const BudgetCategory = (props: any): JSX.Element => {
         {
           Title: "",
           Area: "",
-          Validate: false,
+          CatgryValidate: false,
+          AreaValidate: false,
         },
       ],
     });
@@ -209,11 +205,22 @@ const BudgetCategory = (props: any): JSX.Element => {
       },
     },
   };
+
   const dropDownStyle = {
     root: {
       width: "48%",
     },
   };
+
+  const dropErrorStyle = {
+    root: {
+      width: "48%",
+      ".ms-Dropdown-title": {
+        borderColor: "red !important",
+      },
+    },
+  };
+
   const errorStyle = {
     root: {
       width: "82%",
@@ -263,7 +270,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     main: {
       padding: "15px 25px",
       borderRadius: 4,
-      width: "22%",
+      width: "25%",
       height: "auto !important",
       minHeight: "none",
     },
@@ -291,43 +298,29 @@ const BudgetCategory = (props: any): JSX.Element => {
     let headerRows: string[] = [];
     let _isAdmin: boolean = true;
 
-    if (_isAdmin) {
-      worksheet.columns = [
-        { header: "Categorys", key: "Category", width: 100 },
-        { header: "Areas", key: "Area", width: 50 },
-      ];
-      for (let i: number = 0; 1000 > i; i++) {
-        if (_arrExport.length > i) {
-          worksheet.addRow({
-            Category: _arrExport[i].Title,
-            Area: _arrExport[i].Area,
-          });
-        }
-        worksheet.getCell(`B${i + 2}`).dataValidation = {
-          type: "list",
-          formulae: ['"One,Two,Three,Four"'],
-        };
-      }
-      worksheet.autoFilter = {
-        from: "A1",
-        to: "B1",
-      };
-      headerRows = ["A1", "B1"];
-    } else {
-      worksheet.columns = [
-        { header: "Categorys", key: "Category", width: 100 },
-      ];
-      _arrExport.forEach((item: IMasCategoryListColumn, i: number) => {
+    worksheet.columns = [
+      { header: "Categorys", key: "Category", width: 100 },
+      { header: "Areas", key: "Area", width: 50 },
+    ];
+    for (let i: number = 0; 1000 > i; i++) {
+      if (_arrExport.length > i) {
         worksheet.addRow({
-          Category: item.Title,
+          Category: _arrExport[i].Title,
+          Area: _arrExport[i].Area,
         });
-      });
-      worksheet.autoFilter = {
-        from: "A1",
-        to: "A1",
+      }
+
+      worksheet.getCell(`B${i + 2}`).dataValidation = {
+        type: "list",
+        // formulae: ['"One,Two,Three Three,Four"'],
+        formulae: [`"${areaExport.join(",")}"`],
       };
-      headerRows = ["A1"];
     }
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "B1",
+    };
+    headerRows = ["A1", "B1"];
 
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {
@@ -386,7 +379,8 @@ const BudgetCategory = (props: any): JSX.Element => {
       document.getElementById("fileUpload")["value"] = "";
       if (
         worksheet.name.toLowerCase() == "my sheet" &&
-        listItems[0].Title.toLowerCase() == "categorys"
+        listItems[0].Title.toLowerCase() == "categorys" &&
+        listItems[0].Area.toLowerCase() == "areas"
       ) {
         listItems.shift();
         setImportFilePopup(true);
@@ -402,6 +396,67 @@ const BudgetCategory = (props: any): JSX.Element => {
   const _getDefaultFunction = (): void => {
     _isBack = false;
     setIsLoader(true);
+    manipulation(props.groupUsers);
+  };
+
+  const manipulation = (user) => {
+    let areas = [];
+    if (user.isSuperAdmin) {
+      areas.push(
+        {
+          key: 0,
+          text: "Infra Structure",
+        },
+        {
+          key: 1,
+          text: "Enterprise Application",
+        },
+        {
+          key: 2,
+          text: "Special Project",
+        }
+      );
+      areaExport.push(
+        "Infra Structure",
+        "Enterprise Application",
+        "Special Project"
+      );
+    } else {
+      if (user.isInfraManager) {
+        areas.push({
+          key: 0,
+          text: "Infra Structure",
+        });
+        areaExport.push("Infra Structure");
+      }
+      if (user.isEnterpricesManager) {
+        areas.push({
+          key: 1,
+          text: "Enterprise Application",
+        });
+        areaExport.push("Enterprise Application");
+      }
+      if (user.isSpecialManager) {
+        areas.push({
+          key: 2,
+          text: "Special Project",
+        });
+        areaExport.push("Special Project");
+      }
+    }
+    setArea([...areas]);
+    setImportExcelDataView({
+      ...importExcelDataView,
+      addExcelData: [
+        {
+          Title: "",
+          Area: areas[0].text,
+          CatgryValidate: false,
+          AreaValidate: false,
+        },
+      ],
+    });
+
     _getMasterCategoryData();
   };
 
@@ -432,6 +487,17 @@ const BudgetCategory = (props: any): JSX.Element => {
       .catch((err: any) => {
         _getErrorFunction(err);
       });
+    getMasterCountryData();
+  };
+
+  const getMasterCountryData = () => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.CountryList,
+      Topcount: 5000,
+      Orderbydecorasc: false,
+    })
+      .then((resMasCountry) => {})
+      .catch((err) => _getErrorFunction(err));
   };
 
   const splitCategoryData = (listItems: IMasCategoryListColumn[]) => {
@@ -482,7 +548,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     } else {
       let validationData = validation([...listItems]);
       authentication = validationData.every((val) => {
-        return val.Validate == false;
+        return val.CatgryValidate == false && val.AreaValidate == false;
       });
 
       authentication &&
@@ -502,7 +568,14 @@ const BudgetCategory = (props: any): JSX.Element => {
         })
           .then((result) => {
             setImportExcelDataView({
-              addExcelData: [{ Title: "", Area: "", Validate: false }],
+              addExcelData: [
+                {
+                  Title: "",
+                  Area: area[0].text,
+                  CatgryValidate: false,
+                  AreaValidate: false,
+                },
+              ],
               removeExcelData: [],
             });
             setIstrigger(!istrigger);
@@ -513,7 +586,14 @@ const BudgetCategory = (props: any): JSX.Element => {
           .catch((err) => _getErrorFunction(err));
       } else {
         setImportExcelDataView({
-          addExcelData: [{ Title: "", Area: "", Validate: false }],
+          addExcelData: [
+            {
+              Title: "",
+              Area: area[0].text,
+              CatgryValidate: false,
+              AreaValidate: false,
+            },
+          ],
           removeExcelData: [],
         });
         setIsLoader(false);
@@ -536,11 +616,15 @@ const BudgetCategory = (props: any): JSX.Element => {
     let validData = validation([...importExcelDataView.addExcelData]);
     if (
       [...validData].every((val) => {
-        return val.Validate == false;
+        return val.CatgryValidate == false && val.AreaValidate == false;
       })
     ) {
       let addcatcrydata = [...validData];
-      addcatcrydata.push({ Title: "", Area: "", Validate: false });
+      addcatcrydata.push({
+        Title: "",
+        Area: area[0].text,
+        CatgryValidate: false,
+      });
       setImportExcelDataView({
         ...importExcelDataView,
         addExcelData: [...addcatcrydata],
@@ -574,15 +658,27 @@ const BudgetCategory = (props: any): JSX.Element => {
           );
         }).length == 0
       ) {
-        let OriginalFlagChange = { ...dData, Validate: false };
+        let OriginalFlagChange = {
+          ...dData,
+          CatgryValidate: false,
+          AreaValidate: false,
+        };
         DuplicateData.push(OriginalFlagChange);
       } else {
         if (dData.Title.trim() != "" && dData.Area.trim() != "") {
-          let DuplicateFlagChange = { ...dData, Validate: true };
+          let DuplicateFlagChange = {
+            ...dData,
+            CatgryValidate: true,
+            AreaValidate: true,
+          };
           DuplicateData.push(DuplicateFlagChange);
           alertify.error("Already category exists");
         } else {
-          let EmptyData = { ...dData, Validate: true };
+          let EmptyData = {
+            ...dData,
+            CatgryValidate: true,
+            AreaValidate: false,
+          };
           DuplicateData.push(EmptyData);
           alertify.error("Please Enter The Category");
         }
@@ -601,7 +697,11 @@ const BudgetCategory = (props: any): JSX.Element => {
       ) {
         newAddData.push(item);
       } else {
-        let DuplicateDataFlagChange = { ...item, Validate: true };
+        let DuplicateDataFlagChange = {
+          ...item,
+          CatgryValidate: true,
+          AreaValidate: true,
+        };
         newAddData.push(DuplicateDataFlagChange);
         alertify.error("Already category exists");
       }
@@ -617,7 +717,10 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const searchData = (data: string) => {
     let searchdata = [...MData].filter((value) => {
-      return value.Title.toLowerCase().includes(data.trim().toLowerCase());
+      return (
+        value.Title.toLowerCase().includes(data.trim().toLowerCase()) ||
+        value.Area.toLowerCase().includes(data.trim().toLowerCase())
+      );
     });
     setMaster([...searchdata]);
   };
@@ -655,6 +758,15 @@ const BudgetCategory = (props: any): JSX.Element => {
               onChange={(val, text) => searchData(text)}
             />
           </div>
+
+          {/*Counter Add Btn section*/}
+          <DefaultButton
+            text="New Country"
+            styles={btnStyle}
+            iconProps={addIcon}
+            onClick={() => setCountryPopup(true)}
+          />
+
           {/* New btn section */}
           <DefaultButton
             text="New item"
@@ -718,7 +830,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                 <div key={index} className={styles.modalTextAndIconFlex}>
                   <div className={styles.modalTextAndDropFlex}>
                     <TextField
-                      styles={val.Validate ? errorStyle : inputStyle}
+                      styles={val.CatgryValidate ? errorStyle : inputStyle}
                       type="text"
                       value={val.Title}
                       placeholder="Enter The Category"
@@ -728,7 +840,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                     />
                     <Dropdown
                       options={area}
-                      styles={dropDownStyle}
+                      styles={val.AreaValidate ? dropErrorStyle : dropDownStyle}
                       placeholder="Enter The Area"
                       selectedKey={importExcelDataView.addExcelData[index].Area}
                       onChange={(e, item) =>
@@ -796,7 +908,14 @@ const BudgetCategory = (props: any): JSX.Element => {
             onClick={() => {
               setImportExcelDataView({
                 removeExcelData: [],
-                addExcelData: [{ Title: "", Area: "", Validate: false }],
+                addExcelData: [
+                  {
+                    Title: "",
+                    Area: area[0].text,
+                    CatgryValidate: false,
+                    AreaValidate: false,
+                  },
+                ],
               });
               setcategoryPopup(false);
             }}
@@ -809,13 +928,16 @@ const BudgetCategory = (props: any): JSX.Element => {
         <div className={styles.importBoxView}>
           <div>
             <h3>New Category</h3>
-            {/* <div className={styles.importDataView}> */}
+            <div style={{ width: "100%", display: "flex" }}>
+              <h4 className={styles.importHeader}>Category</h4>
+              <h4 className={styles.importHeader}>Area</h4>
+            </div>
             {importExcelDataView.addExcelData.map((value, index) => {
               return (
                 <div>
-                  <div key={index}>
+                  <div key={index} style={{ width: "100%", display: "flex" }}>
                     <label className={styles.boxViewLabel}>{value.Title}</label>
-                    <label>{value.Area}</label>
+                    <label className={styles.boxViewLabel}>{value.Area}</label>
                   </div>
                 </div>
               );
@@ -825,19 +947,24 @@ const BudgetCategory = (props: any): JSX.Element => {
                 <label>No Records</label>
               </div>
             )}
-            {/* </div> */}
           </div>
           <div>
             <h3>Duplicate Category</h3>
+            <div style={{ width: "100%", display: "flex" }}>
+              <h4 className={styles.importHeader}>Category</h4>
+              <h4 className={styles.importHeader}>Area</h4>
+            </div>
             <div className={styles.importDataView}>
               {importExcelDataView.removeExcelData.map((value, index) => {
                 return (
                   <div>
-                    <div key={index}>
+                    <div key={index} style={{ width: "100%", display: "flex" }}>
                       <label className={styles.boxViewLabel}>
                         {value.Title}
                       </label>
-                      <label>{value.Area}</label>
+                      <label className={styles.boxViewLabel}>
+                        {value.Area}
+                      </label>
                     </div>
                   </div>
                 );
