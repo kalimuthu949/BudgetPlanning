@@ -19,6 +19,7 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import { sp } from "@pnp/sp/presets/all";
 import { Icon, Label } from "@fluentui/react";
+import { _filAreaDrop } from "../../../CommonServices/filterCommonArray";
 
 const App = (props: any): JSX.Element => {
   // local variable
@@ -34,20 +35,20 @@ const App = (props: any): JSX.Element => {
       groupName: Config.GroupNames.InfraAdmin,
     },
     {
-      user: "isEnterpricesAdmin",
-      groupName: Config.GroupNames.InfraManger,
+      user: "isSpecialAdmin",
+      groupName: Config.GroupNames.SpecialAdmin,
     },
     {
-      user: "isSpecialAdmin",
+      user: "isEnterpricesAdmin",
       groupName: Config.GroupNames.EnterpricesAdmin,
     },
     {
       user: "isInfraManager",
-      groupName: Config.GroupNames.EnterpricesManager,
+      groupName: Config.GroupNames.InfraManger,
     },
     {
       user: "isEnterpricesManager",
-      groupName: Config.GroupNames.SpecialAdmin,
+      groupName: Config.GroupNames.EnterpricesManager,
     },
     {
       user: "isSpecialManager",
@@ -66,6 +67,52 @@ const App = (props: any): JSX.Element => {
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error("Error message");
+  };
+
+  const getUsers = async () => {
+    let allUsers: any = { ...groupUsers };
+    for (let i = 0; i < _allUsers.length; i++) {
+      await sp.web.siteGroups
+        .getByName(_allUsers[i].groupName)
+        .users.get()
+        .then((result) => {
+          let authendication: boolean = [...result].some(
+            (value) => value.Email === currentUser
+          );
+
+          if (authendication) {
+            allUsers[_allUsers[i].user] = authendication;
+          }
+
+          _allUsers.length == i + 1 && getOtherUser(allUsers);
+        })
+        .catch((error) => {
+          _getErrorFunction("get users erroe");
+        });
+    }
+  };
+
+  const getOtherUser = (allUsers: IGroupUsers): void => {
+    let users: boolean[] = [];
+    for (let keys in allUsers) {
+      users.push(allUsers[keys]);
+    }
+    let _isOther: boolean = users.some((e: boolean) => e == true);
+    if (_isOther) {
+      setGroupUsers({ ...allUsers });
+      setIsOtherUser(true);
+      _getAreaDrop({ ...allUsers });
+    } else {
+      setIsOtherUser(false);
+    }
+  };
+
+  const _getAreaDrop = (user: IGroupUsers): void => {
+    let _filArrayArea: IDrop[] = _filAreaDrop(user);
+    dropValue.Area = [..._filArrayArea];
+    setDropValue({ ...dropValue });
+
+    _getDropDownValues();
   };
 
   const _getDropDownValues = (): void => {
@@ -155,7 +202,7 @@ const App = (props: any): JSX.Element => {
 
                     dropValue.masterCate = [..._typeMasterCate];
                     setDropValue({ ...dropValue });
-                    getUsers();
+                    _getPageName();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -172,39 +219,6 @@ const App = (props: any): JSX.Element => {
       .catch((err: any) => {
         _getErrorFunction(err);
       });
-  };
-
-  const getUsers = async () => {
-    let allUsers: any = { ...groupUsers };
-    for (let i = 0; i < _allUsers.length; i++) {
-      await sp.web.siteGroups
-        .getByName(_allUsers[i].groupName)
-        .users.get()
-        .then((result) => {
-          let authendication: boolean = [...result].some(
-            (value) => value.Email === currentUser
-          );
-
-          if (authendication) {
-            allUsers[_allUsers[i].user] = authendication;
-          }
-
-          _allUsers.length == i + 1 && getOtherUser(allUsers);
-        })
-        .catch((error) => {
-          _getErrorFunction("get users erroe");
-        });
-    }
-  };
-
-  const getOtherUser = (allUsers: IGroupUsers): void => {
-    let users: boolean[] = [];
-    for (let keys in allUsers) {
-      users.push(allUsers[keys]);
-    }
-    let _isOther: boolean = users.some((e: boolean) => e == true);
-    _isOther ? setIsOtherUser(_isOther) : setGroupUsers({ ...allUsers });
-    _getPageName();
   };
 
   const _getPageName = (): void => {
@@ -245,7 +259,7 @@ const App = (props: any): JSX.Element => {
 
   /* Life cycle of onload */
   useEffect(() => {
-    _getDropDownValues();
+    getUsers();
   }, []);
 
   return (
