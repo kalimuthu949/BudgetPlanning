@@ -22,6 +22,7 @@ import {
   IOverAllItem,
   IBudgetListColumn,
   IBudgetValidation,
+  IGroupUsers,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -37,14 +38,14 @@ let _groupItem: IOverAllItem[] = [];
 let alertifyMSG: string = "";
 let _isBack: boolean = false;
 let _isCurYear: boolean = true;
-let isUserPermissions: any;
+let isUserPermissions: IGroupUsers;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   let _curYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
-  isUserPermissions = { ...props };
+  isUserPermissions = { ...props.groupUsers };
 
   const _budgetPlanColumns: IColumn[] = [
     {
@@ -59,12 +60,12 @@ const BudgetPlan = (props: any): JSX.Element => {
     },
     {
       key: "column2",
-      name: "Country",
-      fieldName: Config.BudgetListColumns.CountryId.toString(),
+      name: "Area",
+      fieldName: Config.BudgetListColumns.Area,
       minWidth: 150,
       maxWidth: _isCurYear ? 150 : 230,
       onRender: (item: ICurBudgetItem): any => {
-        return item.ID ? item.Country : item.isEdit && item.Country;
+        return item.ID ? item.Area : item.isEdit && item.Area;
       },
     },
     {
@@ -327,6 +328,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   );
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
+  const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
   const [curData, setCurData] = useState<ICurBudgetItem>(Config.curBudgetItem);
   const [isValidation, setIsValidation] = useState<IBudgetValidation>(
     Config.budgetValidation
@@ -434,8 +436,9 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _getCategoryDatas = (year: string): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CategoryList,
-      Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
-      Expand: "Year, Country",
+      Select:
+        "*, Year/ID, Year/Title, Country/ID, Country/Title, MasterCategory/ID",
+      Expand: "Year, Country, MasterCategory",
       Filter: [
         {
           FilterKey: "isDeleted",
@@ -452,6 +455,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     })
       .then((resCate: any) => {
         let _curCategory: ICurCategoryItem[] = [];
+
         if (resCate.length) {
           for (let i: number = 0; resCate.length > i; i++) {
             _curCategory.push({
@@ -463,6 +467,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   }
                 : undefined,
               Type: resCate[i].CategoryType ? resCate[i].CategoryType : "",
+              Area: resCate[i].Area ? resCate[i].Area : "",
               YearAcc: resCate[i].YearId
                 ? {
                     ID: resCate[i].Year.ID,
@@ -475,6 +480,9 @@ const BudgetPlan = (props: any): JSX.Element => {
                     Text: resCate[i].Country.Title,
                   }
                 : undefined,
+              OverAllBudgetCost: resCate[i].OverAllBudgetCost
+                ? resCate[i].OverAllBudgetCost
+                : null,
             });
             i + 1 == resCate.length && _getFilterFunction([..._curCategory]);
           }
@@ -503,10 +511,25 @@ const BudgetPlan = (props: any): JSX.Element => {
         return arr.Type == filTypeDrop;
       });
     }
-    _filArray = _filterArray();
-    console.log("_filArray", _filArray);
+    if (filAreaDrop != "All" && tempArr.length) {
+      tempArr = tempArr.filter((arr: ICurCategoryItem) => {
+        return arr.Area == filAreaDrop;
+      });
+    }
 
-    _getBudgetDatas(tempArr);
+    _filArray = _filterArray(
+      isUserPermissions,
+      [...tempArr],
+      Config.Navigation.BudgetPlanning
+    );
+
+    if (_filArray.length) {
+      _getBudgetDatas([..._filArray]);
+    } else {
+      setItems([]);
+      setGroup([]);
+      setIsLoader(false);
+    }
   };
 
   const _getBudgetDatas = (_arrCate: ICurCategoryItem[]): void => {
@@ -520,6 +543,11 @@ const BudgetPlan = (props: any): JSX.Element => {
           FilterKey: "isDeleted",
           FilterValue: "1",
           Operator: "ne",
+        },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: _arrCate[0].YearAcc.Text,
         },
       ],
       Topcount: 5000,
@@ -537,6 +565,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               Country: resBudget[i].CountryId ? resBudget[i].Country.Title : "",
               Year: resBudget[i].YearId ? resBudget[i].Year.Title : "",
               Type: resBudget[i].CategoryType ? resBudget[i].CategoryType : "",
+              Area: resBudget[i].Area ? resBudget[i].Area : "",
               CateId: resBudget[i].CategoryId ? resBudget[i].Category.ID : null,
               CounId: resBudget[i].CountryId ? resBudget[i].Country.ID : null,
               YearId: resBudget[i].YearId ? resBudget[i].Year.ID : null,
@@ -585,9 +614,11 @@ const BudgetPlan = (props: any): JSX.Element => {
           YearAcc: _arrCate[i].YearAcc.Text,
           CountryAcc: _arrCate[i].CountryAcc.Text,
           Type: _arrCate[i].Type,
+          Area: _arrCate[i].Area,
           ID: _arrCate[i].ID,
           yearID: _arrCate[i].YearAcc.ID,
           countryID: _arrCate[i].CountryAcc.ID,
+          OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
           subCategory: [],
         });
         i + 1 == _arrCate.length &&
@@ -617,7 +648,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           _arrCateDatas[i].YearAcc == _arrBudget[j].Year &&
           _arrCateDatas[i].CategoryAcc == _arrBudget[j].Category &&
           _arrCateDatas[i].CountryAcc == _arrBudget[j].Country &&
-          _arrCateDatas[i].Type == _arrBudget[j].Type
+          _arrCateDatas[i].Type == _arrBudget[j].Type &&
+          _arrCateDatas[i].Area == _arrBudget[j].Area
         ) {
           isDatas = false;
           _arrCateDatas[i].subCategory.push(_arrBudget[j]);
@@ -652,6 +684,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       CateId: _arrCateDatas.ID,
       CounId: _arrCateDatas.countryID,
       YearId: _arrCateDatas.yearID,
+      Area: _arrCateDatas.Area,
       BudgetAllocated: null,
       BudgetProposed: null,
       Used: null,
@@ -687,7 +720,8 @@ const BudgetPlan = (props: any): JSX.Element => {
                   e1.Year === e2.YearAcc &&
                   e1.Country === e2.CountryAcc &&
                   e1.Type === e2.Type &&
-                  e1.CateId === e2.ID
+                  e1.CateId === e2.ID &&
+                  e1.Area === e2.Area
                 );
               });
               if (matches.length == 0) {
@@ -702,7 +736,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       _filRecord.forEach((ul: any) => {
         let FilteredData: ICurBudgetItem[] = Uniquelessons.filter(
           (arr: any) => {
-            return arr.CateId === ul.ID && arr.Type === ul.Type;
+            return (
+              arr.CateId === ul.ID &&
+              arr.Type === ul.Type &&
+              arr.Area === ul.Area
+            );
           }
         );
         let sortingRecord = reOrderedRecords.concat(FilteredData);
@@ -722,19 +760,31 @@ const BudgetPlan = (props: any): JSX.Element => {
         Country: arr.CountryAcc ? arr.CountryAcc : "",
         Year: arr.YearAcc ? arr.YearAcc : "",
         Type: arr.Type ? arr.Type : "",
+        Area: arr.Area ? arr.Area : "",
         ID: arr.ID ? arr.ID : null,
+        OverAllBudgetCost: arr.OverAllBudgetCost ? arr.OverAllBudgetCost : null,
         indexValue: _recordsLength,
       });
       _recordsLength += arr.subCategory.length;
     });
     newRecords.forEach((ur: any, index: number) => {
       let recordLength: number = records.filter((arr: ICurBudgetItem) => {
-        return arr.CateId === ur.ID && arr.Type === ur.Type;
+        return (
+          arr.CateId === ur.ID && arr.Type === ur.Type && arr.Area === ur.Area
+        );
       }).length;
       varGroup.push({
         key: ur.Category,
         name: ur.Country
-          ? `${ur.Category + " - " + ur.Country + " ( " + ur.Type + " ) "}`
+          ? `${
+              ur.Category +
+              " - " +
+              ur.Country +
+              " ( " +
+              ur.Type +
+              " ) ~ " +
+              ur.OverAllBudgetCost
+            }`
           : ur.Category,
         startIndex: ur.indexValue,
         count: recordLength,
@@ -758,6 +808,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.ApproveStatus = _curItem.ApproveStatus;
     curData.Description = _curItem.Description;
     curData.Comments = _curItem.Comments;
+    curData.Area = _curItem.Area;
     curData.ID = _curItem.ID;
     curData.CateId = _curItem.CateId;
     curData.CounId = _curItem.CounId;
@@ -776,7 +827,8 @@ const BudgetPlan = (props: any): JSX.Element => {
         _Items[i].Country === _curItem.Country &&
         _Items[i].Year === _curItem.Year &&
         _Items[i].Type === _curItem.Type &&
-        _Items[i].ID === _curItem.ID
+        _Items[i].ID === _curItem.ID &&
+        _Items[i].Area === _curItem.Area
       ) {
         _Items[i].isEdit = true;
       } else {
@@ -806,6 +858,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
+      data[columns.Area] = curData.Area;
       _getValidation({ ...data }, "Updated");
     } else {
       data[columns.CategoryId] = curData.CateId;
@@ -816,6 +869,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
+      data[columns.Area] = curData.Area;
       _getValidation({ ...data }, "");
     }
   };
@@ -857,14 +911,20 @@ const BudgetPlan = (props: any): JSX.Element => {
         ? alertify.error(
             "Already description exists and Please enter budget allocated"
           )
+        : !curData.Description.trim()
+        ? alertify.error("Please enter description")
         : _isDuplicate
         ? alertify.error("Already description exists")
         : !curData.Description.trim() &&
           alertify.error("Please enter description");
-    } else if (_isDuplicate) {
-      alertify.error("Already description exists");
+    } else if (_isDuplicate || !curData.Description.trim()) {
+      !curData.Description.trim()
+        ? alertify.error("Please enter description")
+        : alertify.error("Already description exists");
     } else if (!curData.BudgetAllocated) {
       alertify.error("Please enter budget allocated");
+    } else if (!curData.Description.trim()) {
+      alertify.error("Please enter description");
     }
 
     if (_isValid) {
@@ -897,7 +957,8 @@ const BudgetPlan = (props: any): JSX.Element => {
             _Items[i].Category == curData.Category &&
             _Items[i].Country == curData.Country &&
             _Items[i].Year == curData.Year &&
-            _Items[i].Type == curData.Type
+            _Items[i].Type == curData.Type &&
+            _Items[i].Area == curData.Area
           ) {
             _TotalAmount +=
               _Items[i].ID == curData.ID
@@ -935,7 +996,8 @@ const BudgetPlan = (props: any): JSX.Element => {
             _Items[i].Category == curData.Category &&
             _Items[i].Country == curData.Country &&
             _Items[i].Year == curData.Year &&
-            _Items[i].Type == curData.Type
+            _Items[i].Type == curData.Type &&
+            _Items[i].Area == curData.Area
           ) {
             _TotalAmount +=
               _Items[i].ID == curData.ID
@@ -976,7 +1038,23 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     })
       .then((res: any) => {
-        _prepareArrMasterDatas([..._groupItem], [..._arrNewBudget]);
+        let _emptyGroup: IOverAllItem[] = [];
+        for (let i: number = 0; _groupItem.length > i; i++) {
+          if (
+            _groupItem[i].ID == curData.CateId &&
+            _groupItem[i].CategoryAcc == curData.Category &&
+            _groupItem[i].CountryAcc == curData.Country &&
+            _groupItem[i].YearAcc == curData.Year &&
+            _groupItem[i].Type == curData.Type &&
+            _groupItem[i].Area == curData.Area
+          ) {
+            _groupItem[i].OverAllBudgetCost = Total;
+            _emptyGroup.push({ ..._groupItem[i] });
+          } else {
+            _emptyGroup.push(_groupItem[i]);
+          }
+        }
+        _prepareArrMasterDatas([..._emptyGroup], [..._arrNewBudget]);
       })
       .catch((err: any) => {
         _getErrorFunction(err);
@@ -1017,7 +1095,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
-  }, [filCountryDrop, filPeriodDrop, filTypeDrop]);
+  }, [filCountryDrop, filPeriodDrop, filTypeDrop, filAreaDrop]);
 
   return isLoader ? (
     <Loader />
@@ -1086,6 +1164,24 @@ const BudgetPlan = (props: any): JSX.Element => {
             />
           </div>
 
+          {/* Type section */}
+          <div style={{ width: "16%" }}>
+            <Label>Area</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Area]}
+              selectedKey={_getFilterDropValues(
+                "Area",
+                { ...propDropValue },
+                filAreaDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
+                setFilAreaDrop(text.text as string);
+              }}
+            />
+          </div>
+
           {/* Over all refresh section */}
           <div
             className={styles.refIcon}
@@ -1097,6 +1193,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               );
               setFilCountryDrop("All");
               setFilTypeDrop("All");
+              setFilAreaDrop("All");
             }}
           >
             <Icon iconName="Refresh" style={{ color: "#ffff" }} />

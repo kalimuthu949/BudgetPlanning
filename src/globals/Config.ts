@@ -13,6 +13,7 @@ import {
   IMasCategoryListColumn,
   IGroupUsers,
   IGroupNames,
+  IAreaName,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -65,6 +66,7 @@ export namespace Config {
     CategoryType: "CategoryType",
     BudgetAllocated: "BudgetAllocated",
     Comments: "Comments",
+    Area: "Area",
     BudgetProposed: "BudgetProposed",
     Used: "Used",
     ApproveStatus: "ApproveStatus",
@@ -117,6 +119,7 @@ export namespace Config {
     Type: [],
     masterCate: [],
     ctgryDropOptions: [],
+    Area: [],
   };
 
   /* Global of current budget items names */
@@ -128,6 +131,7 @@ export namespace Config {
     ApproveStatus: "",
     Description: "",
     Comments: "",
+    Area: "",
     ID: null,
     CateId: null,
     CounId: null,
@@ -165,5 +169,11 @@ export namespace Config {
     EnterpricesManager: "Enterprices Manager",
     SpecialAdmin: "Special Admin",
     SpecialManager: "Special Manager",
+  };
+
+  export const AreaName: IAreaName = {
+    InfraStructure: "Infra Structure",
+    EnterpriseApplication: "Enterprise Application",
+    SpecialProject: "Special Project",
   };
 }

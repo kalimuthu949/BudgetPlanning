@@ -22,6 +22,9 @@ const _getFilterDropValues = (
     key = value.ctgryDropOptions.filter((e: IDrop) => e.text == filValue)[0]
       .key;
   }
+  if (type == "Area" && value.Area.length) {
+    key = value.Area.filter((e: IDrop) => e.text == filValue)[0].key;
+  }
   return key;
 };
 

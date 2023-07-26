@@ -45,6 +45,7 @@ export interface IBudgetListColumn {
   YearId: string | number;
   CountryId: string | number;
   Comments: string;
+  Area: string;
   CategoryType: string;
   BudgetAllocated: string;
   BudgetProposed: string;
@@ -106,6 +107,7 @@ export interface IDropdowns {
   Type: IDrop[];
   masterCate: IDrop[];
   ctgryDropOptions: IDrop[];
+  Area: IDrop[];
 }
 
 /* Interface of lookup obj */
@@ -120,7 +122,9 @@ export interface ICurCategoryItem {
   YearAcc: ILookup;
   CountryAcc: ILookup;
   Type: string;
+  Area: string;
   ID: number;
+  OverAllBudgetCost: number;
 }
 
 /* Interface of current budget items */
@@ -132,6 +136,7 @@ export interface ICurBudgetItem {
   ApproveStatus: string;
   Description: string;
   Comments: string;
+  Area: string;
   ID: number;
   CateId: number;
   CounId: number;
@@ -151,9 +156,11 @@ export interface IOverAllItem {
   YearAcc: string;
   CountryAcc: string;
   Type: string;
+  Area: string;
   ID: number;
   yearID: number;
   countryID: number;
+  OverAllBudgetCost: number;
   subCategory: ICurBudgetItem[];
 }
 
@@ -243,4 +250,11 @@ export interface IGroupNames {
   EnterpricesManager: string;
   SpecialAdmin: string;
   SpecialManager: string;
+}
+
+// Interface for area names
+export interface IAreaName {
+  InfraStructure: string;
+  EnterpriseApplication: string;
+  SpecialProject: string;
 }
