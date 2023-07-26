@@ -17,6 +17,7 @@ export interface IYearListColumn {
 /* Interface of master category List Column */
 export interface IMasCategoryListColumn {
   Title: string;
+  Area: string;
 }
 
 /* Interface of Category List Column */
@@ -43,6 +44,7 @@ export interface IBudgetListColumn {
   CategoryId: string | number;
   YearId: string | number;
   CountryId: string | number;
+  Comments: string;
   CategoryType: string;
   BudgetAllocated: string;
   BudgetProposed: string;
@@ -129,6 +131,7 @@ export interface ICurBudgetItem {
   Type: string;
   ApproveStatus: string;
   Description: string;
+  Comments: string;
   ID: number;
   CateId: number;
   CounId: number;
@@ -193,16 +196,16 @@ export interface ICurBudgetAnalysis {
   Area: string;
   ID: number;
   Total: number;
-  isEdit: boolean,
+  isEdit: boolean;
 }
 
 /* Interface of edit budget analysis */
-export interface IEdit{
-  authendication:boolean;
-  id:number;
-  data:number;
+export interface IEdit {
+  authendication: boolean;
+  id: number;
+  data: number;
 }
-export interface IVendorListColumn{
+export interface IVendorListColumn {
   Vendor: string;
   Description: string;
   Pricing: string;
@@ -217,18 +220,27 @@ export interface IVendorListColumn{
   Cost: string;
   PoCurrency: string;
   InvoiceNo: string;
-  isDummy:boolean;
-  isEdit:boolean;
+  isDummy: boolean;
+  isEdit: boolean;
 }
 
 // Interface for gruop authendication
-export interface IGroupUsers{
-  isSuperAdmin:boolean;
-  isOtherUser:boolean;
-  // isInfraAdmin:boolean;
-  // isInfra
+export interface IGroupUsers {
+  isSuperAdmin: boolean;
+  isInfraAdmin: boolean;
+  isInfraManager: boolean;
+  isEnterpricesAdmin: boolean;
+  isEnterpricesManager: boolean;
+  isSpecialAdmin: boolean;
+  isSpecialManager: boolean;
 }
 
-export interface IGroupNames{
-  SuperAdmin:string;
+export interface IGroupNames {
+  SuperAdmin: string;
+  InfraAdmin: string;
+  InfraManger: string;
+  EnterpricesAdmin: string;
+  EnterpricesManager: string;
+  SpecialAdmin: string;
+  SpecialManager: string;
 }

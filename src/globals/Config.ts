@@ -12,7 +12,7 @@ import {
   IBudgetValidation,
   IMasCategoryListColumn,
   IGroupUsers,
-  IGroupNames
+  IGroupNames,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -35,6 +35,7 @@ export namespace Config {
   /* Global Year List Column Names */
   export const masCategoryListColumns: IMasCategoryListColumn = {
     Title: "Title",
+    Area: "Area",
   };
 
   /* Global Category List Column Names */
@@ -63,6 +64,7 @@ export namespace Config {
     CountryId: "CountryId",
     CategoryType: "CategoryType",
     BudgetAllocated: "BudgetAllocated",
+    Comments: "Comments",
     BudgetProposed: "BudgetProposed",
     Used: "Used",
     ApproveStatus: "ApproveStatus",
@@ -125,6 +127,7 @@ export namespace Config {
     Country: "",
     ApproveStatus: "",
     Description: "",
+    Comments: "",
     ID: null,
     CateId: null,
     CounId: null,
@@ -144,12 +147,23 @@ export namespace Config {
     isBudgetAllocated: false,
   };
 
-  export const GroupUsers:IGroupUsers = {
-    isSuperAdmin:false,
-    isOtherUser:false
-  }
+  export const GroupUsers: IGroupUsers = {
+    isSuperAdmin: false,
+    isInfraAdmin: false,
+    isInfraManager: false,
+    isEnterpricesAdmin: false,
+    isEnterpricesManager: false,
+    isSpecialAdmin: false,
+    isSpecialManager: false,
+  };
 
-  export const GroupNames:IGroupNames = {
-    SuperAdmin:'Super Admin'
-  }
+  export const GroupNames: IGroupNames = {
+    SuperAdmin: "Super Admin",
+    InfraAdmin: "Infra Admin",
+    InfraManger: "Infra Manger",
+    EnterpricesAdmin: "Enterprices Admin",
+    EnterpricesManager: "Enterprices Manager",
+    SpecialAdmin: "Special Admin",
+    SpecialManager: "Special Manager",
+  };
 }

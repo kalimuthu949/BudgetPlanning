@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Config } from "../../../globals/Config";
-import { IDrop, IDropdowns } from "../../../globalInterFace/BudgetInterFaces";
+import {
+  IDrop,
+  IDropdowns,
+  IGroupUsers,
+} from "../../../globalInterFace/BudgetInterFaces";
 import BudgetCategory from "./BudgetCategory";
 import BudgetPlan from "./BudgetPlan";
 import Dashboard from "./Dashboard";
@@ -17,11 +21,47 @@ import { sp } from "@pnp/sp/presets/all";
 import { Icon, Label } from "@fluentui/react";
 
 const App = (props: any): JSX.Element => {
+  // local variable
+  const currentUser = props.context._pageContext._user.email;
+
+  const _allUsers: any[] = [
+    {
+      user: "isSuperAdmin",
+      groupName: Config.GroupNames.SuperAdmin,
+    },
+    {
+      user: "isInfraAdmin",
+      groupName: Config.GroupNames.InfraAdmin,
+    },
+    {
+      user: "isEnterpricesAdmin",
+      groupName: Config.GroupNames.InfraManger,
+    },
+    {
+      user: "isSpecialAdmin",
+      groupName: Config.GroupNames.EnterpricesAdmin,
+    },
+    {
+      user: "isInfraManager",
+      groupName: Config.GroupNames.EnterpricesManager,
+    },
+    {
+      user: "isEnterpricesManager",
+      groupName: Config.GroupNames.SpecialAdmin,
+    },
+    {
+      user: "isSpecialManager",
+      groupName: Config.GroupNames.SpecialManager,
+    },
+  ];
+
   /* State creation */
   const [pageNave, setPageNave] = useState<string>("");
   const [dropValue, setDropValue] = useState<IDropdowns>(Config.dropdownValues);
-  const [groupUsers, setGroupUsers] = useState({ ...Config.GroupUsers });
-  console.log("groupUsers", groupUsers);
+  const [groupUsers, setGroupUsers] = useState<IGroupUsers>({
+    ...Config.GroupUsers,
+  });
+  const [isOtherUser, setIsOtherUser] = useState<boolean>(false);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -115,8 +155,7 @@ const App = (props: any): JSX.Element => {
 
                     dropValue.masterCate = [..._typeMasterCate];
                     setDropValue({ ...dropValue });
-                    _getPageName();
-                    _getSuperAdminGroup();
+                    getUsers();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -135,14 +174,37 @@ const App = (props: any): JSX.Element => {
       });
   };
 
-  const _getSuperAdminGroup = async () => {
-    await sp.web.siteGroups
-      .getByName(Config.GroupNames.SuperAdmin)
-      .users.get()
-      .then((data) => {})
-      .catch((error) => {
-        // handleError("get group Admin", error);
-      });
+  const getUsers = async () => {
+    let allUsers: any = { ...groupUsers };
+    for (let i = 0; i < _allUsers.length; i++) {
+      await sp.web.siteGroups
+        .getByName(_allUsers[i].groupName)
+        .users.get()
+        .then((result) => {
+          let authendication: boolean = [...result].some(
+            (value) => value.Email === currentUser
+          );
+
+          if (authendication) {
+            allUsers[_allUsers[i].user] = authendication;
+          }
+
+          _allUsers.length == i + 1 && getOtherUser(allUsers);
+        })
+        .catch((error) => {
+          _getErrorFunction("get users erroe");
+        });
+    }
+  };
+
+  const getOtherUser = (allUsers: IGroupUsers): void => {
+    let users: boolean[] = [];
+    for (let keys in allUsers) {
+      users.push(allUsers[keys]);
+    }
+    let _isOther: boolean = users.some((e: boolean) => e == true);
+    _isOther ? setIsOtherUser(_isOther) : setGroupUsers({ ...allUsers });
+    _getPageName();
   };
 
   const _getPageName = (): void => {
@@ -193,25 +255,26 @@ const App = (props: any): JSX.Element => {
           padding: "0px 30px",
         }}
       >
-        {true ? (
+        {isOtherUser ? (
           <div>
             {pageNave == Config.Navigation.Dashboard ? (
               <Dashboard />
             ) : pageNave == Config.Navigation.BudgetCategory ? (
-              <BudgetCategory dropValue={dropValue} />
+              <BudgetCategory dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.CategoryConfig ? (
-              <CategoryConfig dropValue={dropValue} />
+              <CategoryConfig dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetPlanning ? (
-              <BudgetPlan dropValue={dropValue} />
+              <BudgetPlan dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetAnalysis ? (
-              <BudgetAnalysis dropValue={dropValue} />
+              <BudgetAnalysis dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetDistribution ? (
               <BudgetDistribution
                 dropValue={dropValue}
                 context={props.context}
+                groupUsers={groupUsers}
               />
             ) : (
-              <BudgetTrackingList />
+              <BudgetTrackingList groupUsers={groupUsers} />
             )}
           </div>
         ) : (
