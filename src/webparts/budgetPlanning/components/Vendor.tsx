@@ -152,27 +152,8 @@ const Vendor = () => {
         );
       },
     },
-    // {
-    //   key: "6",
-    //   name: "StartingDate",
-    //   fieldName: "StartingDate",
-    //   minWidth: 100,
-    //   maxWidth: 200,
-    //   onRender: (item, index) => {
-    //     return admin && item.isEdit ? (
-    //       <TextField
-    //         value={addNewVendor.StartingDate}
-    //         onChange={(e, text) => {
-    //           setAddNewVendor({ ...addNewVendor, StartingDate: text });
-    //         }}
-    //       />
-    //     ) : (
-    //       <label>{item.StartingDate}</label>
-    //     );
-    //   },
-    // },
     {
-      key: "7",
+      key: "6",
       name: "PO",
       fieldName: "PO",
       minWidth: 100,
@@ -207,7 +188,7 @@ const Vendor = () => {
       },
     },
     {
-      key: "8",
+      key: "7",
       name: "Supplier",
       fieldName: "Supplier",
       minWidth: 100,
@@ -226,7 +207,45 @@ const Vendor = () => {
       },
     },
     {
+      key: "8",
+      name: "Attachment",
+      fieldName: "Attachment",
+      minWidth: 100,
+      maxWidth: 200,
+      onRender: (item) => {
+        return admin && item.isEdit ? (
+          <TextField
+            value={addNewVendor.Supplier}
+            onChange={(e, text) => {
+              setAddNewVendor({ ...addNewVendor, Supplier: text });
+            }}
+          />
+        ) : (
+          <label>{item.Supplier}</label>
+        );
+      },
+    },
+    {
       key: "9",
+      name: "Procurement",
+      fieldName: "Procurement",
+      minWidth: 100,
+      maxWidth: 200,
+      onRender: (item) => {
+        return admin && item.isEdit ? (
+          <TextField
+            value={addNewVendor.Supplier}
+            onChange={(e, text) => {
+              setAddNewVendor({ ...addNewVendor, Supplier: text });
+            }}
+          />
+        ) : (
+          <label>{item.Supplier}</label>
+        );
+      },
+    },
+    {
+      key: "10",
       name: "RequestedAmount",
       fieldName: "RequestedAmount",
       minWidth: 100,
@@ -241,101 +260,6 @@ const Vendor = () => {
           />
         ) : (
           <label>{item.RequestedAmount}</label>
-        );
-      },
-    },
-    // {
-    //   key: "10",
-    //   name: "EntryDate",
-    //   fieldName: "EntryDate",
-    //   minWidth: 100,
-    //   maxWidth: 200,
-    //   onRender: (item) => {
-    //     return admin && item.isEdit ? (
-    //       <TextField
-    //         value={addNewVendor.EntryDate}
-    //         onChange={(e, text) => {
-    //           setAddNewVendor({ ...addNewVendor, EntryDate: text });
-    //         }}
-    //       />
-    //     ) : (
-    //       <label>{item.EntryDate}</label>
-    //     );
-    //   },
-    // },
-    // {
-    //   key: "11",
-    //   name: "ToDate",
-    //   fieldName: "ToDate",
-    //   minWidth: 100,
-    //   maxWidth: 200,
-    //   onRender: (item) => {
-    //     return admin && item.isEdit ? (
-    //       <TextField
-    //         value={addNewVendor.ToDate}
-    //         onChange={(e, text) => {
-    //           setAddNewVendor({ ...addNewVendor, ToDate: text });
-    //         }}
-    //       />
-    //     ) : (
-    //       <label>{item.ToDate}</label>
-    //     );
-    //   },
-    // },
-    {
-      key: "12",
-      name: "Cost",
-      fieldName: "Cost",
-      minWidth: 100,
-      maxWidth: 200,
-      onRender: (item) => {
-        return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.Cost}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Cost: text });
-            }}
-          />
-        ) : (
-          <label>{item.Cost}</label>
-        );
-      },
-    },
-    {
-      key: "13",
-      name: "PoCurrency",
-      fieldName: "PoCurrency",
-      minWidth: 100,
-      maxWidth: 200,
-      onRender: (item) => {
-        return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.PoCurrency}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, PoCurrency: text });
-            }}
-          />
-        ) : (
-          <label>{item.PoCurrency}</label>
-        );
-      },
-    },
-    {
-      key: "14",
-      name: "InvoiceNo",
-      fieldName: "InvoiceNo",
-      minWidth: 100,
-      maxWidth: 200,
-      onRender: (item) => {
-        return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.InvoiceNo}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, InvoiceNo: text });
-            }}
-          />
-        ) : (
-          <label>{item.InvoiceNo}</label>
         );
       },
     },
@@ -362,6 +286,8 @@ const Vendor = () => {
                     addVendor(item);
                   } else {
                     // ConfimMsg = !ConfimMsg;
+                    console.log("item", item);
+
                     vendorUpdate(item, index);
                   }
                 }}
@@ -422,7 +348,7 @@ const Vendor = () => {
       },
     },
   ];
-
+  const [isTrigger, setIsTrigger] = useState(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorListColumn[]>([]);
   const [addNewVendor, setAddNewVendor] = useState<IVendorListColumn>(null);
@@ -442,7 +368,6 @@ const Vendor = () => {
     PoCurrency: false,
     InvoiceNo: false,
   });
-  console.log("val", Validate);
 
   const getErrorFunction = (error) => {
     alertify.error("Error Message");
@@ -583,16 +508,17 @@ const Vendor = () => {
       InvoiceNo: addNewVendor.InvoiceNo,
     };
     Validation();
-    // SPServices.SPAddItem({
-    //   Listname: Config.ListNames.DistributionList,
-    //   RequestJSON: NewJson,
-    // })
-    //   .then((resAddItem) => {
-    //     console.log("result", resAddItem);
-    //   })
-    //   .catch((error) => {
-    //     getErrorFunction(error);
-    // });
+    SPServices.SPAddItem({
+      Listname: Config.ListNames.DistributionList,
+      RequestJSON: NewJson,
+    })
+      .then((resAddItem) => {
+        console.log("result", resAddItem);
+        setIsTrigger(!isTrigger);
+      })
+      .catch((error) => {
+        getErrorFunction(error);
+      });
   };
 
   const editVendorItem = (items, index) => {
@@ -609,7 +535,38 @@ const Vendor = () => {
   };
 
   const vendorUpdate = (item, index) => {
+    console.log("itemis", item);
+
     console.log("update");
+    let UpdateJson = {
+      Vendor: addNewVendor.Vendor,
+      Description: addNewVendor.Description,
+      Pricing: 100,
+      PaymentTerms: addNewVendor.PaymentTerms,
+      LastYearCost: addNewVendor.LastYearCost,
+      StartingDate: new Date(),
+      PO: addNewVendor.PO,
+      Supplier: addNewVendor.Supplier,
+      RequestedAmount: addNewVendor.RequestedAmount,
+      EntryDate: new Date(),
+      ToDate: new Date(),
+      Cost: addNewVendor.Cost,
+      PoCurrency: addNewVendor.PoCurrency,
+      InvoiceNo: addNewVendor.InvoiceNo,
+    };
+    Validation();
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.DistributionList,
+      RequestJSON: UpdateJson,
+      ID: item.Id,
+    })
+      .then((resUpdateItem) => {
+        console.log("result", resUpdateItem);
+        setIsTrigger(!isTrigger);
+      })
+      .catch((error) => {
+        getErrorFunction(error);
+      });
   };
 
   const ConfirmPageChange = (item, index, type) => {

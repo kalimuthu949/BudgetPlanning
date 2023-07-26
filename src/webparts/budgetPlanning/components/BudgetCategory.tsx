@@ -18,6 +18,7 @@ import {
   ISearchBoxStyles,
   IButtonStyles,
   IModalStyles,
+  Dropdown,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import Loader from "./Loader";
@@ -62,8 +63,28 @@ const BudgetCategory = (props: any): JSX.Element => {
       minWidth: 200,
       maxWidth: 500,
     },
+    {
+      key: "column2",
+      name: "Area",
+      fieldName: Config.masCategoryListColumns.Area,
+      minWidth: 200,
+      maxWidth: 500,
+    },
   ];
-
+  const area = [
+    {
+      key: "Infra Structure",
+      text: "Infra Structure",
+    },
+    {
+      key: "Enterprise Application",
+      text: "Enterprise Application",
+    },
+    {
+      key: "Special Project",
+      text: "Special Project",
+    },
+  ];
   const options = [
     { value: 0, label: "Option 1" },
     { value: 1, label: "Option 2" },
@@ -84,6 +105,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       addExcelData: [
         {
           Title: "",
+          Area: "",
           Validate: false,
         },
       ],
@@ -165,7 +187,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     main: {
       padding: "10px 20px",
       borderRadius: 4,
-      width: "23%",
+      width: "30%",
       height: "auto !important",
       minHeight: "none",
     },
@@ -173,7 +195,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const inputStyle: Partial<ITextFieldStyles> = {
     root: {
-      width: "82%",
+      width: "48%",
       marginRight: 6,
       // ".ms-TextField-fieldGroup": {
       //   ":focus-visible": {
@@ -187,7 +209,11 @@ const BudgetCategory = (props: any): JSX.Element => {
       },
     },
   };
-
+  const dropDownStyle = {
+    root: {
+      width: "48%",
+    },
+  };
   const errorStyle = {
     root: {
       width: "82%",
@@ -274,7 +300,7 @@ const BudgetCategory = (props: any): JSX.Element => {
         if (_arrExport.length > i) {
           worksheet.addRow({
             Category: _arrExport[i].Title,
-            Area: '',
+            Area: _arrExport[i].Area,
           });
         }
         worksheet.getCell(`B${i + 2}`).dataValidation = {
@@ -354,6 +380,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       listItems = [];
       listItems = filteredData.map((row: any) => ({
         Title: row[1] ? row[1] : "",
+        Area: row[2] ? row[2] : "",
       }));
       //Reset the file
       document.getElementById("fileUpload")["value"] = "";
@@ -390,6 +417,7 @@ const BudgetCategory = (props: any): JSX.Element => {
           _resMasCate.forEach((data: any) => {
             _masCategory.push({
               Title: data.Title ? data.Title : "",
+              Area: data.Area ? data.Area : "",
             });
           });
           setMData([..._resMasCate]);
@@ -415,7 +443,8 @@ const BudgetCategory = (props: any): JSX.Element => {
       if (
         dummyData.findIndex((arr) => {
           return (
-            arr.Title.trim().toLowerCase() == item.Title.trim().toLowerCase()
+            arr.Title.trim().toLowerCase() == item.Title.trim().toLowerCase() &&
+            arr.Area.trim().toLowerCase() == item.Area.trim().toLowerCase()
           );
         }) == -1
       ) {
@@ -427,7 +456,9 @@ const BudgetCategory = (props: any): JSX.Element => {
       if (
         MData.filter((mdata) => {
           return (
-            mdata.Title.trim().toLowerCase() == dData.Title.trim().toLowerCase()
+            mdata.Title.trim().toLowerCase() ==
+              dData.Title.trim().toLowerCase() &&
+            mdata.Area.trim().toLowerCase() == dData.Area.trim().toLowerCase()
           );
         }).length == 0
       ) {
@@ -458,6 +489,7 @@ const BudgetCategory = (props: any): JSX.Element => {
         [...validationData].forEach((e: any) => {
           mascatgryData.push({
             Title: e.Title,
+            Area: e.Area,
           });
         });
     }
@@ -470,7 +502,7 @@ const BudgetCategory = (props: any): JSX.Element => {
         })
           .then((result) => {
             setImportExcelDataView({
-              addExcelData: [{ Title: "", Validate: false }],
+              addExcelData: [{ Title: "", Area: "", Validate: false }],
               removeExcelData: [],
             });
             setIstrigger(!istrigger);
@@ -481,7 +513,7 @@ const BudgetCategory = (props: any): JSX.Element => {
           .catch((err) => _getErrorFunction(err));
       } else {
         setImportExcelDataView({
-          addExcelData: [{ Title: "", Validate: false }],
+          addExcelData: [{ Title: "", Area: "", Validate: false }],
           removeExcelData: [],
         });
         setIsLoader(false);
@@ -508,7 +540,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       })
     ) {
       let addcatcrydata = [...validData];
-      addcatcrydata.push({ Title: "", Validate: false });
+      addcatcrydata.push({ Title: "", Area: "", Validate: false });
       setImportExcelDataView({
         ...importExcelDataView,
         addExcelData: [...addcatcrydata],
@@ -516,9 +548,13 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
   };
 
-  const addCategoryData = (index: number, data: string) => {
+  const addCategoryData = (index: number, data: string, type: string) => {
     let addData = [...importExcelDataView.addExcelData];
-    addData[index].Title = data;
+    if (type == "Category") {
+      addData[index].Title = data;
+    } else {
+      addData[index].Area = data;
+    }
     setImportExcelDataView({ ...importExcelDataView, addExcelData: addData });
   };
 
@@ -529,16 +565,19 @@ const BudgetCategory = (props: any): JSX.Element => {
     arr.forEach((dData) => {
       if (
         dData.Title.trim() != "" &&
+        dData.Area.trim() != "" &&
         MData.filter((mdata) => {
           return (
-            mdata.Title.trim().toLowerCase() == dData.Title.trim().toLowerCase()
+            mdata.Title.trim().toLowerCase() ==
+              dData.Title.trim().toLowerCase() &&
+            mdata.Area.trim() == dData.Area.trim()
           );
         }).length == 0
       ) {
         let OriginalFlagChange = { ...dData, Validate: false };
         DuplicateData.push(OriginalFlagChange);
       } else {
-        if (dData.Title.trim() != "") {
+        if (dData.Title.trim() != "" && dData.Area.trim() != "") {
           let DuplicateFlagChange = { ...dData, Validate: true };
           DuplicateData.push(DuplicateFlagChange);
           alertify.error("Already category exists");
@@ -554,7 +593,9 @@ const BudgetCategory = (props: any): JSX.Element => {
       if (
         newAddData.findIndex((items) => {
           return (
-            items.Title.trim().toLowerCase() == item.Title.trim().toLowerCase()
+            items.Title.trim().toLowerCase() ==
+              item.Title.trim().toLowerCase() &&
+            items.Area.trim().toLowerCase() == item.Area.trim().toLowerCase()
           );
         }) == -1
       ) {
@@ -675,14 +716,26 @@ const BudgetCategory = (props: any): JSX.Element => {
             return (
               <>
                 <div key={index} className={styles.modalTextAndIconFlex}>
-                  <TextField
-                    styles={val.Validate ? errorStyle : inputStyle}
-                    type="text"
-                    value={val.Title}
-                    placeholder="Enter The Category"
-                    onChange={(e, text) => addCategoryData(index, text)}
-                  />
-
+                  <div className={styles.modalTextAndDropFlex}>
+                    <TextField
+                      styles={val.Validate ? errorStyle : inputStyle}
+                      type="text"
+                      value={val.Title}
+                      placeholder="Enter The Category"
+                      onChange={(e, text) =>
+                        addCategoryData(index, text, "Category")
+                      }
+                    />
+                    <Dropdown
+                      options={area}
+                      styles={dropDownStyle}
+                      placeholder="Enter The Area"
+                      selectedKey={importExcelDataView.addExcelData[index].Area}
+                      onChange={(e, item) =>
+                        addCategoryData(index, item.text, "Area")
+                      }
+                    />
+                  </div>
                   <div>
                     {importExcelDataView.addExcelData.length > 1 &&
                     importExcelDataView.addExcelData.length != index + 1 ? (
@@ -743,7 +796,7 @@ const BudgetCategory = (props: any): JSX.Element => {
             onClick={() => {
               setImportExcelDataView({
                 removeExcelData: [],
-                addExcelData: [{ Title: "", Validate: false }],
+                addExcelData: [{ Title: "", Area: "", Validate: false }],
               });
               setcategoryPopup(false);
             }}
@@ -762,6 +815,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                 <div>
                   <div key={index}>
                     <label className={styles.boxViewLabel}>{value.Title}</label>
+                    <label>{value.Area}</label>
                   </div>
                 </div>
               );
@@ -783,6 +837,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                       <label className={styles.boxViewLabel}>
                         {value.Title}
                       </label>
+                      <label>{value.Area}</label>
                     </div>
                   </div>
                 );
