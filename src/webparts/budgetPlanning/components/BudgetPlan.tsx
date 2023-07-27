@@ -12,6 +12,8 @@ import {
   IDropdownStyles,
   IDetailsListStyles,
   ITextFieldStyles,
+  Modal,
+  IModalStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -97,7 +99,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               onClick={() => {
                 if (!_isBack) {
                   _isBack = !item.isEdit;
-                  _getEditItem(item);
+                  _getEditItem(item, "Add");
                 } else {
                   _getPageErrorMSG(item, "Add");
                 }
@@ -281,7 +283,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     onClick={() => {
                       if (!_isBack) {
                         _isBack = !item.isEdit;
-                        _getEditItem(item);
+                        _getEditItem(item, "Edit");
                       } else {
                         _getPageErrorMSG(item, "Edit");
                       }
@@ -296,14 +298,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     }}
                     onClick={() => {
                       if (!_isBack) {
-                        setIsLoader(true);
-                        let data: any = {};
-                        const _deletedColumn: IBudgetListColumn =
-                          Config.BudgetListColumns;
-                        curData.ID = item.ID;
-                        setCurData({ ...curData });
-                        data[_deletedColumn.isDeleted] = true;
-                        _getEditData({ ...data }, "Deleted");
+                        _getEditItem(item, "Deleted");
                       } else {
                         _getPageErrorMSG(item, "Deleted");
                       }
@@ -333,6 +328,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [isValidation, setIsValidation] = useState<IBudgetValidation>(
     Config.budgetValidation
   );
+  const [isDeleteModal, setIsDeleteModal] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -400,6 +396,20 @@ const BudgetPlan = (props: any): JSX.Element => {
       ":hover": {
         border: "1px solid red",
       },
+    },
+  };
+
+  const modalStyles: Partial<IModalStyles> = {
+    main: {
+      width: "20%",
+      background: "#f7f9fa",
+      padding: 10,
+      height: "auto",
+      borderRadius: 4,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
     },
   };
 
@@ -773,6 +783,9 @@ const BudgetPlan = (props: any): JSX.Element => {
           arr.CateId === ur.ID && arr.Type === ur.Type && arr.Area === ur.Area
         );
       }).length;
+      let _totalAmount: string = ur.OverAllBudgetCost
+        ? ur.OverAllBudgetCost.toString()
+        : "0";
       varGroup.push({
         key: ur.Category,
         name: ur.Country
@@ -783,7 +796,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               " ( " +
               ur.Type +
               " ) ~ " +
-              ur.OverAllBudgetCost
+              _totalAmount
             }`
           : ur.Category,
         startIndex: ur.indexValue,
@@ -794,13 +807,14 @@ const BudgetPlan = (props: any): JSX.Element => {
         _isBack = false;
         setItems([...records]);
         setGroup([...varGroup]);
+        setIsDeleteModal(false);
         alertifyMSG && alertify.success(`Item ${alertifyMSG} successfully`);
         setIsLoader(false);
       }
     });
   };
 
-  const _getEditItem = (_curItem: ICurBudgetItem): void => {
+  const _getEditItem = (_curItem: ICurBudgetItem, type: string): void => {
     curData.Category = _curItem.Category;
     curData.Year = _curItem.Year;
     curData.Type = _curItem.Type;
@@ -814,27 +828,31 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.CounId = _curItem.CounId;
     curData.YearId = _curItem.YearId;
     curData.BudgetAllocated = _curItem.BudgetAllocated;
-    curData.BudgetProposed = _curItem.BudgetProposed;
+    curData.BudgetProposed = _curItem.BudgetAllocated;
     curData.Used = _curItem.Used;
     curData.RemainingCost = _curItem.RemainingCost;
     curData.isDeleted = false;
     curData.isEdit = false;
     setCurData({ ...curData });
 
-    for (let i: number = 0; _Items.length > i; i++) {
-      if (
-        _Items[i].Category === _curItem.Category &&
-        _Items[i].Country === _curItem.Country &&
-        _Items[i].Year === _curItem.Year &&
-        _Items[i].Type === _curItem.Type &&
-        _Items[i].ID === _curItem.ID &&
-        _Items[i].Area === _curItem.Area
-      ) {
-        _Items[i].isEdit = true;
-      } else {
-        _Items[i].isEdit = false;
+    if (type == "Deleted") {
+      setIsDeleteModal(true);
+    } else {
+      for (let i: number = 0; _Items.length > i; i++) {
+        if (
+          _Items[i].Category === _curItem.Category &&
+          _Items[i].Country === _curItem.Country &&
+          _Items[i].Year === _curItem.Year &&
+          _Items[i].Type === _curItem.Type &&
+          _Items[i].ID === _curItem.ID &&
+          _Items[i].Area === _curItem.Area
+        ) {
+          _Items[i].isEdit = true;
+        } else {
+          _Items[i].isEdit = false;
+        }
+        i + 1 == _Items.length && setItems([..._Items]);
       }
-      i + 1 == _Items.length && setItems([..._Items]);
     }
   };
 
@@ -990,6 +1008,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         let _arrNewBudget: ICurBudgetItem[] = [];
         let _TotalAmount: number = 0;
         let _message: string = "";
+        let isDeleted: boolean = true;
         for (let i: number = 0; _Items.length > i; i++) {
           if (
             _Items[i].CateId == curData.CateId &&
@@ -997,15 +1016,28 @@ const BudgetPlan = (props: any): JSX.Element => {
             _Items[i].Country == curData.Country &&
             _Items[i].Year == curData.Year &&
             _Items[i].Type == curData.Type &&
-            _Items[i].Area == curData.Area
+            _Items[i].Area == curData.Area &&
+            isDeleted
           ) {
-            _TotalAmount +=
-              _Items[i].ID == curData.ID
-                ? Number(curData.BudgetAllocated)
-                : _Items[i].BudgetAllocated
-                ? Number(_Items[i].BudgetAllocated)
-                : 0;
+            if (type == "Updated") {
+              isDeleted = true;
+              _TotalAmount +=
+                _Items[i].ID == curData.ID
+                  ? Number(curData.BudgetAllocated)
+                  : _Items[i].BudgetAllocated
+                  ? Number(_Items[i].BudgetAllocated)
+                  : 0;
+            } else {
+              isDeleted = false;
+              _TotalAmount =
+                Number(
+                  _groupItem.filter(
+                    (e: IOverAllItem) => e.ID == curData.CateId
+                  )[0].OverAllBudgetCost
+                ) - Number(curData.BudgetProposed);
+            }
           }
+
           if (_Items[i].ID) {
             if (type == "Updated" && _Items[i].ID == curData.ID) {
               _message = type;
@@ -1071,13 +1103,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           isValidation.isDescription = false;
           setIsValidation({ ...isValidation });
           _isBack = false;
-          setIsLoader(true);
-          let data: any = {};
-          const _deletedColumn: IBudgetListColumn = Config.BudgetListColumns;
-          curData.ID = _item.ID;
-          setCurData({ ...curData });
-          data[_deletedColumn.isDeleted] = true;
-          _getEditData({ ...data }, _type);
+          _getEditItem(_item, "Deleted");
         }
       } else if (
         confirm("You have unsaved changes, are you sure you want to leave?")
@@ -1085,7 +1111,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         isValidation.isBudgetAllocated = false;
         isValidation.isDescription = false;
         setIsValidation({ ...isValidation });
-        _getEditItem(_item);
+        _getEditItem(_item, "Add");
       } else null;
     } else {
       _isBack = false;
@@ -1214,6 +1240,67 @@ const BudgetPlan = (props: any): JSX.Element => {
       {items.length == 0 && (
         <div className={styles.noRecords}>No data found !!!</div>
       )}
+
+      {/* Delete Modal section */}
+      <Modal isOpen={isDeleteModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          {/* Content section */}
+          <Label
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            Do you want to delete this item?
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "16%",
+                background: "#ffffff",
+                border: "1px solid",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsDeleteModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "16%",
+                background: "#f6db55",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsLoader(true);
+                let data: any = {};
+                const _deletedColumn: IBudgetListColumn =
+                  Config.BudgetListColumns;
+                data[_deletedColumn.isDeleted] = true;
+                _getEditData({ ...data }, "Deleted");
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

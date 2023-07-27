@@ -50,6 +50,8 @@ export namespace Config {
     OverAllPOIssuedCost: "OverAllPOIssuedCost",
     OverAllRemainingCost: "OverAllRemainingCost",
     isDeleted: "isDeleted",
+    MasterCategory: "MasterCategoryId",
+    Area: "Area",
   };
 
   /* Global Country List Column Names */
@@ -104,6 +106,7 @@ export namespace Config {
   /* Global Navigation Names */
   export const Navigation: INave = {
     Dashboard: "dashboard",
+    Country: "Country",
     BudgetCategory: "budgetcategory",
     CategoryConfig: "categoryconfig",
     BudgetPlanning: "budgetplanning",

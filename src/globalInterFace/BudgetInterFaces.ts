@@ -31,6 +31,8 @@ export interface ICategoryListColumn {
   OverAllPOIssuedCost: string;
   OverAllRemainingCost: string;
   isDeleted: string;
+  MasterCategory: string;
+  Area: string;
 }
 
 /* Interface of Country List Column */
@@ -85,6 +87,7 @@ export interface IDistributionLibraryColumn {
 /* Interface of Navigation Names */
 export interface INave {
   Dashboard: string;
+  Country: string;
   BudgetCategory: string;
   CategoryConfig: string;
   BudgetPlanning: string;
@@ -98,6 +101,7 @@ export interface IDrop {
   ID?: number;
   key: number;
   text: string;
+  Area?: string;
 }
 
 /* Interface of Dropdown */
@@ -182,14 +186,19 @@ export interface ICategory {
   Year: string;
   Country: string;
   CategoryType: string;
+  Area: string;
+  MasCateTitle: string;
   ID: number;
+  MasCateID: number;
 }
 
 /* Interface of category insert items */
 export interface INewCate {
   Title: string;
   CategoryType: string;
+  Area: string;
   ID?: number;
+  MasterCategory: number;
   CountryId: number;
   YearId: number;
 }
