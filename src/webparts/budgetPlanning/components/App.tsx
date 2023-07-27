@@ -13,6 +13,7 @@ import BudgetAnalysis from "./BudgetAnalysis";
 import BudgetDistribution from "./BudgetDistribution";
 import BudgetTrackingList from "./BudgetTrackingList";
 import CategoryConfig from "./CategoryConfig";
+import Country from "./Country";
 import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
 import alertify from "alertifyjs";
@@ -184,10 +185,11 @@ const App = (props: any): JSX.Element => {
                     let _typeMasterCate: IDrop[] = [];
 
                     resMasCategory.length &&
-                      resMasCategory.forEach((e: any, i: number) => {
+                      resMasCategory.forEach((e: any) => {
                         _strMasCateArray.push({
-                          key: i + 1,
+                          key: e.ID,
                           text: e.Title,
+                          Area: e.Area,
                         });
                       });
 
@@ -227,6 +229,8 @@ const App = (props: any): JSX.Element => {
     let _pageNaveName: string = pageName ? pageName.toLowerCase() : "";
 
     if (_pageNaveName == Config.Navigation.Dashboard.toLowerCase()) {
+      setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.Country.toLowerCase()) {
       setPageNave(_pageNaveName);
     } else if (
       _pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()
@@ -273,6 +277,8 @@ const App = (props: any): JSX.Element => {
           <div>
             {pageNave == Config.Navigation.Dashboard ? (
               <Dashboard />
+            ) : pageNave == Config.Navigation.Country ? (
+              <Country dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetCategory ? (
               <BudgetCategory dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.CategoryConfig ? (

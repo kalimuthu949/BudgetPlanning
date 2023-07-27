@@ -18,6 +18,7 @@ import {
   ICategoryListColumn,
   IDrop,
   IDropdowns,
+  IGroupUsers,
   INewCate,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { TextField, makeStyles } from "@material-ui/core";
@@ -31,23 +32,31 @@ import SPServices from "../../../CommonServices/SPServices";
 import { Modal } from "office-ui-fabric-react";
 import commonServices from "../../../CommonServices/CommonServices";
 import Pagination from "office-ui-fabric-react-pagination";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
 let _preparCareArray: ICategory[] = [];
 let _strCountry: string = "All";
 let _strCateType: string = "All";
+let _strArea: string = "All";
 let _numCate: any[] = [];
 let _masterCateOption: IDrop[] = [];
+let _AreaOption: IDrop[] = [];
 let _isSubmit: boolean = false;
 let _preNewCate: INewCate[] = [];
 let _curItem: ICategory;
 let _isCateMulti: boolean = false;
+let isUserPermissions: IGroupUsers;
+let _lastYear: string = "";
 
 const CategoryConfig = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   _masterCateOption = [...propDropValue.masterCate];
+  _AreaOption = [...propDropValue.Area];
+  _lastYear = propDropValue.Period[propDropValue.Period.length - 1].text;
+  isUserPermissions = { ...props.groupUsers };
 
   const _categoryListColumns: IColumn[] = [
     {
@@ -55,24 +64,31 @@ const CategoryConfig = (props: any): JSX.Element => {
       name: "Category",
       fieldName: "Title",
       minWidth: 200,
-      maxWidth: 600,
-    },
-    {
-      key: "column2",
-      name: "Country",
-      fieldName: "Country",
-      minWidth: 200,
       maxWidth: 500,
     },
     {
-      key: "column3",
-      name: "Category Type",
-      fieldName: "CategoryType",
+      key: "column2",
+      name: "Area",
+      fieldName: "Area",
       minWidth: 200,
       maxWidth: 400,
     },
     {
+      key: "column3",
+      name: "Country",
+      fieldName: "Country",
+      minWidth: 200,
+      maxWidth: 300,
+    },
+    {
       key: "column4",
+      name: "Category Type",
+      fieldName: "CategoryType",
+      minWidth: 200,
+      maxWidth: 300,
+    },
+    {
+      key: "column5",
       name: "Action",
       fieldName: "",
       minWidth: 100,
@@ -102,6 +118,7 @@ const CategoryConfig = (props: any): JSX.Element => {
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
+  const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
   const [filMasCateKey, setFilMasCateKey] = useState<IDrop[]>([]);
   const [items, setItems] = useState<ICategory[]>([]);
   const [master, setMaster] = useState<ICategory[]>([]);
@@ -205,37 +222,63 @@ const CategoryConfig = (props: any): JSX.Element => {
   const getCategoryRecords = (): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CategoryList,
-      Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
+      Select:
+        "*, Year/ID, Year/Title, Country/ID, Country/Title, MasterCategory/ID, MasterCategory/Title",
+      Expand: "Year, Country, MasterCategory",
       Filter: [
         {
           FilterKey: "isDeleted",
           Operator: "ne",
           FilterValue: "1",
         },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: _lastYear,
+        },
       ],
-      Expand: "Year, Country",
       Topcount: 5000,
       Orderbydecorasc: false,
     })
       .then((res: any) => {
-        _preparCareArray = [];
-        let _lastYear: string =
-          propDropValue.Period[propDropValue.Period.length - 1].text;
+        let _emptyArray: ICategory[] = [];
         if (res.length) {
           for (let i: number = 0; res.length > i; i++) {
-            if (res[i].Year.Title == _lastYear) {
-              let data: ICategory = {
-                Title: res[i].Title ? res[i].Title : "",
-                Country: res[i].CountryId ? res[i].Country.Title : "",
-                Year: res[i].YearId ? res[i].Year.Title : "",
-                CategoryType: res[i].CategoryType ? res[i].CategoryType : "",
-                ID: res[i].ID,
-              };
-              _preparCareArray.push({ ...data });
+            let data: ICategory = {
+              Title: res[i].Title ? res[i].Title : "",
+              Country: res[i].CountryId ? res[i].Country.Title : "",
+              Year: res[i].YearId ? res[i].Year.Title : "",
+              CategoryType: res[i].CategoryType ? res[i].CategoryType : "",
+              Area: res[i].Area ? res[i].Area : "",
+              MasCateTitle: res[i].MasterCategoryId
+                ? res[i].MasterCategory.Title
+                : "",
+              ID: res[i].ID,
+              MasCateID: res[i].MasterCategoryId
+                ? res[i].MasterCategory.ID
+                : null,
+            };
+            _emptyArray.push({ ...data });
+            if (res.length == _emptyArray.length) {
+              let _filArray: ICategory[] = _filterArray(
+                isUserPermissions,
+                [..._emptyArray],
+                Config.Navigation.CategoryConfig
+              );
+
+              if (_filArray.length) {
+                _preparCareArray = [..._filArray];
+                _filterCategoryArray();
+              } else {
+                _preparCareArray = [..._filArray];
+                _filterCategoryArray();
+              }
             }
           }
+        } else {
+          _preparCareArray = [..._emptyArray];
+          _filterCategoryArray();
         }
-        _filterCategoryArray();
       })
       .catch((err: any) => {
         _getErrorFunction(err);
@@ -245,6 +288,24 @@ const CategoryConfig = (props: any): JSX.Element => {
   const _filterCategoryArray = (): void => {
     let _filterdArray: ICategory[] = [..._preparCareArray];
     let _masterCateArray: IDrop[] = [...propDropValue.masterCate];
+    let _areasArray: IDrop[] = [...propDropValue.Area];
+    let _filterMasterArr: IDrop[] = [];
+
+    if (_strArea != "All") {
+      _filterMasterArr = _masterCateArray.filter((e: IDrop) => {
+        return e.Area === _strArea;
+      });
+    } else {
+      if (_masterCateArray.length && _areasArray.length) {
+        let _uniqueArr: IDrop[] = [];
+        for (let i: number = 0; _areasArray.length > i; i++) {
+          _uniqueArr = _masterCateArray.filter((e: IDrop) => {
+            return e.Area === _areasArray[i].text;
+          });
+          _filterMasterArr = _filterMasterArr.concat([..._uniqueArr]);
+        }
+      }
+    }
 
     if (_strCountry != "All") {
       _filterdArray = _filterdArray.filter((e: ICategory) => {
@@ -256,24 +317,31 @@ const CategoryConfig = (props: any): JSX.Element => {
         return e.CategoryType == _strCateType;
       });
     }
+    if (_strArea != "All") {
+      _filterdArray = _filterdArray.filter((e: ICategory) => {
+        return e.Area == _strArea;
+      });
+    }
 
     if (
-      _masterCateArray.length &&
+      _filterMasterArr.length &&
       _filterdArray.length &&
-      (_strCountry != "All" || _strCateType != "All")
+      _areasArray.length &&
+      (_strCountry != "All" || _strCateType != "All" || _strArea != "All")
     ) {
       for (let i: number = 0; _filterdArray.length > i; i++) {
-        _masterCateArray = _masterCateArray.filter((e: IDrop) => {
+        _filterMasterArr = _filterMasterArr.filter((e: IDrop) => {
           return e.text.toLowerCase() != _filterdArray[i].Title.toLowerCase();
         });
+
         if (_filterdArray.length == i + 1) {
-          setCateOpt([..._masterCateArray]);
+          setCateOpt([..._filterMasterArr]);
           setItems([..._filterdArray]);
           setIsLoader(false);
         }
       }
     } else {
-      setCateOpt([..._masterCateArray]);
+      setCateOpt([..._filterMasterArr]);
       setItems([..._filterdArray]);
       setIsLoader(false);
     }
@@ -283,7 +351,8 @@ const CategoryConfig = (props: any): JSX.Element => {
     let cunID: number = null;
     let yearID: number = null;
     let cateType: string = "";
-    let _strMasCate: string[] = [];
+    let cateArea: string = "";
+    let _strMasCate: IDrop[] = [];
     _preNewCate = [];
 
     cunID = propDropValue.Country.filter((e: IDrop) => e.text == _strCountry)[0]
@@ -298,37 +367,47 @@ const CategoryConfig = (props: any): JSX.Element => {
       (e: IDrop) => e.text == _strCateType
     )[0].text;
 
+    cateArea = propDropValue.Area.filter((e: IDrop) => e.text == _strArea)[0]
+      .text;
+
     if (_numCate.length) {
       for (let i: number = 0; _numCate.length > i; i++) {
-        let _samString: string = "";
-        _samString = propDropValue.masterCate.filter(
+        let _samMasCate: IDrop;
+        _samMasCate = propDropValue.masterCate.filter(
           (e: IDrop) => e.key == _numCate[i]
-        )[0].text;
-        _samString && _strMasCate.push(_samString);
+        )[0];
+        _samMasCate && _strMasCate.push(_samMasCate);
       }
     }
 
-    if (cunID && yearID && cateType != "All") {
+    if (cunID && yearID && cateType != "All" && cateArea != "All") {
       _isCateMulti = true;
     } else {
       _isCateMulti = false;
     }
 
-    if (cunID && yearID && cateType != "All" && _strMasCate.length) {
+    if (
+      cunID &&
+      yearID &&
+      cateType != "All" &&
+      cateArea != "All" &&
+      _strMasCate.length
+    ) {
       _isSubmit = true;
       for (let i: number = 0; _strMasCate.length > i; i++) {
         let data: any = {};
         const cloumn: ICategoryListColumn = Config.CategoryListColumns;
-        data[cloumn.Title] = _strMasCate[i];
+        data[cloumn.Title] = _strMasCate[i].text;
         data[cloumn.Country] = cunID;
         data[cloumn.Year] = yearID;
         data[cloumn.CategoryType] = cateType;
+        data[cloumn.MasterCategory] = _strMasCate[i].key;
+        data[cloumn.Area] = cateArea;
         _preNewCate.push({ ...data });
       }
     } else {
       _isSubmit = false;
     }
-    console.log([..._preNewCate]);
   };
 
   const _getBulkInsert = (): void => {
@@ -340,10 +419,12 @@ const CategoryConfig = (props: any): JSX.Element => {
         _isSubmit = false;
         _strCountry = "All";
         _strCateType = "All";
+        _strArea = "All";
         _numCate = [];
         setFilMasCateKey([]);
         setFilCountryDrop("All");
         setFilTypeDrop("All");
+        setFilAreaDrop("All");
         _getOnChange();
         getCategoryRecords();
         alertify.success("Category config's done");
@@ -452,6 +533,28 @@ const CategoryConfig = (props: any): JSX.Element => {
             />
           </div>
 
+          {/* Category type dropdown section */}
+          <div style={{ width: "15%" }}>
+            <Label>Area</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Area]}
+              selectedKey={_getFilterDropValues(
+                "Area",
+                {
+                  ...propDropValue,
+                },
+                filAreaDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                setFilAreaDrop(text.text as string);
+                _strArea = text.text as string;
+                _getOnChange();
+                _filterCategoryArray();
+              }}
+            />
+          </div>
+
           {/* Year dropdown section */}
           <div style={{ width: "8%" }}>
             <Label>Year</Label>
@@ -512,10 +615,12 @@ const CategoryConfig = (props: any): JSX.Element => {
               onClick={() => {
                 _strCountry = "All";
                 _strCateType = "All";
+                _strArea = "All";
                 _numCate = [];
                 setFilMasCateKey([]);
                 setFilCountryDrop("All");
                 setFilTypeDrop("All");
+                setFilAreaDrop("All");
                 _getOnChange();
                 _filterCategoryArray();
                 setPagination({ ...pagination, pagenumber: 1 });
