@@ -67,8 +67,18 @@
   display: flex;
   gap:2%;
   width: 13%;
+  justify-content: flex-end;
 }
 
 .import{
   width: 100%;
+}
+
+.noRecords {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  font-weight: 600;
+  font-size: 16px;
+  color: #4d546a;
 }

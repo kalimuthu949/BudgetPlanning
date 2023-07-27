@@ -32,6 +32,7 @@ import {
 } from "@fluentui/react";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import { IButtonStyles } from "office-ui-fabric-react";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 let _isCurYear: boolean = true;
 let listItems = [];
@@ -47,6 +48,8 @@ interface IPagination {
 
 const BudgetAnalysis = (props: any): JSX.Element => {
 
+  console.log('props',props);
+  
   // local variables
   propDropValue = { ...props.dropValue };
   let currentYear: string =
@@ -185,7 +188,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     data: null,
   });
   const [pagination, setPagination] = useState<IPagination>({
-    perPage: 1,
+    perPage: 5,
     currentPage: 1,
   });  
 
@@ -227,6 +230,13 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         overflowY: "auto",
         overflowX: "hidden",
       },
+      ".ms-DetailsRow":{
+        
+        ":hover": {
+          backgroundColor: "white",
+          color:'balck'
+        },
+      }
     },
   };
 
@@ -303,38 +313,36 @@ const BudgetAnalysis = (props: any): JSX.Element => {
           FilterValue: year,
           Operator: "eq",
         },
-        {
-          FilterKey: "OverAllBudgetCost",
-          FilterValue: "0",
-          Operator: "ne",
-        },
-        {
-          FilterKey: "OverAllBudgetCost",
-          FilterValue: null,
-          Operator: "ne",
-        },
       ],
       Orderbydecorasc: false,
     })
       .then((data: any) => {
         let items: ICurBudgetAnalysis[] = [];
                 
-        data.length &&  data.forEach((value: any) => {
+        data.length &&  data.forEach((value: any) => 
+        {
+          console.log('check',value.OverAllBudgetCost ? true:false);
+          
           items.push({
             Category: value.Title ? value.Title : "",
             Country: value.Country.Title ? value.Country.Title : "",
             Year: value.Year.Title ? value.Year.Title : "",
             Type: value.CategoryType ? value.CategoryType : "",
             ID: value.ID ? value.ID : null,
-            Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : null,
+            Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : 0,
             isEdit: false,
             Area: value.Area ? value.Area:'',
           });
-        });          
+        });      
+                
+        console.log('items',items);
         
-        setMasterData(items);
-        setBudgetItems(items);
-        getDropdownValues(items);
+        let newItems = _filterArray(props.groupUsers,items,Config.Navigation.BudgetAnalysis)
+        console.log('newItems',newItems);
+
+        setMasterData(newItems);
+        setBudgetItems(newItems);
+        getDropdownValues(newItems);
       })
       .catch((error: any) => _getErrorFunction("get budgjet data"));
   };
@@ -414,6 +422,9 @@ const BudgetAnalysis = (props: any): JSX.Element => {
           data: item.Total,
           id: item.ID,
         });
+        if(!item.Total){
+          setIsvalidation(true)
+        }
       }
       setViewBudgetItems(items)
     }
@@ -459,6 +470,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     }
 
     setBudgetItems(filteredItems);
+    setPagination({ ...pagination, currentPage: 1 })
     setPaginationData(filteredItems);
   };
 
@@ -468,12 +480,14 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     const worksheet: any = workbook.addWorksheet("My Sheet");
     worksheet.columns = [
       { header: "ID", key: "ID", width: 15 },
+      { header: "Area", key: "Area", width: 25 },
       { header: "Year", key: "Year", width: 25 },
       { header: "Category", key: "Category", width: 25 },
       { header: "Country", key: "Country", width: 25 },
       { header: "Type", key: "Type", width: 25 },
       { header: "Total", key: "Total", width: 25 },
     ];
+
     _arrExport.forEach((item: ICurBudgetAnalysis) => {
       worksheet.addRow({
         ID: item.ID,
@@ -482,13 +496,22 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         Country: item.Country,
         Type: item.Type,
         Total: item.Total,
+        Area:item.Area
       });
     });
     worksheet.autoFilter = {
       from: "A1",
-      to: "F1",
+      to: "G1",
     };
-    const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1"];
+
+    
+
+    // worksheet.protect("password", {
+    //   selectLockedCells: false,
+    //   selectUnlockedCells: false,
+    // });
+
+    const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1","G1"];
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {
         type: "pattern",
@@ -509,6 +532,12 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         horizontal: "center",
       };
     });
+
+    // const readOnlyRows = ["B1", "C1", "D1", "E1", "F1"];
+    // readOnlyRows.map((key:any) => {
+    //   worksheet.getCell(key).protection = { locked: true };
+    // })
+    
     workbook.xlsx
       .writeBuffer()
       .then((buffer: any) =>
@@ -538,7 +567,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       listItems = [];
       listItems = filteredData.map((row: any) => ({
         ID: row[1] ? row[1] : null,
-        OverAllBudgetCost: row[6] ? row[6] : null,
+        OverAllBudgetCost: row[7] ? row[7] : null,
       }));
       //Reset the file
       document.getElementById("fileUpload")["value"] = "";
@@ -587,6 +616,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   }, []);
 
   useEffect(() => {
+    // setPagination({ ...pagination, currentPage: 1 })
     setPaginationData(budgetItems);
   }, [pagination]);
 
@@ -671,21 +701,19 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                 />
               </div>
               <div className={styles.dropdowns}>
-                <Dropdown
+                <Dropdown   
                   styles={DropdownStyle}
                   label="Area"
-                  options={[{key:'All',text:'All'}]}
-                  selectedKey={fillAreaDrop
-                  //   _getFilterDropValues(
-                  //   "Area",
-                  //   { ...propDropValue },
-                  //   filTypeDrop
-                  // )
-                }
+                  options={[...propDropValue.Area]}
+                  selectedKey={_getFilterDropValues(
+                    "Area",
+                    { ...propDropValue },
+                    fillAreaDrop
+                  )}
                   onChange={(e: any, text: IDrop) => {
-                    // _isCurYear = filPeriodDrop == currentYear ? true : false;
-                    // setFilTypeDrop(text.text as string);
-                    // handleFilter(filTypeDrop, filCountryDrop, filCtgryDrop,text.text);
+                    _isCurYear = filPeriodDrop == currentYear ? true : false;
+                    setFillAreaDrop(text.text as string);
+                    handleFilter(filTypeDrop, filCountryDrop, filCtgryDrop,text.text);
                   }}
                 />
               </div>
@@ -753,9 +781,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
               }
             />
           ) : (
-            <div className={""}>
-              <label>No data found !!!</label>
-            </div>
+            <div className={styles.noRecords}>No data found !!!</div>
           )}
         </div>
       ) : null}
