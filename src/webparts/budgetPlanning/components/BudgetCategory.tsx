@@ -26,7 +26,9 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import SPServices from "../../../CommonServices/SPServices";
 import {
+  IDrop,
   IDropdowns,
+  IGroupUsers,
   IMasCategoryListColumn,
 } from "../../../globalInterFace/BudgetInterFaces";
 import * as Excel from "exceljs/dist/exceljs.min.js";
@@ -35,6 +37,7 @@ import * as moment from "moment";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import commonServices from "../../../CommonServices/CommonServices";
 import Pagination from "office-ui-fabric-react-pagination";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 interface IimportExcelDataView {
   removeExcelData: IMasCategoryListColumn[];
@@ -51,12 +54,16 @@ let _isBack: boolean = false;
 let listItems: IMasCategoryListColumn[] = [];
 const addIcon: IIconProps = { iconName: "Add" };
 let areaExport = [];
-let areas = [];
+let _areasDrop: IDrop[] = [];
+let isUserPermissions: IGroupUsers;
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
-
   propDropValue = { ...props.dropValue };
+  _areasDrop = [...props.dropValue.Area];
+  _areasDrop.shift();
+
+  isUserPermissions = { ...props.groupUsers };
 
   const _budgetPlanColumns: IColumn[] = [
     {
@@ -90,7 +97,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       addExcelData: [
         {
           Title: "",
-          Area: "",
+          Area: _areasDrop[0].text,
           CatgryValidate: false,
           AreaValidate: false,
         },
@@ -386,60 +393,35 @@ const BudgetCategory = (props: any): JSX.Element => {
   const _getDefaultFunction = (): void => {
     _isBack = false;
     setIsLoader(true);
-    manipulation(props.groupUsers);
+    manipulation();
   };
 
-  const manipulation = (user) => {
-    if (user.isSuperAdmin) {
-      areas.push(
-        {
-          key: 0,
-          text: "Infra Structure",
-        },
-        {
-          key: 1,
-          text: "Enterprise Application",
-        },
-        {
-          key: 2,
-          text: "Special Project",
-        }
-      );
+  const manipulation = (): void => {
+    if (isUserPermissions.isSuperAdmin) {
       areaExport.push(
-        "Infra Structure",
-        "Enterprise Application",
-        "Special Project"
+        Config.AreaName.InfraStructure,
+        Config.AreaName.EnterpriseApplication,
+        Config.AreaName.SpecialProject
       );
     } else {
-      if (user.isInfraManager) {
-        areas.push({
-          key: 0,
-          text: "Infra Structure",
-        });
-        areaExport.push("Infra Structure");
+      if (isUserPermissions.isInfraManager) {
+        areaExport.push(Config.AreaName.InfraStructure);
       }
-      if (user.isEnterpricesManager) {
-        areas.push({
-          key: 1,
-          text: "Enterprise Application",
-        });
-        areaExport.push("Enterprise Application");
+      if (isUserPermissions.isEnterpricesManager) {
+        areaExport.push(Config.AreaName.EnterpriseApplication);
       }
-      if (user.isSpecialManager) {
-        areas.push({
-          key: 2,
-          text: "Special Project",
-        });
-        areaExport.push("Special Project");
+      if (isUserPermissions.isSpecialManager) {
+        areaExport.push(Config.AreaName.SpecialProject);
       }
     }
-    setArea([...areas]);
+
+    setArea([..._areasDrop]);
     setImportExcelDataView({
       removeExcelData: [],
       addExcelData: [
         {
           Title: "",
-          Area: areas[0].text,
+          Area: _areasDrop[0].text,
           CatgryValidate: false,
           AreaValidate: false,
         },
@@ -457,18 +439,17 @@ const BudgetCategory = (props: any): JSX.Element => {
       .then((_resMasCate: any) => {
         let _masCategory: IMasCategoryListColumn[] = [];
         if (_resMasCate.length) {
-          _resMasCate.forEach((data: any) => {
+          _resMasCate.forEach((data: any, i: number) => {
             _masCategory.push({
               Title: data.Title ? data.Title : "",
               Area: data.Area ? data.Area : "",
             });
+            _masCategory.length == _resMasCate.length &&
+              _getFilteredMas([..._masCategory]);
           });
-          setMData([..._resMasCate]);
-          setMaster([..._resMasCate]);
-          setIsLoader(false);
         } else {
-          setMData([..._resMasCate]);
-          setMaster([..._resMasCate]);
+          setMData([..._masCategory]);
+          setMaster([..._masCategory]);
           setIsLoader(false);
         }
       })
@@ -477,7 +458,27 @@ const BudgetCategory = (props: any): JSX.Element => {
       });
   };
 
-  const splitCategoryData = (listItems: IMasCategoryListColumn[]) => {
+  const _getFilteredMas = (arr: IMasCategoryListColumn[]): void => {
+    let _filArray: IMasCategoryListColumn[] = [];
+
+    _filArray = _filterArray(
+      isUserPermissions,
+      [...arr],
+      Config.Navigation.BudgetCategory
+    );
+
+    if (_filArray.length) {
+      setMData([..._filArray]);
+      setMaster([..._filArray]);
+      setIsLoader(false);
+    } else {
+      setMData([..._filArray]);
+      setMaster([..._filArray]);
+      setIsLoader(false);
+    }
+  };
+
+  const splitCategoryData = (listItems: IMasCategoryListColumn[]): void => {
     let newaddData = [];
     let DuplicateData = [];
     let dummyData = [];
@@ -516,7 +517,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     });
   };
 
-  const addMasterCategoryData = (listItems: any[], type: string) => {
+  const addMasterCategoryData = (listItems: any[], type: string): void => {
     let mascatgryData = [];
     let authentication = false;
     if (type == "ImportFiles") {
@@ -580,7 +581,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
   };
 
-  const deleteCategory = (index: number) => {
+  const deleteCategory = (index: number): void => {
     let delcatgry = [...importExcelDataView.addExcelData];
     delcatgry.splice(index, 1);
     setImportExcelDataView({
@@ -589,7 +590,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     });
   };
 
-  const addCategory = (index: number) => {
+  const addCategory = (index: number): void => {
     let validData = catgryValidation([...importExcelDataView.addExcelData]);
     if (
       [...validData].every((val) => {
@@ -609,7 +610,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
   };
 
-  const addCategoryData = (index: number, data: string, type: string) => {
+  const addCategoryData = (index: number, data: string, type: string): void => {
     let addData = [...importExcelDataView.addExcelData];
     if (type == "Category") {
       addData[index].Title = data;
@@ -692,7 +693,8 @@ const BudgetCategory = (props: any): JSX.Element => {
     return newAddData;
   };
 
-  const searchData = (data: string) => {
+  const searchData = (data: string): void => {
+    setPagination({...pagination,pagenumber:1})
     let searchdata = [...MData].filter((value) => {
       return (
         value.Title.toLowerCase().includes(data.trim().toLowerCase()) ||
@@ -702,13 +704,14 @@ const BudgetCategory = (props: any): JSX.Element => {
     setMaster([...searchdata]);
   };
 
-  const dropKeyFilter = (textVal: string) => {
-    let filterkey = areas.findIndex((keyval) => {
+  const dropKeyFilter = (textVal: string): number => {
+    let filterkey: number = _areasDrop.filter((keyval: IDrop) => {
       return keyval.text == textVal;
-    });
+    })[0].key;
 
     return filterkey;
   };
+
   /* Life cycle of onload */
   useEffect(() => {
     let masterData = commonServices.paginateFunction(
@@ -755,7 +758,7 @@ const BudgetCategory = (props: any): JSX.Element => {
                 addExcelData: [
                   {
                     Title: "",
-                    Area: areas[0].text,
+                    Area: _areasDrop[0].text,
                     CatgryValidate: false,
                     AreaValidate: false,
                   },
@@ -907,7 +910,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       <Modal isOpen={importFilePopup} styles={importModalStyle}>
         <div className={styles.importBoxView}>
           <div>
-            <h3>New Category</h3>
+            <h3 className={styles.importBoxHeader}>New Category</h3>
             <div style={{ width: "100%", display: "flex" }}>
               <h4 className={styles.importHeader}>Category</h4>
               <h4 className={styles.importHeader}>Area</h4>
@@ -929,7 +932,7 @@ const BudgetCategory = (props: any): JSX.Element => {
             )}
           </div>
           <div>
-            <h3>Duplicate Category</h3>
+            <h3 className={styles.importBoxHeader}>Duplicate Category</h3>
             <div style={{ width: "100%", display: "flex" }}>
               <h4 className={styles.importHeader}>Category</h4>
               <h4 className={styles.importHeader}>Area</h4>

@@ -129,6 +129,7 @@ export interface ICurCategoryItem {
   Area: string;
   ID: number;
   OverAllBudgetCost: number;
+  TotalProposed: number;
 }
 
 /* Interface of current budget items */
@@ -165,6 +166,7 @@ export interface IOverAllItem {
   yearID: number;
   countryID: number;
   OverAllBudgetCost: number;
+  TotalProposed: number;
   subCategory: ICurBudgetItem[];
 }
 
@@ -212,6 +214,7 @@ export interface ICurBudgetAnalysis {
   Area: string;
   ID: number;
   Total: number;
+  PropsedTotal: number;
   isEdit: boolean;
 }
 
