@@ -106,7 +106,7 @@ export namespace Config {
   /* Global Navigation Names */
   export const Navigation: INave = {
     Dashboard: "dashboard",
-    Country: "Country",
+    Country: "country",
     BudgetCategory: "budgetcategory",
     CategoryConfig: "categoryconfig",
     BudgetPlanning: "budgetplanning",

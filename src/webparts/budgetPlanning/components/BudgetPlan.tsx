@@ -493,6 +493,9 @@ const BudgetPlan = (props: any): JSX.Element => {
               OverAllBudgetCost: resCate[i].OverAllBudgetCost
                 ? resCate[i].OverAllBudgetCost
                 : null,
+              TotalProposed: resCate[i].TotalProposed
+                ? resCate[i].TotalProposed
+                : null,
             });
             i + 1 == resCate.length && _getFilterFunction([..._curCategory]);
           }
@@ -629,6 +632,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           yearID: _arrCate[i].YearAcc.ID,
           countryID: _arrCate[i].CountryAcc.ID,
           OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
+          TotalProposed: _arrCate[i].TotalProposed,
           subCategory: [],
         });
         i + 1 == _arrCate.length &&
@@ -773,6 +777,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         Area: arr.Area ? arr.Area : "",
         ID: arr.ID ? arr.ID : null,
         OverAllBudgetCost: arr.OverAllBudgetCost ? arr.OverAllBudgetCost : null,
+        TotalProposed: arr.TotalProposed ? arr.TotalProposed : null,
         indexValue: _recordsLength,
       });
       _recordsLength += arr.subCategory.length;
@@ -785,6 +790,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       }).length;
       let _totalAmount: string = ur.OverAllBudgetCost
         ? ur.OverAllBudgetCost.toString()
+        : ur.TotalProposed
+        ? ur.TotalProposed.toString()
         : "0";
       varGroup.push({
         key: ur.Category,
@@ -1033,7 +1040,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 Number(
                   _groupItem.filter(
                     (e: IOverAllItem) => e.ID == curData.CateId
-                  )[0].OverAllBudgetCost
+                  )[0].TotalProposed
                 ) - Number(curData.BudgetProposed);
             }
           }
@@ -1066,7 +1073,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       Listname: Config.ListNames.CategoryList,
       ID: curData.CateId,
       RequestJSON: {
-        OverAllBudgetCost: Total,
+        TotalProposed: Total,
       },
     })
       .then((res: any) => {
@@ -1080,7 +1087,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             _groupItem[i].Type == curData.Type &&
             _groupItem[i].Area == curData.Area
           ) {
-            _groupItem[i].OverAllBudgetCost = Total;
+            _groupItem[i].TotalProposed = Total;
             _emptyGroup.push({ ..._groupItem[i] });
           } else {
             _emptyGroup.push(_groupItem[i]);
