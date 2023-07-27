@@ -178,12 +178,6 @@ const Country = (props: any) => {
       height: 33,
       borderRadius: 5,
     },
-    label: {
-      fontWeight: 500,
-      color: "#000",
-      cursor: "pointer",
-      fontSize: 16,
-    },
     icon: {
       fontSize: 16,
       color: "#000",
@@ -213,12 +207,18 @@ const Country = (props: any) => {
     })
       .then((resMasCountry) => {
         let countryListData = [];
-        resMasCountry.forEach((countryData) => {
-          countryListData.push({
-            Country: countryData[Config.CountryListColumns.Title],
+        if (resMasCountry.length) {
+          resMasCountry.forEach((countryData) => {
+            countryListData.push({
+              Country: countryData[Config.CountryListColumns.Title],
+            });
           });
-        });
-        setMData([...countryListData]);
+          setMData([...countryListData]);
+          setMaster([...countryListData]);
+        } else {
+          setMData([...countryListData]);
+          setMaster([...countryListData]);
+        }
       })
       .catch((err) => _getErrorFunction(err));
   };
@@ -324,19 +324,19 @@ const Country = (props: any) => {
     }
   };
 
-  const addCountryData = (index, data) => {
+  const addCountryData = (index: number, data: string) => {
     let addData = [...newCountry];
     addData[index].Country = data;
     setNewCountry([...addData]);
   };
 
-  const deleteCountry = (index) => {
+  const deleteCountry = (index: number) => {
     let delcountry = [...newCountry];
     delcountry.splice(index, 1);
     setNewCountry([...delcountry]);
   };
 
-  const addCountry = (index) => {
+  const addCountry = (index: number) => {
     let validData = countryValidation([...newCountry]);
     if (
       [...validData].every((val) => {
@@ -353,6 +353,7 @@ const Country = (props: any) => {
   };
 
   const searchData = (data: string) => {
+    setPagination({ ...pagination, pagenumber: 1 });
     let searchdata = [...MData].filter((value) => {
       return value.Country.toLowerCase().includes(data.trim().toLowerCase());
     });
@@ -367,6 +368,7 @@ const Country = (props: any) => {
     );
     setItems(masterData.displayitems);
   }, [pagination, master]);
+
   useEffect(() => {
     getMasterCountryData();
   }, [istrigger]);
@@ -375,21 +377,26 @@ const Country = (props: any) => {
     <Loader />
   ) : (
     <div>
-      <div style={{ width: "15%" }}>
-        {/* search section */}
-        <SearchBox
-          styles={searchStyle}
-          placeholder="Search"
-          onChange={(val, text) => searchData(text)}
-        />
+      <Label className={styles.HeaderLable}>Budget Country</Label>
+      <div className={styles.countryModalBtnSec}>
+        <div className={styles.countryModalSearchBox}>
+          {/* search section */}
+          <SearchBox
+            styles={searchStyle}
+            placeholder="Search"
+            onChange={(val, text) => searchData(text)}
+          />
+        </div>
+        <div>
+          {/*Counter Add Btn section*/}
+          <DefaultButton
+            text="New Country"
+            styles={btnStyle}
+            iconProps={addIcon}
+            onClick={() => setCountryPopup(true)}
+          />
+        </div>
       </div>
-      {/*Counter Add Btn section*/}
-      <DefaultButton
-        text="New Country"
-        // styles={btnStyle}
-        iconProps={addIcon}
-        onClick={() => setCountryPopup(true)}
-      />
       {/* Details list section */}
       <DetailsList
         items={[...items]}
@@ -421,7 +428,7 @@ const Country = (props: any) => {
             return (
               <>
                 <div key={index} className={styles.countryModalBox}>
-                  <div>
+                  <div className={styles.contryTextField}>
                     <TextField
                       styles={
                         val.Validate ? countryErrorStyle : countryinputStyle
