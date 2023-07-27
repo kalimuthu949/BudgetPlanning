@@ -46,15 +46,12 @@ interface IPagination {
   pagenumber: number;
 }
 
-interface ICountryList {
-  Country: string;
-}
-
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
 let listItems: IMasCategoryListColumn[] = [];
 const addIcon: IIconProps = { iconName: "Add" };
 let areaExport = [];
+let areas = [];
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
@@ -86,14 +83,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   const [area, setArea] = useState([]);
   const [categoryPopup, setcategoryPopup] = useState<boolean>(false);
   const [importFilePopup, setImportFilePopup] = useState<boolean>(false);
-  const [countryPopup, setCountryPopup] = useState(false);
   const [istrigger, setIstrigger] = useState<boolean>(false);
-  const [countryMData, setCountryMData] = useState<ICountryList[]>([]);
-  const [newCountry, setNewCountry] = useState<ICountryList[]>([
-    {
-      Country: "",
-    },
-  ]);
   const [importExcelDataView, setImportExcelDataView] =
     useState<IimportExcelDataView>({
       removeExcelData: [],
@@ -223,7 +213,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const errorStyle = {
     root: {
-      width: "82%",
+      width: "48%",
       marginRight: 6,
     },
     fieldGroup: {
@@ -400,7 +390,6 @@ const BudgetCategory = (props: any): JSX.Element => {
   };
 
   const manipulation = (user) => {
-    let areas = [];
     if (user.isSuperAdmin) {
       areas.push(
         {
@@ -446,7 +435,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
     setArea([...areas]);
     setImportExcelDataView({
-      ...importExcelDataView,
+      removeExcelData: [],
       addExcelData: [
         {
           Title: "",
@@ -456,7 +445,6 @@ const BudgetCategory = (props: any): JSX.Element => {
         },
       ],
     });
-
     _getMasterCategoryData();
   };
 
@@ -487,17 +475,6 @@ const BudgetCategory = (props: any): JSX.Element => {
       .catch((err: any) => {
         _getErrorFunction(err);
       });
-    getMasterCountryData();
-  };
-
-  const getMasterCountryData = () => {
-    SPServices.SPReadItems({
-      Listname: Config.ListNames.CountryList,
-      Topcount: 5000,
-      Orderbydecorasc: false,
-    })
-      .then((resMasCountry) => {})
-      .catch((err) => _getErrorFunction(err));
   };
 
   const splitCategoryData = (listItems: IMasCategoryListColumn[]) => {
@@ -546,7 +523,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       mascatgryData = [...listItems];
       authentication = true;
     } else {
-      let validationData = validation([...listItems]);
+      let validationData = catgryValidation([...listItems]);
       authentication = validationData.every((val) => {
         return val.CatgryValidate == false && val.AreaValidate == false;
       });
@@ -613,7 +590,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   };
 
   const addCategory = (index: number) => {
-    let validData = validation([...importExcelDataView.addExcelData]);
+    let validData = catgryValidation([...importExcelDataView.addExcelData]);
     if (
       [...validData].every((val) => {
         return val.CatgryValidate == false && val.AreaValidate == false;
@@ -642,7 +619,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     setImportExcelDataView({ ...importExcelDataView, addExcelData: addData });
   };
 
-  const validation = (arr: any[]): any[] => {
+  const catgryValidation = (arr: any[]): any[] => {
     let newAddData = [];
     let DuplicateData = [];
 
@@ -725,6 +702,13 @@ const BudgetCategory = (props: any): JSX.Element => {
     setMaster([...searchdata]);
   };
 
+  const dropKeyFilter = (textVal: string) => {
+    let filterkey = areas.findIndex((keyval) => {
+      return keyval.text == textVal;
+    });
+
+    return filterkey;
+  };
   /* Life cycle of onload */
   useEffect(() => {
     let masterData = commonServices.paginateFunction(
@@ -759,20 +743,25 @@ const BudgetCategory = (props: any): JSX.Element => {
             />
           </div>
 
-          {/*Counter Add Btn section*/}
-          <DefaultButton
-            text="New Country"
-            styles={btnStyle}
-            iconProps={addIcon}
-            onClick={() => setCountryPopup(true)}
-          />
-
           {/* New btn section */}
           <DefaultButton
             text="New item"
             styles={btnStyle}
             iconProps={addIcon}
-            onClick={() => setcategoryPopup(true)}
+            onClick={() => {
+              setcategoryPopup(true);
+              setImportExcelDataView({
+                ...importExcelDataView,
+                addExcelData: [
+                  {
+                    Title: "",
+                    Area: areas[0].text,
+                    CatgryValidate: false,
+                    AreaValidate: false,
+                  },
+                ],
+              });
+            }}
           />
 
           {/* import btn section */}
@@ -841,8 +830,10 @@ const BudgetCategory = (props: any): JSX.Element => {
                     <Dropdown
                       options={area}
                       styles={val.AreaValidate ? dropErrorStyle : dropDownStyle}
-                      placeholder="Enter The Area"
-                      selectedKey={importExcelDataView.addExcelData[index].Area}
+                      placeholder="Select The Area"
+                      selectedKey={dropKeyFilter(
+                        importExcelDataView.addExcelData[index].Area
+                      )}
                       onChange={(e, item) =>
                         addCategoryData(index, item.text, "Area")
                       }
@@ -906,17 +897,6 @@ const BudgetCategory = (props: any): JSX.Element => {
             styles={cancelBtnStyle}
             text={"Cancel"}
             onClick={() => {
-              setImportExcelDataView({
-                removeExcelData: [],
-                addExcelData: [
-                  {
-                    Title: "",
-                    Area: area[0].text,
-                    CatgryValidate: false,
-                    AreaValidate: false,
-                  },
-                ],
-              });
               setcategoryPopup(false);
             }}
           />
