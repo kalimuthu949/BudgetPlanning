@@ -47,8 +47,6 @@ interface IPagination {
 }
 
 const BudgetAnalysis = (props: any): JSX.Element => {
-
-  console.log('props',props);
   
   // local variables
   propDropValue = { ...props.dropValue };
@@ -110,7 +108,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             />
           );
         } else {
-          return item.Total;
+          return item.Total ? item.Total:item.PropsedTotal
         }
       },
     },
@@ -318,6 +316,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     })
       .then((data: any) => {
         let items: ICurBudgetAnalysis[] = [];
+        console.log('data',data);
+        
                 
         data.length &&  data.forEach((value: any) => 
         {
@@ -332,6 +332,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : 0,
             isEdit: false,
             Area: value.Area ? value.Area:'',
+            PropsedTotal:value.TotalProposed ? value.TotalProposed:0
           });
         });      
                 
@@ -504,13 +505,6 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       to: "G1",
     };
 
-    
-
-    // worksheet.protect("password", {
-    //   selectLockedCells: false,
-    //   selectUnlockedCells: false,
-    // });
-
     const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1","G1"];
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {
@@ -533,11 +527,10 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       };
     });
 
-    // const readOnlyRows = ["B1", "C1", "D1", "E1", "F1"];
-    // readOnlyRows.map((key:any) => {
-    //   worksheet.getCell(key).protection = { locked: true };
-    // })
-    
+    const readOnlyRows = ["B1", "C1", "D1", "E1", "F1"];
+    readOnlyRows.map((key:any) => {
+      worksheet.getCell(key).protection = { locked: true };
+    })
     workbook.xlsx
       .writeBuffer()
       .then((buffer: any) =>
