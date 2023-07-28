@@ -1197,7 +1197,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             />
           </div>
 
-          {/* Type section */}
+          {/* Area section */}
           <div style={{ width: "16%" }}>
             <Label>Area</Label>
             <Dropdown

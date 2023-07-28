@@ -533,7 +533,7 @@ const CategoryConfig = (props: any): JSX.Element => {
             />
           </div>
 
-          {/* Category type dropdown section */}
+          {/* Area dropdown section */}
           <div style={{ width: "15%" }}>
             <Label>Area</Label>
             <Dropdown

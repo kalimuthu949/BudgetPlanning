@@ -1,5 +1,6 @@
 /* Interface of List Names */
 export interface IList {
+  AdminList: string;
   VendorList: string;
   YearList: string;
   MasterCategoryList: string;
@@ -114,6 +115,7 @@ export interface IDropdowns {
   masterCate: IDrop[];
   ctgryDropOptions: IDrop[];
   Area: IDrop[];
+  Vendor: IDrop[];
 }
 
 /* Interface of lookup obj */
@@ -226,6 +228,8 @@ export interface IEdit {
   id: number;
   data: number;
 }
+
+// Vendor page interface
 export interface IVendorListColumn {
   VendorId: number;
   Vendor: string;
@@ -269,4 +273,22 @@ export interface IAreaName {
   InfraStructure: string;
   EnterpriseApplication: string;
   SpecialProject: string;
+}
+
+// Vendor validation
+export interface IVendorValidation {
+  Vendor: boolean;
+  Description: boolean;
+  Pricing: boolean;
+  PaymentTerms: boolean;
+  LastYearCost: boolean;
+  StartingDate: boolean;
+  PO: boolean;
+  Supplier: boolean;
+  RequestedAmount: boolean;
+  EntryDate: boolean;
+  ToDate: boolean;
+  Cost: boolean;
+  PoCurrency: boolean;
+  InvoiceNo: boolean;
 }

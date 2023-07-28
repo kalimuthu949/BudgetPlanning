@@ -23,6 +23,8 @@ import { Icon, Label } from "@fluentui/react";
 import { _filAreaDrop } from "../../../CommonServices/filterCommonArray";
 import VendorCreate from "./VendorCreate";
 
+let _preYear: string = "";
+
 const App = (props: any): JSX.Element => {
   // local variable
   const currentUser = props.context._pageContext._user.email;
@@ -127,6 +129,7 @@ const App = (props: any): JSX.Element => {
     })
       .then((resType: any[]) => {
         let _yearDrop: IDrop[] = [];
+        let beforeYear: number;
         if (resType.length) {
           resType.forEach((e: any, i: number) => {
             _yearDrop.push({
@@ -138,6 +141,8 @@ const App = (props: any): JSX.Element => {
         } else {
           _yearDrop = [{ key: 1, text: moment().format("YYYY") }];
         }
+        beforeYear = Number(_yearDrop[_yearDrop.length - 1].text) - 1;
+        _preYear = beforeYear.toString();
         dropValue.Period = _yearDrop;
 
         // get country choice function
@@ -203,10 +208,48 @@ const App = (props: any): JSX.Element => {
                         if (_firstText > _secondText) return 1;
                       });
                     }
-
                     dropValue.masterCate = [..._typeMasterCate];
-                    setDropValue({ ...dropValue });
-                    _getPageName();
+
+                    // get Vendor datas function
+                    SPServices.SPReadItems({
+                      Listname: Config.ListNames.VendorList,
+                      Filter: [
+                        {
+                          FilterKey: "isDeleted",
+                          Operator: "ne",
+                          FilterValue: "1",
+                        },
+                      ],
+                      Topcount: 5000,
+                    })
+                      .then((resVend: any) => {
+                        let _strVendorArray: IDrop[] = [];
+                        let _typeVendor: IDrop[] = [];
+
+                        resVend.length &&
+                          resVend.forEach((e: any) => {
+                            _strVendorArray.push({
+                              key: e.ID,
+                              text: e.Title,
+                            });
+                          });
+
+                        if (resVend.length == _strVendorArray.length) {
+                          _typeVendor = _strVendorArray.sort((a, b) => {
+                            let _firstText: string = a.text.toLowerCase();
+                            let _secondText: string = b.text.toLowerCase();
+                            if (_firstText < _secondText) return -1;
+                            if (_firstText > _secondText) return 1;
+                          });
+                        }
+                        dropValue.Vendor = [..._typeVendor];
+
+                        setDropValue({ ...dropValue });
+                        _getVendorsArr();
+                      })
+                      .catch((err: any) => {
+                        _getErrorFunction(err);
+                      });
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -219,6 +262,42 @@ const App = (props: any): JSX.Element => {
           .catch((err: any) => {
             _getErrorFunction(err);
           });
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const _getVendorsArr = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.DistributionList,
+      Select: "*, Year/ID, Year/Title",
+      Expand: "Year",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: _preYear,
+        },
+      ],
+      Topcount: 5000,
+    })
+      .then((res: any) => {
+        console.log("res > ", res);
+        if (res.length) {
+          for (let i: number = 0; res.length > i; i++) {
+            if (res.length == i + 1) {
+              _getPageName();
+            }
+          }
+        } else {
+          _getPageName();
+        }
       })
       .catch((err: any) => {
         _getErrorFunction(err);
