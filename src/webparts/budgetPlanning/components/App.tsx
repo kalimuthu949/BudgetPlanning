@@ -21,6 +21,7 @@ import "alertifyjs/build/css/alertify.css";
 import { sp } from "@pnp/sp/presets/all";
 import { Icon, Label } from "@fluentui/react";
 import { _filAreaDrop } from "../../../CommonServices/filterCommonArray";
+import VendorCreate from "./VendorCreate";
 
 const App = (props: any): JSX.Element => {
   // local variable
@@ -105,6 +106,7 @@ const App = (props: any): JSX.Element => {
       _getAreaDrop({ ...allUsers });
     } else {
       setIsOtherUser(false);
+      _getPageName();
     }
   };
 
@@ -232,6 +234,8 @@ const App = (props: any): JSX.Element => {
       setPageNave(_pageNaveName);
     } else if (_pageNaveName == Config.Navigation.Country.toLowerCase()) {
       setPageNave(_pageNaveName);
+    } else if (_pageNaveName == Config.Navigation.VendorCreate.toLowerCase()) {
+      setPageNave(_pageNaveName);
     } else if (
       _pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()
     ) {
@@ -279,6 +283,8 @@ const App = (props: any): JSX.Element => {
               <Dashboard />
             ) : pageNave == Config.Navigation.Country ? (
               <Country dropValue={dropValue} groupUsers={groupUsers} />
+            ) : pageNave == Config.Navigation.VendorCreate ? (
+              <VendorCreate dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetCategory ? (
               <BudgetCategory dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.CategoryConfig ? (
@@ -338,7 +344,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 0.4
+          V - 0.6
         </div>
       </div>
     )

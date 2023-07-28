@@ -694,7 +694,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   };
 
   const searchData = (data: string): void => {
-    setPagination({...pagination,pagenumber:1})
+    setPagination({ ...pagination, pagenumber: 1 });
     let searchdata = [...MData].filter((value) => {
       return (
         value.Title.toLowerCase().includes(data.trim().toLowerCase()) ||
@@ -985,7 +985,14 @@ const BudgetCategory = (props: any): JSX.Element => {
             onClick={() => {
               setImportExcelDataView({
                 removeExcelData: [],
-                addExcelData: [{ Title: "", Validate: false }],
+                addExcelData: [
+                  {
+                    Title: "",
+                    Area: _areasDrop[0].text,
+                    CatgryValidate: false,
+                    AreaValidate: false,
+                  },
+                ],
               });
               setImportFilePopup(false);
             }}
