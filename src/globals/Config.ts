@@ -19,6 +19,7 @@ import {
 export namespace Config {
   /* Global List Names */
   export const ListNames: IList = {
+    VendorList: "Vendor List",
     YearList: "Year List",
     MasterCategoryList: "Master Category List",
     CategoryList: "Category List",

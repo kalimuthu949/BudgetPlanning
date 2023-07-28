@@ -1,5 +1,6 @@
 /* Interface of List Names */
 export interface IList {
+  VendorList: string;
   YearList: string;
   MasterCategoryList: string;
   CategoryList: string;
@@ -88,7 +89,7 @@ export interface IDistributionLibraryColumn {
 export interface INave {
   Dashboard: string;
   Country: string;
-  VendorCreate:string;
+  VendorCreate: string;
   BudgetCategory: string;
   CategoryConfig: string;
   BudgetPlanning: string;
@@ -226,7 +227,7 @@ export interface IEdit {
   data: number;
 }
 export interface IVendorListColumn {
-  VendorId:number;
+  VendorId: number;
   Vendor: string;
   Description: string;
   Pricing: string;
@@ -235,9 +236,9 @@ export interface IVendorListColumn {
   PO: string;
   Supplier: string;
   RequestedAmount: string;
-  Attachment:any;
-  Procurement:any;
-  BudgetId:number;
+  Attachment: any;
+  Procurement: any;
+  BudgetId: number;
   isDummy: boolean;
   isEdit: boolean;
 }
