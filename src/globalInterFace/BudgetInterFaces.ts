@@ -88,6 +88,7 @@ export interface IDistributionLibraryColumn {
 export interface INave {
   Dashboard: string;
   Country: string;
+  VendorCreate:string;
   BudgetCategory: string;
   CategoryConfig: string;
   BudgetPlanning: string;
@@ -225,20 +226,18 @@ export interface IEdit {
   data: number;
 }
 export interface IVendorListColumn {
+  VendorId:number;
   Vendor: string;
   Description: string;
   Pricing: string;
   PaymentTerms: string;
   LastYearCost: string;
-  StartingDate: string;
   PO: string;
   Supplier: string;
   RequestedAmount: string;
-  EntryDate: string;
-  ToDate: string;
-  Cost: string;
-  PoCurrency: string;
-  InvoiceNo: string;
+  Attachment:any;
+  Procurement:any;
+  BudgetId:number;
   isDummy: boolean;
   isEdit: boolean;
 }

@@ -31,11 +31,12 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./Vendor.module.scss";
 import { config } from "exceljs";
+import { sp } from "@pnp/sp/presets/all";
 
 let TypeFlag = "";
-let ConfimMsg = false;
+let ConfimMsg = true;
 
-const Vendor = () => {
+const Vendor = (props: any) => {
   let admin = true;
   const errtxtFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
@@ -66,6 +67,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Vendor}
+            placeholder="Enter The Vendor"
             styles={Validate.Vendor ? errtxtFieldStyle : textFieldStyle}
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Vendor: text });
@@ -86,6 +88,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Description}
+            placeholder="Enter The Description"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Description: text });
             }}
@@ -105,6 +108,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Pricing}
+            placeholder="Enter The Pricing"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Pricing: text });
             }}
@@ -124,6 +128,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.PaymentTerms}
+            placeholder="Enter The PaymentTerms"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, PaymentTerms: text });
             }}
@@ -143,6 +148,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.LastYearCost}
+            placeholder="Enter The LastYearCost"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, LastYearCost: text });
             }}
@@ -162,8 +168,6 @@ const Vendor = () => {
         return admin && item.isDummy ? (
           <div
             onClick={() => {
-              console.log("msg", ConfimMsg);
-
               if (!ConfimMsg) {
                 ConfimMsg = !ConfimMsg;
                 newVendorAdd(item, index);
@@ -178,6 +182,7 @@ const Vendor = () => {
         ) : admin && item.isEdit ? (
           <TextField
             value={addNewVendor.PO}
+            placeholder="Enter The PO"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, PO: text });
             }}
@@ -197,6 +202,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Supplier}
+            placeholder="Enter The Supplier"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Supplier: text });
             }}
@@ -214,14 +220,22 @@ const Vendor = () => {
       maxWidth: 200,
       onRender: (item) => {
         return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.Supplier}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Supplier: text });
-            }}
-          />
+          <div>
+            <input
+              id="AttachmentFile"
+              type="file"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                setAddNewVendor({
+                  ...addNewVendor,
+                  Attachment: e.target.files[0],
+                })
+              }
+            />
+            <label htmlFor="AttachmentFile">AttachmentFile</label>
+          </div>
         ) : (
-          <label>{item.Supplier}</label>
+          <label></label>
         );
       },
     },
@@ -233,14 +247,22 @@ const Vendor = () => {
       maxWidth: 200,
       onRender: (item) => {
         return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.Supplier}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Supplier: text });
-            }}
-          />
+          <div>
+            <input
+              id="ProcurementFile"
+              type="file"
+              style={{ display: "none" }}
+              onChange={(e) =>
+                setAddNewVendor({
+                  ...addNewVendor,
+                  Procurement: e.target.files[0],
+                })
+              }
+            />
+            <label htmlFor="ProcurementFile">ProcurementFile</label>
+          </div>
         ) : (
-          <label>{item.Supplier}</label>
+          <label></label>
         );
       },
     },
@@ -254,6 +276,7 @@ const Vendor = () => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.RequestedAmount}
+            placeholder="Enter The RequestedAmount"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, RequestedAmount: text });
             }}
@@ -282,12 +305,8 @@ const Vendor = () => {
                 }}
                 onClick={() => {
                   if (TypeFlag == "Add") {
-                    // ConfimMsg = !ConfimMsg;
                     addVendor(item);
                   } else {
-                    // ConfimMsg = !ConfimMsg;
-                    console.log("item", item);
-
                     vendorUpdate(item, index);
                   }
                 }}
@@ -384,69 +403,64 @@ const Vendor = () => {
       Listname: Config.ListNames.DistributionList,
     })
       .then((resVendor) => {
-        console.log("res", resVendor);
         let getVendorData: IVendorListColumn[] = [];
         if (resVendor.length) {
           resVendor.forEach((item) => {
             getVendorData.push({
+              VendorId: item["Id"] ? item["Id"] : null,
               Vendor: item["Vendor"] ? item["Vendor"] : "",
               Description: item["Description"] ? item["Description"] : "",
               Pricing: item["Pricing"] ? item["Pricing"] : "",
               PaymentTerms: item["PaymentTerms"] ? item["PaymentTerms"] : "",
               LastYearCost: item["LastYearCost"] ? item["LastYearCost"] : "",
-              StartingDate: item["StartingDate"] ? item["StartingDate"] : "",
               PO: item["PO"] ? item["PO"] : "",
               Supplier: item["Supplier"] ? item["Supplier"] : "",
+              Attachment: "",
+              Procurement: "",
               RequestedAmount: item["RequestedAmount"]
                 ? item["RequestedAmount"]
                 : "",
-              EntryDate: item["EntryDate"] ? item["EntryDate"] : "",
-              ToDate: item["ToDate"] ? item["ToDate"] : "",
-              Cost: item["Cost"] ? item["Cost"] : "",
-              PoCurrency: item["PoCurrency"] ? item["PoCurrency"] : "",
-              InvoiceNo: item["InvoiceNo"] ? item["InvoiceNo"] : "",
+              BudgetId: item["BudgetId"] ? item["BudgetId"] : null,
               isDummy: false,
               isEdit: false,
             });
           });
-          getVendorData.push({
-            Vendor: "",
-            Description: "",
-            Pricing: "",
-            PaymentTerms: "",
-            LastYearCost: "",
-            StartingDate: "",
-            PO: "",
-            Supplier: "",
-            RequestedAmount: "",
-            EntryDate: "",
-            ToDate: "",
-            Cost: "",
-            PoCurrency: "",
-            InvoiceNo: "",
-            isDummy: true,
-            isEdit: false,
-          });
+          if (admin) {
+            getVendorData.push({
+              VendorId: null,
+              Vendor: "",
+              Description: "",
+              Pricing: "",
+              PaymentTerms: "",
+              LastYearCost: "",
+              PO: "",
+              Supplier: "",
+              Attachment: "",
+              Procurement: "",
+              RequestedAmount: "",
+              BudgetId: null,
+              isDummy: true,
+              isEdit: false,
+            });
+          }
           setMData([...getVendorData]);
           setIsLoader(false);
         } else {
           setMData([
             ...MData,
             {
+              VendorId: null,
               Vendor: "",
               Description: "",
               Pricing: "",
               PaymentTerms: "",
               LastYearCost: "",
-              StartingDate: "",
               PO: "",
               Supplier: "",
+              Attachment: "",
+              Procurement: "",
               RequestedAmount: "",
-              EntryDate: "",
-              ToDate: "",
-              Cost: "",
-              PoCurrency: "",
-              InvoiceNo: "",
+              BudgetId: null,
               isDummy: true,
               isEdit: false,
             },
@@ -471,20 +485,18 @@ const Vendor = () => {
     AVendorCancel[index].isEdit = false;
     setMData([...AVendorCancel]);
     setAddNewVendor({
+      VendorId: null,
       Vendor: "",
       Description: "",
       Pricing: "",
       PaymentTerms: "",
       LastYearCost: "",
-      StartingDate: "",
       PO: "",
       Supplier: "",
+      Attachment: "",
+      Procurement: "",
       RequestedAmount: "",
-      EntryDate: "",
-      ToDate: "",
-      Cost: "",
-      PoCurrency: "",
-      InvoiceNo: "",
+      BudgetId: null,
       isDummy: true,
       isEdit: false,
     });
@@ -497,15 +509,9 @@ const Vendor = () => {
       Pricing: 100,
       PaymentTerms: addNewVendor.PaymentTerms,
       LastYearCost: addNewVendor.LastYearCost,
-      StartingDate: new Date(),
       PO: addNewVendor.PO,
       Supplier: addNewVendor.Supplier,
       RequestedAmount: addNewVendor.RequestedAmount,
-      EntryDate: new Date(),
-      ToDate: new Date(),
-      Cost: addNewVendor.Cost,
-      PoCurrency: addNewVendor.PoCurrency,
-      InvoiceNo: addNewVendor.InvoiceNo,
     };
     Validation();
     SPServices.SPAddItem({
@@ -513,11 +519,24 @@ const Vendor = () => {
       RequestJSON: NewJson,
     })
       .then((resAddItem) => {
-        console.log("result", resAddItem);
-        setIsTrigger(!isTrigger);
+        createFolder(resAddItem.data.Id);
       })
       .catch((error) => {
         getErrorFunction(error);
+      });
+  };
+
+  const createFolder = (itemId) => {
+    sp.web.rootFolder.folders
+      .getByName("DistributionLibrary")
+      .folders.addUsingPath(itemId.toString(), true)
+      .then((folder) => {
+        TypeFlag = "";
+        ConfimMsg = false;
+        setIsTrigger(!isTrigger);
+      })
+      .catch((err) => {
+        getErrorFunction(err);
       });
   };
 
@@ -535,33 +554,25 @@ const Vendor = () => {
   };
 
   const vendorUpdate = (item, index) => {
-    console.log("itemis", item);
-
-    console.log("update");
     let UpdateJson = {
       Vendor: addNewVendor.Vendor,
       Description: addNewVendor.Description,
       Pricing: 100,
       PaymentTerms: addNewVendor.PaymentTerms,
       LastYearCost: addNewVendor.LastYearCost,
-      StartingDate: new Date(),
       PO: addNewVendor.PO,
       Supplier: addNewVendor.Supplier,
       RequestedAmount: addNewVendor.RequestedAmount,
-      EntryDate: new Date(),
-      ToDate: new Date(),
-      Cost: addNewVendor.Cost,
-      PoCurrency: addNewVendor.PoCurrency,
-      InvoiceNo: addNewVendor.InvoiceNo,
     };
     Validation();
     SPServices.SPUpdateItem({
       Listname: Config.ListNames.DistributionList,
       RequestJSON: UpdateJson,
-      ID: item.Id,
+      ID: item.VendorId,
     })
       .then((resUpdateItem) => {
-        console.log("result", resUpdateItem);
+        TypeFlag = "";
+        ConfimMsg = false;
         setIsTrigger(!isTrigger);
       })
       .catch((error) => {
@@ -582,20 +593,18 @@ const Vendor = () => {
         newVendorAdd(item, index);
       } else {
         setAddNewVendor({
+          VendorId: null,
           Vendor: "",
           Description: "",
           Pricing: "",
           PaymentTerms: "",
           LastYearCost: "",
-          StartingDate: "",
           PO: "",
           Supplier: "",
+          Attachment: "",
+          Procurement: "",
           RequestedAmount: "",
-          EntryDate: "",
-          ToDate: "",
-          Cost: "",
-          PoCurrency: "",
-          InvoiceNo: "",
+          BudgetId: null,
           isDummy: true,
           isEdit: false,
         });
@@ -613,7 +622,6 @@ const Vendor = () => {
   };
 
   const Validation = () => {
-    console.log("adscs", addNewVendor.Vendor);
     let valueCheck = { ...Validate };
     if (addNewVendor.Vendor.trim() == "") {
       setValidate({ ...Validate, Vendor: true });
@@ -621,9 +629,10 @@ const Vendor = () => {
       setValidate({ ...Validate, Vendor: false, Description: true });
     }
   };
+
   useEffect(() => {
     getDefaultFunction();
-  }, []);
+  }, [isTrigger]);
 
   return isLoader ? (
     <Loader />
