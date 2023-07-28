@@ -23,6 +23,7 @@ import {
   IBudgetListColumn,
   IBudgetValidation,
   IVendorListColumn,
+  IVendorValidation
 } from "../../../globalInterFace/BudgetInterFaces";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -32,12 +33,61 @@ import "alertifyjs/build/css/alertify.css";
 import styles from "./Vendor.module.scss";
 import { config } from "exceljs";
 import { sp } from "@pnp/sp/presets/all";
+import { truncate } from "@microsoft/sp-lodash-subset";
 
 let TypeFlag = "";
-let ConfimMsg = true;
+let ConfimMsg = false;
 
 const Vendor = (props: any) => {
   let admin = true;
+
+  const _DetailsListStyle: Partial<IDetailsListStyles> = {
+    root: {
+      marginTop: "20px",
+      ".ms-DetailsHeader": {
+        backgroundColor: "#ededed",
+        padding: "0px",
+      },
+      ".ms-DetailsHeader-cell": {
+        ":first-child": {
+          color: "#202945",
+          cursor: "pointer",
+        },
+        ":hover": {
+          backgroundColor: "#ededed",
+        },
+      },
+      ".ms-DetailsHeader-cellName": {
+        color: "#202945",
+        fontWeight: "700 !important",
+        fontSize: "16px !important",
+      },
+      ".ms-GroupHeader-title": {
+        "span:nth-child(2)": {
+          display: "none",
+        },
+      },
+      "[data-automationid=DetailsRowFields]": {
+        alignItems: "center !important",
+      },
+      ".ms-DetailsRow-cell": {
+        fontSize: 14,
+      },
+      ".ms-DetailsList-contentWrapper": {
+        // height: items.length ? "58vh" : 20,
+        overflowY: "auto",
+        overflowX: "hidden",
+      },
+      ".ms-DetailsRow":{
+        
+        ":hover": {
+          backgroundColor: "white",
+          color:'balck'
+        },
+      }
+    },
+  };
+
   const errtxtFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       border: "1px solid red",
@@ -56,23 +106,34 @@ const Vendor = (props: any) => {
       },
     },
   };
+
+  const DropdownStyle: Partial<IDropdownStyles> = {
+    root: {
+      dropdown: {
+        ":focus::after": {
+          border: "5px solid red",
+        },
+      },
+      ".ms-Dropdown-container": {
+        width: "100%",
+      },
+    },
+  };
+
   const column: IColumn[] = [
     {
       key: "1",
       name: "Supplier",
       fieldName: "Vendor",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
-          <TextField
-            value={addNewVendor.Vendor}
-            placeholder="Enter The Vendor"
-            styles={Validate.Vendor ? errtxtFieldStyle : textFieldStyle}
-            onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Vendor: text });
-            }}
-          />
+          <Dropdown   
+          styles={DropdownStyle}
+          options={dropOptions}
+          selectedKey={dropOptions[0].key}
+        />
         ) : (
           <label>{item.Vendor}</label>
         );
@@ -83,12 +144,12 @@ const Vendor = (props: any) => {
       name: "Description",
       fieldName: "Description",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Description}
-            placeholder="Enter The Description"
+            //placeholder="Enter The Description"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Description: text });
             }}
@@ -103,12 +164,12 @@ const Vendor = (props: any) => {
       name: "Pricing",
       fieldName: "Pricing",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Pricing}
-            placeholder="Enter The Pricing"
+            //placeholder="Enter The Pricing"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Pricing: text });
             }}
@@ -123,12 +184,12 @@ const Vendor = (props: any) => {
       name: "PaymentTerms",
       fieldName: "PaymentTerms",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.PaymentTerms}
-            placeholder="Enter The PaymentTerms"
+            //placeholder="Enter The PaymentTerms"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, PaymentTerms: text });
             }}
@@ -143,12 +204,12 @@ const Vendor = (props: any) => {
       name: "LastYearCost",
       fieldName: "LastYearCost",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.LastYearCost}
-            placeholder="Enter The LastYearCost"
+            //placeholder="Enter The LastYearCost"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, LastYearCost: text });
             }}
@@ -163,7 +224,7 @@ const Vendor = (props: any) => {
       name: "PO",
       fieldName: "PO",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item, index) => {
         return admin && item.isDummy ? (
           <div
@@ -176,13 +237,24 @@ const Vendor = (props: any) => {
                 ConfirmPageChange(item, index, "Add");
               }
             }}
+
+            style={{
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 14,
+              background: "#4d546a",
+              display: "inline",
+              // padding: 4,
+              color: "#fff",
+              borderRadius: 4,
+            }}
           >
             New Vendor Add
           </div>
         ) : admin && item.isEdit ? (
           <TextField
             value={addNewVendor.PO}
-            placeholder="Enter The PO"
+            //placeholder="Enter The PO"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, PO: text });
             }}
@@ -197,12 +269,12 @@ const Vendor = (props: any) => {
       name: "Supplier",
       fieldName: "Supplier",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.Supplier}
-            placeholder="Enter The Supplier"
+            //placeholder="Enter The Supplier"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, Supplier: text });
             }}
@@ -217,7 +289,7 @@ const Vendor = (props: any) => {
       name: "Attachment",
       fieldName: "Attachment",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <div>
@@ -225,6 +297,7 @@ const Vendor = (props: any) => {
               id="AttachmentFile"
               type="file"
               style={{ display: "none" }}
+              multiple
               onChange={(e) =>
                 setAddNewVendor({
                   ...addNewVendor,
@@ -244,7 +317,7 @@ const Vendor = (props: any) => {
       name: "Procurement",
       fieldName: "Procurement",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <div>
@@ -252,11 +325,14 @@ const Vendor = (props: any) => {
               id="ProcurementFile"
               type="file"
               style={{ display: "none" }}
-              onChange={(e) =>
+              multiple
+              onChange={(e) =>{
+                
                 setAddNewVendor({
                   ...addNewVendor,
                   Procurement: e.target.files[0],
                 })
+              }
               }
             />
             <label htmlFor="ProcurementFile">ProcurementFile</label>
@@ -271,12 +347,12 @@ const Vendor = (props: any) => {
       name: "RequestedAmount",
       fieldName: "RequestedAmount",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item) => {
         return admin && item.isEdit ? (
           <TextField
             value={addNewVendor.RequestedAmount}
-            placeholder="Enter The RequestedAmount"
+            //placeholder="Enter The RequestedAmount"
             onChange={(e, text) => {
               setAddNewVendor({ ...addNewVendor, RequestedAmount: text });
             }}
@@ -291,7 +367,7 @@ const Vendor = (props: any) => {
       name: "Action",
       fieldName: "Action",
       minWidth: 100,
-      maxWidth: 200,
+      maxWidth: 500,
       onRender: (item, index) => {
         return admin ? (
           item.isEdit ? (
@@ -367,11 +443,20 @@ const Vendor = (props: any) => {
       },
     },
   ];
-  const [isTrigger, setIsTrigger] = useState(false);
+
+  const dropOptions = [
+    {key:0,text:'Vendor1'},
+    {key:1,text:'Vendor1'},
+    {key:2,text:'Vendor1'},
+    {key:3,text:'Vendor1'},
+    {key:4,text:'Vendor1'},
+  ]
+
+  const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorListColumn[]>([]);
   const [addNewVendor, setAddNewVendor] = useState<IVendorListColumn>(null);
-  const [Validate, setValidate] = useState({
+  const [Validate, setValidate] = useState<IVendorValidation>({
     Vendor: false,
     Description: false,
     Pricing: false,
@@ -405,22 +490,22 @@ const Vendor = (props: any) => {
       .then((resVendor) => {
         let getVendorData: IVendorListColumn[] = [];
         if (resVendor.length) {
-          resVendor.forEach((item) => {
+          resVendor.forEach((item:any) => {
             getVendorData.push({
-              VendorId: item["Id"] ? item["Id"] : null,
-              Vendor: item["Vendor"] ? item["Vendor"] : "",
-              Description: item["Description"] ? item["Description"] : "",
-              Pricing: item["Pricing"] ? item["Pricing"] : "",
-              PaymentTerms: item["PaymentTerms"] ? item["PaymentTerms"] : "",
-              LastYearCost: item["LastYearCost"] ? item["LastYearCost"] : "",
-              PO: item["PO"] ? item["PO"] : "",
-              Supplier: item["Supplier"] ? item["Supplier"] : "",
+              VendorId: item.Id ? item.Id : null,
+              Vendor: item.Vendor ? item.Vendor : "",
+              Description: item.Description ? item.Description : "",
+              Pricing: item.Pricing ? item.Pricing : "",
+              PaymentTerms: item.PaymentTerms ? item.PaymentTerms : "",
+              LastYearCost: item.LastYearCost ? item.LastYearCost : "",
+              PO: item.PO ? item.PO : "",
+              Supplier: item.Supplier ? item.Supplier : "",
               Attachment: "",
               Procurement: "",
-              RequestedAmount: item["RequestedAmount"]
-                ? item["RequestedAmount"]
+              RequestedAmount: item.RequestedAmount
+                ? item.RequestedAmount
                 : "",
-              BudgetId: item["BudgetId"] ? item["BudgetId"] : null,
+              BudgetId: item.BudgetId ? item.BudgetId : null,
               isDummy: false,
               isEdit: false,
             });
@@ -504,7 +589,7 @@ const Vendor = (props: any) => {
 
   const addVendor = (item) => {
     let NewJson = {
-      Vendor: addNewVendor.Vendor,
+      VendorId: 5,
       Description: addNewVendor.Description,
       Pricing: 100,
       PaymentTerms: addNewVendor.PaymentTerms,
@@ -526,11 +611,26 @@ const Vendor = (props: any) => {
       });
   };
 
-  const createFolder = (itemId) => {
-    sp.web.rootFolder.folders
+  const createFolder = async (itemId) => {
+    await sp.web.rootFolder.folders
       .getByName("DistributionLibrary")
-      .folders.addUsingPath(itemId.toString(), true)
-      .then((folder) => {
+      .folders.addUsingPath('Master', true)
+      .then( async (folder) => {
+        console.log('folder',folder);
+        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('test1',true)
+        .then((data)=>{
+          
+        })
+        .catch((error)=>console.log('first sub folder',error))
+        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('test2',true)
+        .then((data)=>{
+          
+        })
+        .catch((error)=>console.log('second sub folder',error))
+                // .then(async (file) => {
+                //     await errorFunction('File created successfully:', file);
+                // })
+        
         TypeFlag = "";
         ConfimMsg = false;
         setIsTrigger(!isTrigger);
@@ -641,6 +741,7 @@ const Vendor = (props: any) => {
       <DetailsList
         columns={column}
         items={MData}
+        styles={_DetailsListStyle}
         selectionMode={SelectionMode.none}
       />
     </div>
