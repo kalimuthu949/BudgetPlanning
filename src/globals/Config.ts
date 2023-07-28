@@ -19,6 +19,7 @@ import {
 export namespace Config {
   /* Global List Names */
   export const ListNames: IList = {
+    AdminList: "Admin List",
     VendorList: "Vendor List",
     YearList: "Year List",
     MasterCategoryList: "Master Category List",
@@ -125,6 +126,7 @@ export namespace Config {
     masterCate: [],
     ctgryDropOptions: [],
     Area: [],
+    Vendor: [],
   };
 
   /* Global of current budget items names */
