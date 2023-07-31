@@ -148,39 +148,49 @@ const Country = (props: any) => {
   const saveBtnStyle = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
-      borderRadius: 5,
+      height: 32,
+      color: "#fff",
+      background: "#2580e0 !important",
+      borderRadius: 3,
       marginRight: 10,
-      width: "30%",
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#2580e0",
+      color: "#fff",
+    },
   };
 
   const cancelBtnStyle = {
     root: {
-      border: "1px solid",
-      background: "transparent !important",
-      borderRadius: 5,
-      marginRight: 10,
-      width: "30%",
+      backgroundColor: "#dc3120",
+      color: "#FFF",
+      height: 32,
+      borderRadius: 3,
+      border: "none",
+      // marginRight: 10,
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#dc3120",
+      color: "#fff",
+    },
   };
 
   const btnStyle = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
+      background: "#2580e0 !important",
+      color: "#fff",
       height: 33,
       borderRadius: 5,
     },
+    rootHovered: {
+      color: "#fff",
+    },
     icon: {
       fontSize: 16,
-      color: "#000",
+      color: "#fff",
     },
   };
 

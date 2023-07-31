@@ -162,3 +162,21 @@ div {
   border-radius: 10px;
   background-color: #e7e7e7;
 }
+
+[data-automation-key="column4"] {
+  white-space: pre-wrap !important;
+  max-height: 58px !important;
+  overflow: auto !important;
+}
+[data-automation-key="column4"]::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f7f7f7;
+}
+[data-automation-key="column4"]::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #e7e7e7;
+}
+
+button:active {
+  color: #fff !important;
+}

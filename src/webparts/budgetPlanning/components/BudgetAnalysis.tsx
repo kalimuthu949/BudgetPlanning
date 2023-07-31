@@ -47,7 +47,6 @@ interface IPagination {
 }
 
 const BudgetAnalysis = (props: any): JSX.Element => {
-  
   // local variables
   propDropValue = { ...props.dropValue };
   let currentYear: string =
@@ -108,7 +107,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             />
           );
         } else {
-          return item.Total ? item.Total:item.PropsedTotal
+          return item.Total ? item.Total : item.PropsedTotal;
         }
       },
     },
@@ -172,23 +171,28 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [masterData, setMasterData] = useState<ICurBudgetAnalysis[]>([]);
   const [budgetItems, setBudgetItems] = useState<ICurBudgetAnalysis[]>([]);
-  const [viewBudgetItems, setViewBudgetItems] = useState<ICurBudgetAnalysis[]>([]);
+  const [viewBudgetItems, setViewBudgetItems] = useState<ICurBudgetAnalysis[]>(
+    []
+  );
   const [isValidation, setIsvalidation] = useState<boolean>(false);
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filCtgryDrop, setFilCtgryDrop] = useState<string>("All");
-  const [fillAreaDrop,setFillAreaDrop] = useState<string>('All')
-  const [ctgryDropOptions, setCtgryDropOptions] =useState<IDropdowns>(propDropValue);
-  const [filPeriodDrop, setFilPeriodDrop] = useState<string>(propDropValue.Period[propDropValue.Period.length - 1].text);
+  const [fillAreaDrop, setFillAreaDrop] = useState<string>("All");
+  const [ctgryDropOptions, setCtgryDropOptions] =
+    useState<IDropdowns>(propDropValue);
+  const [filPeriodDrop, setFilPeriodDrop] = useState<string>(
+    propDropValue.Period[propDropValue.Period.length - 1].text
+  );
   const [edit, setEdit] = useState<IEdit>({
     authendication: false,
     id: null,
     data: null,
   });
   const [pagination, setPagination] = useState<IPagination>({
-    perPage: 5,
+    perPage: 10,
     currentPage: 1,
-  });  
+  });
 
   // style cteations
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -228,13 +232,12 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         overflowY: "auto",
         overflowX: "hidden",
       },
-      ".ms-DetailsRow":{
-        
+      ".ms-DetailsRow": {
         ":hover": {
           backgroundColor: "white",
-          color:'balck'
+          color: "balck",
         },
-      }
+      },
     },
   };
 
@@ -265,13 +268,13 @@ const BudgetAnalysis = (props: any): JSX.Element => {
 
   const DropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      dropdown: {
-        ":focus::after": {
-          border: "5px solid red",
-        },
-      },
       ".ms-Dropdown-container": {
         width: "100%",
+      },
+    },
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid rgb(96, 94, 92)",
       },
     },
   };
@@ -285,16 +288,16 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   };
 
   // functions creations
-  const _getErrorFunction = (errMsg: any) :void => {
+  const _getErrorFunction = (errMsg: any): void => {
     alertify.error(errMsg);
     setIsLoader(false);
   };
 
-  const _getDefaultFunction = () :void => {
+  const _getDefaultFunction = (): void => {
     getAllData(currentYear);
   };
 
-  const getAllData = (year: string) :void => {
+  const getAllData = (year: string): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CategoryList,
       Select: "*, Year/ID, Year/Title, Country/ID, Country/Title",
@@ -316,30 +319,33 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     })
       .then((data: any) => {
         let items: ICurBudgetAnalysis[] = [];
-        console.log('data',data);
-        
-                
-        data.length &&  data.forEach((value: any) => 
-        {
-          console.log('check',value.OverAllBudgetCost ? true:false);
-          
-          items.push({
-            Category: value.Title ? value.Title : "",
-            Country: value.Country.Title ? value.Country.Title : "",
-            Year: value.Year.Title ? value.Year.Title : "",
-            Type: value.CategoryType ? value.CategoryType : "",
-            ID: value.ID ? value.ID : null,
-            Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : 0,
-            isEdit: false,
-            Area: value.Area ? value.Area:'',
-            PropsedTotal:value.TotalProposed ? value.TotalProposed:0
+        console.log("data", data);
+
+        data.length &&
+          data.forEach((value: any) => {
+            console.log("check", value.OverAllBudgetCost ? true : false);
+
+            items.push({
+              Category: value.Title ? value.Title : "",
+              Country: value.Country.Title ? value.Country.Title : "",
+              Year: value.Year.Title ? value.Year.Title : "",
+              Type: value.CategoryType ? value.CategoryType : "",
+              ID: value.ID ? value.ID : null,
+              Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : 0,
+              isEdit: false,
+              Area: value.Area ? value.Area : "",
+              PropsedTotal: value.TotalProposed ? value.TotalProposed : 0,
+            });
           });
-        });      
-                
-        console.log('items',items);
-        
-        let newItems = _filterArray(props.groupUsers,items,Config.Navigation.BudgetAnalysis)
-        console.log('newItems',newItems);
+
+        console.log("items", items);
+
+        let newItems = _filterArray(
+          props.groupUsers,
+          items,
+          Config.Navigation.BudgetAnalysis
+        );
+        console.log("newItems", newItems);
 
         setMasterData(newItems);
         setBudgetItems(newItems);
@@ -348,7 +354,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       .catch((error: any) => _getErrorFunction("get budgjet data"));
   };
 
-  const getDropdownValues = (items: ICurBudgetAnalysis[]) :void => {
+  const getDropdownValues = (items: ICurBudgetAnalysis[]): void => {
     let allCategory: string[] = [...items].map((value) => value.Category);
     let categories: string[] = [...allCategory].filter(
       (value, index) => index === allCategory.indexOf(value)
@@ -370,43 +376,57 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     let startIndex = (pagination.currentPage - 1) * pagination.perPage;
     let endIndex = startIndex + pagination.perPage;
     let bdgItems = [...items].slice(startIndex, endIndex);
-    let authendication  = [...viewBudgetItems].some((value)=>value.isEdit === true);
-    if(authendication && isCheck){
-      isCheck = false
-      let isNextPage = confirm('You have unsaved changes, are you sure you want to change the page');
-      if(isNextPage){
-        let id = [...viewBudgetItems].filter((value)=>value.isEdit === true)[0].ID;
-        let index = [...items].findIndex((value)=>value.ID === id);
+    let authendication = [...viewBudgetItems].some(
+      (value) => value.isEdit === true
+    );
+    if (authendication && isCheck) {
+      isCheck = false;
+      let isNextPage = confirm(
+        "You have unsaved changes, are you sure you want to change the page"
+      );
+      if (isNextPage) {
+        let id = [...viewBudgetItems].filter(
+          (value) => value.isEdit === true
+        )[0].ID;
+        let index = [...items].findIndex((value) => value.ID === id);
         let newBudgetItems = [...items];
         newBudgetItems[index].isEdit = false;
-        setBudgetItems(newBudgetItems)
+        setBudgetItems(newBudgetItems);
         setIsvalidation(false);
         setViewBudgetItems([...bdgItems]);
         setIsLoader(false);
-        setPagination({ ...pagination, currentPage: _currentPage })
+        setPagination({ ...pagination, currentPage: _currentPage });
+      } else {
+        authendication = false;
+        setPagination({ ...pagination, currentPage: _previousPage });
       }
-      else{
-        authendication = false
-        setPagination({ ...pagination, currentPage: _previousPage })
-      }
-    }
-    else{
+    } else {
       setViewBudgetItems([...bdgItems]);
       setIsLoader(false);
-    } 
+    }
   };
 
-  const handelEdit = (index: number,type: string,item: ICurBudgetAnalysis) :void => {
+  const handelEdit = (
+    index: number,
+    type: string,
+    item: ICurBudgetAnalysis
+  ): void => {
     let items: ICurBudgetAnalysis[] = [...viewBudgetItems];
-    if(type === "Edit"){
-      let authendication:boolean = [...items].some((value)=>value.isEdit === true);
-      if(authendication){
-        let newAuthendication:boolean = confirm('You have unsaved changes, are you sure you want to leave?')
-        let previousIndex:number = [...items].findIndex((value)=>value.isEdit === true)
-        
-        if(newAuthendication){
+    if (type === "Edit") {
+      let authendication: boolean = [...items].some(
+        (value) => value.isEdit === true
+      );
+      if (authendication) {
+        let newAuthendication: boolean = confirm(
+          "You have unsaved changes, are you sure you want to leave?"
+        );
+        let previousIndex: number = [...items].findIndex(
+          (value) => value.isEdit === true
+        );
+
+        if (newAuthendication) {
           items[previousIndex].isEdit = false;
-          items[index].isEdit = true
+          items[index].isEdit = true;
           setEdit({
             authendication: true,
             data: item.Total,
@@ -414,29 +434,27 @@ const BudgetAnalysis = (props: any): JSX.Element => {
           });
           setIsvalidation(false);
         }
-      }
-      else{
+      } else {
         items[index].isEdit = true;
-        
+
         setEdit({
           authendication: true,
           data: item.Total,
           id: item.ID,
         });
-        if(!item.Total){
-          setIsvalidation(true)
+        if (!item.Total) {
+          setIsvalidation(true);
         }
       }
-      setViewBudgetItems(items)
-    }
-    else{
+      setViewBudgetItems(items);
+    } else {
       items[index].isEdit = false;
-      setEdit({ ...edit, authendication: false })
+      setEdit({ ...edit, authendication: false });
       setIsvalidation(false);
     }
   };
 
-  const handleEditUpdate = (item: ICurBudgetAnalysis, index: number) :void => {
+  const handleEditUpdate = (item: ICurBudgetAnalysis, index: number): void => {
     if (edit.data) {
       let items: ICurBudgetAnalysis[] = [...viewBudgetItems];
       items[index].isEdit = false;
@@ -453,29 +471,37 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     }
   };
 
-  const handleFilter = (Type: string, Country: string, Category: string,Area:string) :void => {
-    
-    let filteredItems = [...masterData]
+  const handleFilter = (
+    Type: string,
+    Country: string,
+    Category: string,
+    Area: string
+  ): void => {
+    let filteredItems = [...masterData];
 
-    if(Type !== 'All'){
-      filteredItems = [...filteredItems].filter((value)=>value.Type === Type)
+    if (Type !== "All") {
+      filteredItems = [...filteredItems].filter((value) => value.Type === Type);
     }
-    if(Country !== 'All'){
-      filteredItems = [...filteredItems].filter((value)=>value.Country === Country)
+    if (Country !== "All") {
+      filteredItems = [...filteredItems].filter(
+        (value) => value.Country === Country
+      );
     }
-    if(Category !== 'All'){
-      filteredItems = [...filteredItems].filter((value)=>value.Category === Category)
+    if (Category !== "All") {
+      filteredItems = [...filteredItems].filter(
+        (value) => value.Category === Category
+      );
     }
-    if(Area !== 'All'){
-      filteredItems = [...filteredItems].filter((value)=>value.Area === Area)
+    if (Area !== "All") {
+      filteredItems = [...filteredItems].filter((value) => value.Area === Area);
     }
 
     setBudgetItems(filteredItems);
-    setPagination({ ...pagination, currentPage: 1 })
+    setPagination({ ...pagination, currentPage: 1 });
     setPaginationData(filteredItems);
   };
 
-  const generateExcel = (items: ICurBudgetAnalysis[]) :void => {
+  const generateExcel = (items: ICurBudgetAnalysis[]): void => {
     let _arrExport: ICurBudgetAnalysis[] = [...items];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
@@ -497,7 +523,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         Country: item.Country,
         Type: item.Type,
         Total: item.Total,
-        Area:item.Area
+        Area: item.Area,
       });
     });
     worksheet.autoFilter = {
@@ -505,7 +531,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       to: "G1",
     };
 
-    const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1","G1"];
+    const headerRows: string[] = ["A1", "B1", "C1", "D1", "E1", "F1", "G1"];
     headerRows.map((key: any) => {
       worksheet.getCell(key).fill = {
         type: "pattern",
@@ -528,9 +554,9 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     });
 
     const readOnlyRows = ["B1", "C1", "D1", "E1", "F1"];
-    readOnlyRows.map((key:any) => {
+    readOnlyRows.map((key: any) => {
       worksheet.getCell(key).protection = { locked: true };
-    })
+    });
     workbook.xlsx
       .writeBuffer()
       .then((buffer: any) =>
@@ -580,7 +606,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     }
   };
 
-  const getUpdateImportDatas = (datas: any[]) :void => {
+  const getUpdateImportDatas = (datas: any[]): void => {
     SPServices.batchUpdate({
       ListName: Config.ListNames.CategoryList,
       responseData: [...datas],
@@ -593,15 +619,15 @@ const BudgetAnalysis = (props: any): JSX.Element => {
       });
   };
 
-  const reset = (year:string) :void =>{
+  const reset = (year: string): void => {
     setFilPeriodDrop(year);
     getAllData(year);
     setIsLoader(true);
     setFilCountryDrop("All");
     setFilCtgryDrop("All");
     setFilTypeDrop("All");
-    setFillAreaDrop('All')
-  }
+    setFillAreaDrop("All");
+  };
 
   // useEffect
   useEffect(() => {
@@ -638,7 +664,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                   )}
                   onChange={(e: any, text: IDrop) => {
                     _isCurYear = text.text == currentYear ? true : false;
-                    reset(text.text)
+                    reset(text.text);
                   }}
                 />
               </div>
@@ -655,10 +681,38 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                   onChange={(e: any, text: IDrop) => {
                     _isCurYear = filPeriodDrop == currentYear ? true : false;
                     setFilCountryDrop(text.text as string);
-                    handleFilter(filTypeDrop, text.text, filCtgryDrop,fillAreaDrop);
+                    handleFilter(
+                      filTypeDrop,
+                      text.text,
+                      filCtgryDrop,
+                      fillAreaDrop
+                    );
                   }}
                 />
               </div>
+              <div className={styles.dropdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Area"
+                  options={[...propDropValue.Area]}
+                  selectedKey={_getFilterDropValues(
+                    "Area",
+                    { ...propDropValue },
+                    fillAreaDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = filPeriodDrop == currentYear ? true : false;
+                    setFillAreaDrop(text.text as string);
+                    handleFilter(
+                      filTypeDrop,
+                      filCountryDrop,
+                      filCtgryDrop,
+                      text.text
+                    );
+                  }}
+                />
+              </div>
+
               <div className={styles.dropdowns}>
                 <Dropdown
                   styles={DropdownStyle}
@@ -672,7 +726,12 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                   onChange={(e: any, text: IDrop) => {
                     _isCurYear = filPeriodDrop == currentYear ? true : false;
                     setFilCtgryDrop(text.text as string);
-                    handleFilter(filTypeDrop, filCountryDrop, text.text,fillAreaDrop);
+                    handleFilter(
+                      filTypeDrop,
+                      filCountryDrop,
+                      text.text,
+                      fillAreaDrop
+                    );
                   }}
                 />
               </div>
@@ -689,34 +748,23 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                   onChange={(e: any, text: IDrop) => {
                     _isCurYear = filPeriodDrop == currentYear ? true : false;
                     setFilTypeDrop(text.text as string);
-                    handleFilter(text.text, filCountryDrop, filCtgryDrop,fillAreaDrop);
+                    handleFilter(
+                      text.text,
+                      filCountryDrop,
+                      filCtgryDrop,
+                      fillAreaDrop
+                    );
                   }}
                 />
               </div>
-              <div className={styles.dropdowns}>
-                <Dropdown   
-                  styles={DropdownStyle}
-                  label="Area"
-                  options={[...propDropValue.Area]}
-                  selectedKey={_getFilterDropValues(
-                    "Area",
-                    { ...propDropValue },
-                    fillAreaDrop
-                  )}
-                  onChange={(e: any, text: IDrop) => {
-                    _isCurYear = filPeriodDrop == currentYear ? true : false;
-                    setFillAreaDrop(text.text as string);
-                    handleFilter(filTypeDrop, filCountryDrop, filCtgryDrop,text.text);
-                  }}
-                />
-              </div>
+
               <div className={styles.icon}>
                 <Icon
                   iconName="Refresh"
                   className={styles.refresh}
                   onClick={() => {
                     _isCurYear = true;
-                    reset(currentYear)
+                    reset(currentYear);
                   }}
                 />
               </div>
@@ -764,14 +812,13 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             <Pagination
               currentPage={pagination.currentPage}
               totalPages={Math.ceil(budgetItems.length / pagination.perPage)}
-              onChange={(page: number) =>{
+              onChange={(page: number) => {
                 isCheck = true;
                 _previousPage = pagination.currentPage;
-                _currentPage = page;                
-                
-                setPagination({ ...pagination, currentPage: page })
-              }
-              }
+                _currentPage = page;
+
+                setPagination({ ...pagination, currentPage: page });
+              }}
             />
           ) : (
             <div className={styles.noRecords}>No data found !!!</div>

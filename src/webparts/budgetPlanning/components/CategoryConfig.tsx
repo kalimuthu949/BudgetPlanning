@@ -181,11 +181,20 @@ const CategoryConfig = (props: any): JSX.Element => {
       background: "#fff",
       border: "1px solid #000",
     },
+    root: {
+      width: "100%",
+    },
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid #000",
+      },
+    },
   };
 
   const modalStyles: Partial<IModalStyles> = {
     main: {
       width: "20%",
+      minHeight: 128,
       background: "#f7f9fa",
       padding: 10,
       height: "auto",
@@ -510,29 +519,6 @@ const CategoryConfig = (props: any): JSX.Element => {
               }}
             />
           </div>
-
-          {/* Category type dropdown section */}
-          <div style={{ width: "15%" }}>
-            <Label>Category Type</Label>
-            <Dropdown
-              styles={DropdownStyle}
-              options={[...propDropValue.Type]}
-              selectedKey={_getFilterDropValues(
-                "Type",
-                {
-                  ...propDropValue,
-                },
-                filTypeDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                setFilTypeDrop(text.text as string);
-                _strCateType = text.text as string;
-                _getOnChange();
-                _filterCategoryArray();
-              }}
-            />
-          </div>
-
           {/* Area dropdown section */}
           <div style={{ width: "15%" }}>
             <Label>Area</Label>
@@ -549,6 +535,28 @@ const CategoryConfig = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 setFilAreaDrop(text.text as string);
                 _strArea = text.text as string;
+                _getOnChange();
+                _filterCategoryArray();
+              }}
+            />
+          </div>
+
+          {/* Category type dropdown section */}
+          <div style={{ width: "8%" }}>
+            <Label>Category Type</Label>
+            <Dropdown
+              styles={disabledDropdownStyles}
+              options={[...propDropValue.Type]}
+              selectedKey={_getFilterDropValues(
+                "Type",
+                {
+                  ...propDropValue,
+                },
+                filTypeDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                setFilTypeDrop(text.text as string);
+                _strCateType = text.text as string;
                 _getOnChange();
                 _filterCategoryArray();
               }}
@@ -572,7 +580,7 @@ const CategoryConfig = (props: any): JSX.Element => {
           {/* Category dropdown section */}
           {_isCateMulti && (
             // <div style={{ width: "15%" }}>
-            <div style={{ width: "40%" }}>
+            <div style={{ width: "36%" }}>
               <Label>Category</Label>
               <Autocomplete
                 size="small"
@@ -698,9 +706,11 @@ const CategoryConfig = (props: any): JSX.Element => {
           >
             <button
               style={{
-                width: "16%",
-                background: "#ffffff",
-                border: "1px solid",
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
                 borderRadius: "3px",
                 cursor: "pointer",
                 padding: "4px 0px",
@@ -714,8 +724,10 @@ const CategoryConfig = (props: any): JSX.Element => {
             </button>
             <button
               style={{
-                width: "16%",
-                background: "#f6db55",
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
                 border: "none",
                 borderRadius: "3px",
                 cursor: "pointer",
