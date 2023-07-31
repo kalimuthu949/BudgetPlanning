@@ -14,6 +14,7 @@ import {
   IGroupUsers,
   IGroupNames,
   IAreaName,
+  IVendorDetail,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -182,5 +183,14 @@ export namespace Config {
     InfraStructure: "Infra Structure",
     EnterpriseApplication: "Enterprise Application",
     SpecialProject: "Special Project",
+  };
+
+  export const VendorDetail: IVendorDetail = {
+    ID: 'ID',
+    VendorId: "VendorId",
+    Vendor: "Vendor",
+    LastYearCost: "LastYearCost",
+    PO: "PO",
+    Supplier: "Supplier",
   };
 }

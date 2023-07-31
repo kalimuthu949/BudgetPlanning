@@ -292,3 +292,13 @@ export interface IVendorValidation {
   PoCurrency: boolean;
   InvoiceNo: boolean;
 }
+
+// interface of vendor details
+export interface IVendorDetail {
+  ID: string;
+  VendorId: string;
+  Vendor: string;
+  LastYearCost: string;
+  PO: string;
+  Supplier: string;
+}
