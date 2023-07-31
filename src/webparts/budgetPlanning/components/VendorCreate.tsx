@@ -152,11 +152,16 @@ const VendorCreate = (props: any): JSX.Element => {
 
   const vendorDeletePopupStyle = {
     main: {
-      padding: "15px",
+      width: "20%",
+      minHeight: 128,
+      background: "#f7f9fa",
+      padding: 10,
+      height: "auto",
+      borderRadius: 4,
       display: "flex",
-      alignItems: "flex-end",
-      minHeight: "none",
-      height: "180px",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
     },
   };
 
@@ -192,39 +197,49 @@ const VendorCreate = (props: any): JSX.Element => {
   const saveBtnStyle = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
-      borderRadius: 5,
+      height: 32,
+      color: "#fff",
+      background: "#2580e0 !important",
+      borderRadius: 3,
       marginRight: 10,
-      width: "30%",
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#2580e0",
+      color: "#fff",
+    },
   };
 
   const cancelBtnStyle = {
     root: {
-      border: "1px solid",
-      background: "transparent !important",
-      borderRadius: 5,
-      marginRight: 10,
-      width: "30%",
+      backgroundColor: "#dc3120",
+      color: "#FFF",
+      height: 32,
+      borderRadius: 3,
+      border: "none",
+      // marginRight: 10,
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#dc3120",
+      color: "#fff",
+    },
   };
 
   const btnStyle = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
+      background: "#2580e0 !important",
+      color: "#fff",
       height: 33,
       borderRadius: 5,
     },
+    rootHovered: {
+      color: "#fff",
+    },
     icon: {
       fontSize: 16,
-      color: "#000",
+      color: "#fff",
     },
   };
 
@@ -575,9 +590,18 @@ const VendorCreate = (props: any): JSX.Element => {
       <Modal isOpen={deletePopup.DeleteFlag} styles={vendorDeletePopupStyle}>
         <div>
           <div style={{ textAlign: "center" }}>
-            <h4 style={{ color: "red" }}>Do you want to delete this Vendor?</h4>
+            <Label style={{ color: "red", fontSize: 16 }}>
+              Do you want to delete this Vendor?
+            </Label>
           </div>
-          <div style={{ textAlign: "center", marginTop: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: 20,
+            }}
+          >
             <DefaultButton
               styles={cancelBtnStyle}
               text={"No"}

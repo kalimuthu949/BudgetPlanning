@@ -160,25 +160,27 @@ const BudgetCategory = (props: any): JSX.Element => {
   const btnStyle: Partial<IButtonStyles> = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
+      // background: "#f6db55 !important",
+      background: "#2580e0 !important",
       height: 33,
       borderRadius: 5,
     },
     label: {
       fontWeight: 500,
-      color: "#000",
+      color: "#fff",
       cursor: "pointer",
       fontSize: 16,
     },
     icon: {
       fontSize: 16,
-      color: "#000",
+      color: "#fff",
     },
   };
 
   const NewmodalStyle: Partial<IModalStyles> = {
     main: {
-      padding: "10px 20px",
+      // padding: "10px 20px",
+      padding: " 10px 0px 10px 18px",
       borderRadius: 4,
       width: "30%",
       height: "auto !important",
@@ -237,30 +239,36 @@ const BudgetCategory = (props: any): JSX.Element => {
     },
   };
 
-  const saveBtnStyle: Partial<IButtonStyles> = {
+  const saveBtnStyle = {
     root: {
       border: "none",
-      background: "#f6db55 !important",
-      borderRadius: 5,
+      height: 32,
+      color: "#fff",
+      background: "#2580e0 !important",
+      borderRadius: 3,
       marginRight: 10,
-      width: "30%",
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#2580e0",
+      color: "#fff",
+    },
   };
 
-  const cancelBtnStyle: Partial<IButtonStyles> = {
+  const cancelBtnStyle = {
     root: {
-      border: "1px solid",
-      background: "transparent !important",
-      borderRadius: 5,
-      marginRight: 10,
-      width: "30%",
+      backgroundColor: "#dc3120",
+      color: "#FFF",
+      height: 32,
+      borderRadius: 3,
+      border: "none",
+      // marginRight: 10,
+      width: "26%",
     },
-    // rootHovered:{
-    //   background:""
-    // }
+    rootHovered: {
+      background: "#dc3120",
+      color: "#fff",
+    },
   };
 
   const importModalStyle: Partial<IModalStyles> = {
