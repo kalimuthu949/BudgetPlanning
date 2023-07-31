@@ -10,11 +10,13 @@ import {
   IDropdowns,
   ICurBudgetItem,
   IBudgetValidation,
-  IMasCategoryListColumn,
+  IMasCategoryItems,
   IGroupUsers,
   IGroupNames,
   IAreaName,
   IVendorDetail,
+  IVendorProp,
+  IVendorItems,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -29,6 +31,7 @@ export namespace Config {
     BudgetList: "Budget List",
     DistributionList: "Distribution List",
     DistributionLibrary: "DistributionLibrary",
+    MasterCategoryBackupList: "Master Category Backup List",
   };
 
   /* Global Year List Column Names */
@@ -37,7 +40,7 @@ export namespace Config {
   };
 
   /* Global Year List Column Names */
-  export const masCategoryListColumns: IMasCategoryListColumn = {
+  export const masCategoryListColumns: IMasCategoryItems = {
     Title: "Title",
     Area: "Area",
   };
@@ -151,6 +154,8 @@ export namespace Config {
     isDeleted: false,
     isEdit: false,
     isDummy: false,
+    isAdmin: false,
+    isManager: false,
   };
 
   /* Global of Budget valiation items names */
@@ -186,11 +191,40 @@ export namespace Config {
   };
 
   export const VendorDetail: IVendorDetail = {
-    ID: 'ID',
+    ID: "ID",
     VendorId: "VendorId",
     Vendor: "Vendor",
     LastYearCost: "LastYearCost",
     PO: "PO",
     Supplier: "Supplier",
+  };
+
+  export const VendorProp: IVendorProp = {
+    isVendor: true,
+    isAdmin: false,
+    Item: curBudgetItem,
+  };
+
+  export const Vendor: IVendorItems = {
+    ID: null,
+    VendorId: null,
+    Vendor: "All",
+    Description: "",
+    Pricing: "",
+    PaymentTerms: "",
+    LastYearCost: "",
+    PO: "",
+    Supplier: "",
+    Attachment: "",
+    Procurement: "",
+    RequestedAmount: "",
+    BudgetId: null,
+    isDummy: true,
+    isEdit: false,
+  };
+  export const vendorValidation = {
+    Vendor: false,
+    Description: false,
+    Pricing: false,
   };
 }

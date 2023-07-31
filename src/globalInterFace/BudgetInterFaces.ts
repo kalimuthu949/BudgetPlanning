@@ -9,6 +9,7 @@ export interface IList {
   BudgetList: string;
   DistributionList: string;
   DistributionLibrary: string;
+  MasterCategoryBackupList: string;
 }
 
 /* Interface of Year List Column */
@@ -17,7 +18,7 @@ export interface IYearListColumn {
 }
 
 /* Interface of master category List Column */
-export interface IMasCategoryListColumn {
+export interface IMasCategoryItems {
   Title: string;
   Area: string;
 }
@@ -134,6 +135,8 @@ export interface ICurCategoryItem {
   ID: number;
   OverAllBudgetCost: number;
   TotalProposed: number;
+  isAdmin?: boolean;
+  isManager?: boolean;
 }
 
 /* Interface of current budget items */
@@ -157,6 +160,8 @@ export interface ICurBudgetItem {
   isDeleted: Boolean;
   isEdit: Boolean;
   isDummy: Boolean;
+  isAdmin?: boolean;
+  isManager?: boolean;
 }
 
 /* Interface of over all items */
@@ -171,6 +176,8 @@ export interface IOverAllItem {
   countryID: number;
   OverAllBudgetCost: number;
   TotalProposed: number;
+  isAdmin?: boolean;
+  isManager?: boolean;
   subCategory: ICurBudgetItem[];
 }
 
@@ -230,7 +237,8 @@ export interface IEdit {
 }
 
 // Vendor page interface
-export interface IVendorListColumn {
+export interface IVendorItems {
+  ID: number;
   VendorId: number;
   Vendor: string;
   Description: string;
@@ -280,17 +288,6 @@ export interface IVendorValidation {
   Vendor: boolean;
   Description: boolean;
   Pricing: boolean;
-  PaymentTerms: boolean;
-  LastYearCost: boolean;
-  StartingDate: boolean;
-  PO: boolean;
-  Supplier: boolean;
-  RequestedAmount: boolean;
-  EntryDate: boolean;
-  ToDate: boolean;
-  Cost: boolean;
-  PoCurrency: boolean;
-  InvoiceNo: boolean;
 }
 
 // interface of vendor details
@@ -301,4 +298,19 @@ export interface IVendorDetail {
   LastYearCost: string;
   PO: string;
   Supplier: string;
+}
+
+// admin group user details
+export interface IUserDetail {
+  ID: number;
+  imageUrl: any;
+  text: string;
+  secondaryText: string;
+}
+
+// vendor details
+export interface IVendorProp {
+  isVendor: boolean;
+  isAdmin: boolean;
+  Item: ICurBudgetItem;
 }

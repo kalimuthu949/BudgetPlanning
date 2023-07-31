@@ -8,10 +8,10 @@ import {
   IColumn,
   DetailsListLayoutMode,
   Icon,
-  TextField,
   IDropdownStyles,
   IDetailsListStyles,
-  ITextFieldStyles,
+  NormalPeoplePicker,
+  IPersonaProps,
 } from "@fluentui/react";
 import {
   IDrop,
@@ -19,14 +19,9 @@ import {
   ICurBudgetItem,
   ICurCategoryItem,
   IOverAllItem,
-  IBudgetListColumn,
-  IBudgetValidation,
   IGroupUsers,
+  IVendorProp,
 } from "../../../globalInterFace/BudgetInterFaces";
-import {
-  PeoplePicker,
-  PrincipalType,
-} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { Config } from "../../../globals/Config";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -40,8 +35,6 @@ import { _filterArray } from "../../../CommonServices/filterCommonArray";
 let propDropValue: IDropdowns;
 let _isCurYear: boolean = true;
 let isUserPermissions: IGroupUsers;
-let _Items: ICurBudgetItem[] = [];
-let _groupItem: IOverAllItem[] = [];
 
 const BudgetDistribution = (props: any): JSX.Element => {
   /* Variable creation */
@@ -149,62 +142,43 @@ const BudgetDistribution = (props: any): JSX.Element => {
       maxWidth: 80,
       onRender: (item: any) => {
         return (
-          <div>
-            {item.isEdit ? (
-              <div
+          <div
+            style={{
+              display: "flex",
+              gap: "6%",
+            }}
+          >
+            {item.isAdmin && (
+              <Icon
+                iconName="Add"
                 style={{
-                  display: "flex",
-                  gap: "6%",
+                  color: "green",
+                  fontSize: "20px",
+                  cursor: "pointer",
                 }}
-              >
-                <Icon
-                  iconName="CheckMark"
-                  style={{
-                    color: "green",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {}}
-                />
-                <Icon
-                  iconName="Cancel"
-                  style={{
-                    color: "red",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {}}
-                />
-              </div>
-            ) : (
-              item.ID &&
-              item.Year == _curYear && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "6%",
-                  }}
-                >
-                  <Icon
-                    iconName="Edit"
-                    style={{
-                      color: "blue",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {}}
-                  />
-                  <Icon
-                    iconName="Delete"
-                    style={{
-                      color: "red",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {}}
-                  />
-                </div>
-              )
+                onClick={() => {
+                  vendorDetails.isAdmin = true;
+                  vendorDetails.isVendor = false;
+                  vendorDetails.Item = { ...item };
+                  setVendorDetails({ ...vendorDetails });
+                }}
+              />
+            )}
+            {item.isManager && (
+              <Icon
+                iconName="EntryView"
+                style={{
+                  color: "blue",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  vendorDetails.isAdmin = false;
+                  vendorDetails.isVendor = false;
+                  vendorDetails.Item = { ...item };
+                  setVendorDetails({ ...vendorDetails });
+                }}
+              />
             )}
           </div>
         );
@@ -223,6 +197,10 @@ const BudgetDistribution = (props: any): JSX.Element => {
   const [items, setItems] = useState<ICurBudgetItem[]>([]);
   const [group, setGroup] = useState<any[]>([]);
   const [detailColumn, setDetailColumn] = useState<IColumn[]>([]);
+  const [userDatas, setUserDatas] = useState<IPersonaProps[]>([]);
+  const [vendorDetails, setVendorDetails] = useState<IVendorProp>({
+    ...Config.VendorProp,
+  });
 
   /* Style Section */
   const DropdownStyle: Partial<IDropdownStyles> = {
@@ -280,7 +258,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
   };
 
   const _getDefaultFunction = (): void => {
-    setIsLoader(false);
+    setIsLoader(true);
     filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
     setDetailColumn([..._budgetPlanColumns]);
     _getCategoryDatas();
@@ -339,6 +317,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
               TotalProposed: resCate[i].TotalProposed
                 ? resCate[i].TotalProposed
                 : null,
+              isAdmin: false,
+              isManager: false,
             });
             i + 1 == resCate.length && _getFilterFunction([..._curCategory]);
           }
@@ -352,34 +332,33 @@ const BudgetDistribution = (props: any): JSX.Element => {
   };
 
   const _getFilterFunction = (_filData: ICurCategoryItem[]): void => {
-    let tempArr: ICurCategoryItem[] = [..._filData];
-    let _filArray: ICurCategoryItem[] = [];
+    let tempArr: ICurCategoryItem[] = [];
 
-    _filArray = _filterArray(
+    tempArr = _filterArray(
       isUserPermissions,
-      [...tempArr],
-      Config.Navigation.BudgetPlanning
+      [..._filData],
+      Config.Navigation.BudgetDistribution
     );
 
-    if (_filArray.length) {
-      if (filCountryDrop != "All" && _filArray.length) {
-        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+    if (tempArr.length) {
+      if (filCountryDrop != "All" && tempArr.length) {
+        tempArr = [...tempArr].filter((arr: ICurCategoryItem) => {
           return arr.CountryAcc.Text == filCountryDrop;
         });
       }
-      if (filTypeDrop != "All" && _filArray.length) {
-        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+      if (filTypeDrop != "All" && tempArr.length) {
+        tempArr = [...tempArr].filter((arr: ICurCategoryItem) => {
           return arr.Type == filTypeDrop;
         });
       }
-      if (filAreaDrop != "All" && _filArray.length) {
-        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+      if (filAreaDrop != "All" && tempArr.length) {
+        tempArr = [...tempArr].filter((arr: ICurCategoryItem) => {
           return arr.Area == filAreaDrop;
         });
       }
 
-      if (_filArray.length) {
-        _getBudgetDatas([..._filArray]);
+      if (tempArr.length) {
+        _getBudgetDatas([...tempArr]);
       } else {
         setItems([]);
         setGroup([]);
@@ -449,6 +428,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
               isDeleted: resBudget[i].isDeleted,
               isEdit: false,
               isDummy: false,
+              isAdmin: false,
+              isManager: false,
             });
             i + 1 == resBudget.length &&
               _arrMasterCategoryData([..._arrCate], [..._curItem]);
@@ -480,11 +461,12 @@ const BudgetDistribution = (props: any): JSX.Element => {
           countryID: _arrCate[i].CountryAcc.ID,
           OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
           TotalProposed: _arrCate[i].TotalProposed,
+          isAdmin: _arrCate[i].isAdmin,
+          isManager: _arrCate[i].isManager,
           subCategory: [],
         });
         i + 1 == _arrCate.length &&
-          (_prepareArrMasterDatas([..._arrMasterCategory], [..._arrBudget]),
-          (_groupItem = [..._arrMasterCategory]));
+          _prepareArrMasterDatas([..._arrMasterCategory], [..._arrBudget]);
       }
     } else {
       setItems([]);
@@ -512,7 +494,9 @@ const BudgetDistribution = (props: any): JSX.Element => {
           _arrCateDatas[i].Area == _arrBudget[j].Area
         ) {
           isDatas = false;
-          _arrCateDatas[i].subCategory.push(_arrBudget[j]);
+          _arrBudget[j].isAdmin = _arrCateDatas[i].isAdmin;
+          _arrBudget[j].isManager = _arrCateDatas[i].isManager;
+          _arrCateDatas[i].subCategory.push({ ..._arrBudget[j] });
         }
         if (!isDatas && j + 1 == _arrBudget.length) {
           _arrOfMaster.push(_arrCateDatas[i]);
@@ -619,7 +603,6 @@ const BudgetDistribution = (props: any): JSX.Element => {
         count: recordLength,
       });
       if (index == newRecords.length - 1) {
-        _Items = [...records];
         setItems([...records]);
         setGroup([...varGroup]);
         setIsLoader(false);
@@ -627,53 +610,54 @@ const BudgetDistribution = (props: any): JSX.Element => {
     });
   };
 
+  const addAdminData = (data: string): void => {
+    SPServices.SPAddItem({
+      Listname: Config.ListNames.AdminList,
+      RequestJSON: {
+        AdminData: data,
+      },
+    })
+      .then((res: any) => {
+        alertify.success("Admins added successfully");
+        setUserDatas([]);
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
   }, [filAreaDrop, filCountryDrop, filPeriodDrop, filTypeDrop]);
 
+  /* NormalPeoplePicker Function */
+  const GetUserDetails = (filterText: any): any[] => {
+    let result: any = props.adminUsers.filter(
+      (value, index, self) => index === self.findIndex((t) => t.ID === value.ID)
+    );
+    return result.filter((item) =>
+      doesTextStartWith(item.text as string, filterText)
+    );
+  };
+
+  const doesTextStartWith = (text: string, filterText: string): boolean => {
+    return text.toLowerCase().indexOf(filterText.toLowerCase()) === 0;
+  };
+
   return isLoader ? (
     <Loader />
-  ) : true ? (
+  ) : vendorDetails.isVendor ? (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
       <Label className={styles.HeaderLable}>Budget Distribution</Label>
 
       {/* Dropdown and btn section */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className={styles.filterSection}>
         {/* Left side section */}
-        <div
-          style={{
-            display: "flex",
-            gap: "2%",
-            width: "95%",
-          }}
-        >
-          {/* Area section */}
-          <div style={{ width: "16%" }}>
-            <Label>Area</Label>
-            <Dropdown
-              styles={DropdownStyle}
-              options={[...propDropValue.Area]}
-              selectedKey={_getFilterDropValues(
-                "Area",
-                { ...propDropValue },
-                filAreaDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                _isCurYear = filPeriodDrop == _curYear ? true : false;
-                setFilAreaDrop(text.text as string);
-              }}
-            />
-          </div>
-
+        <div className={styles.filters}>
           {/* Country section */}
-          <div style={{ width: "16%" }}>
+          <div style={{ width: "20%" }}>
             <Label>Country</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -692,8 +676,26 @@ const BudgetDistribution = (props: any): JSX.Element => {
             />
           </div>
 
+          {/* Area section */}
+          <div style={{ width: "20%" }}>
+            <Label>Area</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Area]}
+              selectedKey={_getFilterDropValues(
+                "Area",
+                { ...propDropValue },
+                filAreaDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
+                setFilAreaDrop(text.text as string);
+              }}
+            />
+          </div>
+
           {/* Period section */}
-          <div style={{ width: "8%" }}>
+          <div style={{ width: "10%" }}>
             <Label>Period</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -711,7 +713,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
           </div>
 
           {/* Type section */}
-          <div style={{ width: "8%" }}>
+          <div style={{ width: "10%" }}>
             <Label>Type</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -746,10 +748,41 @@ const BudgetDistribution = (props: any): JSX.Element => {
         </div>
 
         {/* btn and people picker section */}
-        <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
-          <button className={styles.btns} onClick={() => {}}>
-            Send
-          </button>
+        <div style={{ display: "flex", alignItems: "end", width: "26%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+              alignItems: "center",
+            }}
+          >
+            {/* People picker section */}
+            <NormalPeoplePicker
+              inputProps={{ placeholder: "Insert person" }}
+              onResolveSuggestions={GetUserDetails}
+              itemLimit={10}
+              selectedItems={userDatas}
+              onChange={(selectedUser: any): void => {
+                if (selectedUser.length) {
+                  setUserDatas([...selectedUser]);
+                } else {
+                  setUserDatas([]);
+                }
+              }}
+            />
+
+            {/* btn section */}
+            <button
+              className={styles.btns}
+              onClick={() => {
+                userDatas.length &&
+                  addAdminData(JSON.stringify([...userDatas]));
+              }}
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
 
@@ -768,7 +801,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       )}
     </div>
   ) : (
-    <Vendor props={props} />
+    <Vendor props={props} vendorDetails={vendorDetails} />
   );
 };
 

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { IDrop, IGroupUsers } from "../globalInterFace/BudgetInterFaces";
 import { Config } from "../globals/Config";
 
@@ -8,7 +7,10 @@ const _filterArray = (
   CommentName: string
 ): any[] => {
   let _arrValue: any[] = [];
-  if (isUser.isSuperAdmin) {
+  if (
+    isUser.isSuperAdmin &&
+    CommentName != Config.Navigation.BudgetDistribution
+  ) {
     _arrValue = [..._array];
   } else {
     for (let i: number = 0; _array.length > i; i++) {
@@ -37,24 +39,134 @@ const _filterArray = (
         ) {
           _arrValue.push(_array[i]);
         }
-      } else {
-        if (
-          isUser.isInfraAdmin &&
-          _array[i].Area == Config.AreaName.InfraStructure
+      } else if (CommentName == Config.Navigation.BudgetDistribution) {
+        if (isUser.isSuperAdmin) {
+          _array[i].isManager = true;
+          _array[i].isAdmin = true;
+          _arrValue.push({ ..._array[i] });
+        } else if (
+          (isUser.isInfraManager && isUser.isInfraAdmin) ||
+          (isUser.isEnterpricesManager && isUser.isEnterpricesAdmin) ||
+          (isUser.isSpecialManager && isUser.isSpecialAdmin)
         ) {
-          _arrValue.push(_array[i]);
-        }
-        if (
-          isUser.isEnterpricesAdmin &&
-          _array[i].Area == Config.AreaName.EnterpriseApplication
-        ) {
-          _arrValue.push(_array[i]);
-        }
-        if (
-          isUser.isSpecialAdmin &&
-          _array[i].Area == Config.AreaName.SpecialProject
-        ) {
-          _arrValue.push(_array[i]);
+          if (
+            isUser.isInfraManager &&
+            isUser.isInfraAdmin &&
+            _array[i].Area == Config.AreaName.InfraStructure
+          ) {
+            _array[i].isManager = true;
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isEnterpricesManager &&
+            isUser.isEnterpricesAdmin &&
+            _array[i].Area == Config.AreaName.EnterpriseApplication
+          ) {
+            _array[i].isManager = true;
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isSpecialManager &&
+            isUser.isSpecialAdmin &&
+            _array[i].Area == Config.AreaName.SpecialProject
+          ) {
+            _array[i].isManager = true;
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isInfraManager != isUser.isInfraAdmin &&
+            isUser.isInfraManager &&
+            _array[i].Area == Config.AreaName.InfraStructure
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isEnterpricesManager != isUser.isEnterpricesAdmin &&
+            isUser.isEnterpricesManager &&
+            _array[i].Area == Config.AreaName.EnterpriseApplication
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isSpecialManager != isUser.isSpecialAdmin &&
+            isUser.isSpecialManager &&
+            _array[i].Area == Config.AreaName.SpecialProject
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isInfraManager != isUser.isInfraAdmin &&
+            isUser.isInfraAdmin &&
+            _array[i].Area == Config.AreaName.InfraStructure
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isEnterpricesManager != isUser.isEnterpricesAdmin &&
+            isUser.isEnterpricesAdmin &&
+            _array[i].Area == Config.AreaName.EnterpriseApplication
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isSpecialManager != isUser.isSpecialAdmin &&
+            isUser.isSpecialAdmin &&
+            _array[i].Area == Config.AreaName.SpecialProject
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+        } else {
+          if (
+            isUser.isInfraManager &&
+            _array[i].Area == Config.AreaName.InfraStructure
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isEnterpricesManager &&
+            _array[i].Area == Config.AreaName.EnterpriseApplication
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isSpecialManager &&
+            _array[i].Area == Config.AreaName.SpecialProject
+          ) {
+            _array[i].isManager = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isInfraAdmin &&
+            _array[i].Area == Config.AreaName.InfraStructure
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isEnterpricesAdmin &&
+            _array[i].Area == Config.AreaName.EnterpriseApplication
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
+          if (
+            isUser.isSpecialAdmin &&
+            _array[i].Area == Config.AreaName.SpecialProject
+          ) {
+            _array[i].isAdmin = true;
+            _arrValue.push({ ..._array[i] });
+          }
         }
       }
     }

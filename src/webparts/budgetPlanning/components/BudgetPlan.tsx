@@ -387,6 +387,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
   };
+
   const multilineStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       minHeight: 18,
@@ -527,35 +528,38 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getFilterFunction = (_filData: ICurCategoryItem[]): void => {
-    let tempArr: ICurCategoryItem[] = [..._filData];
-    let _filArray: ICurCategoryItem[] = [];
-    // tempArr = tempArr.filter((arr: ICurCategoryItem) => {
-    //   return arr.YearAcc.Text == filPeriodDrop;
-    // });
-    if (filCountryDrop != "All" && tempArr.length) {
-      tempArr = tempArr.filter((arr: ICurCategoryItem) => {
-        return arr.CountryAcc.Text == filCountryDrop;
-      });
-    }
-    if (filTypeDrop != "All" && tempArr.length) {
-      tempArr = tempArr.filter((arr: ICurCategoryItem) => {
-        return arr.Type == filTypeDrop;
-      });
-    }
-    if (filAreaDrop != "All" && tempArr.length) {
-      tempArr = tempArr.filter((arr: ICurCategoryItem) => {
-        return arr.Area == filAreaDrop;
-      });
-    }
+    let tempArr: ICurCategoryItem[] = [];
 
-    _filArray = _filterArray(
+    tempArr = _filterArray(
       isUserPermissions,
-      [...tempArr],
+      [..._filData],
       Config.Navigation.BudgetPlanning
     );
 
-    if (_filArray.length) {
-      _getBudgetDatas([..._filArray]);
+    if (tempArr.length) {
+      if (filCountryDrop != "All" && tempArr.length) {
+        tempArr = tempArr.filter((arr: ICurCategoryItem) => {
+          return arr.CountryAcc.Text == filCountryDrop;
+        });
+      }
+      if (filTypeDrop != "All" && tempArr.length) {
+        tempArr = tempArr.filter((arr: ICurCategoryItem) => {
+          return arr.Type == filTypeDrop;
+        });
+      }
+      if (filAreaDrop != "All" && tempArr.length) {
+        tempArr = tempArr.filter((arr: ICurCategoryItem) => {
+          return arr.Area == filAreaDrop;
+        });
+      }
+
+      if (tempArr.length) {
+        _getBudgetDatas([...tempArr]);
+      } else {
+        setItems([]);
+        setGroup([]);
+        setIsLoader(false);
+      }
     } else {
       setItems([]);
       setGroup([]);

@@ -4,26 +4,41 @@
   margin-bottom: 20px;
 }
 
-.btns {
-  width: 15%;
-  height: 28px;
-  border: none;
-  border-radius: 5px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.refIcon {
+.filterSection {
   display: flex;
-  background: #202945;
-  color: "#fff";
-  cursor: pointer;
-  height: 30px;
-  width: 30px;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  border-radius: 3px;
+  align-items: end;
+  .filters {
+    display: flex;
+    align-items: end;
+    width: 74%;
+    gap: 2%;
+  }
+  .refIcon {
+    display: flex;
+    background: #202945;
+    color: "#fff";
+    cursor: pointer;
+    height: 30px;
+    width: 30px;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    border-radius: 3px;
+  }
+  .btnSection {
+    display: flex;
+    justify-content: end;
+    width: 30%;
+    gap: 4%;
+    .btns {
+      width: 15%;
+      height: 28px;
+      border: none;
+      border-radius: 5px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  }
 }
 
 .noRecords {
