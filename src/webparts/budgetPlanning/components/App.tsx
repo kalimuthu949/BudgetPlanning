@@ -5,6 +5,7 @@ import {
   IDrop,
   IDropdowns,
   IGroupUsers,
+  IVendorDetail,
 } from "../../../globalInterFace/BudgetInterFaces";
 import BudgetCategory from "./BudgetCategory";
 import BudgetPlan from "./BudgetPlan";
@@ -67,6 +68,7 @@ const App = (props: any): JSX.Element => {
     ...Config.GroupUsers,
   });
   const [isOtherUser, setIsOtherUser] = useState<boolean>(false);
+  const [vendorDetail, setVendorDetail] = useState<IVendorDetail[]>([]);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -241,6 +243,7 @@ const App = (props: any): JSX.Element => {
                             if (_firstText < _secondText) return -1;
                             if (_firstText > _secondText) return 1;
                           });
+                          _typeVendor.unshift({ key: 0, text: "All" });
                         }
                         dropValue.Vendor = [..._typeVendor];
 
@@ -271,8 +274,8 @@ const App = (props: any): JSX.Element => {
   const _getVendorsArr = (): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
-      Select: "*, Year/ID, Year/Title",
-      Expand: "Year",
+      Select: "*, Year/ID, Year/Title, Vendor/ID, Vendor/Title",
+      Expand: "Year, Vendor",
       Filter: [
         {
           FilterKey: "isDeleted",
@@ -282,16 +285,55 @@ const App = (props: any): JSX.Element => {
         {
           FilterKey: "Year/Title",
           Operator: "eq",
-          FilterValue: _preYear,
+          FilterValue: "2023",
+          // FilterValue: _preYear,
         },
       ],
       Topcount: 5000,
+      Orderby: "Modified",
+      Orderbydecorasc: false,
     })
       .then((res: any) => {
-        console.log("res > ", res);
-        if (res.length) {
-          for (let i: number = 0; res.length > i; i++) {
-            if (res.length == i + 1) {
+        let matches: any[] = [];
+        let idVendors: number[] = [];
+        let distinctMap = {};
+        let _uniqueVendorName: string[] = [];
+        let filLastVendor: any;
+        let _uniqueVendor: IVendorDetail[] = [];
+
+        res.length &&
+          res.reduce((item: any, e1: any) => {
+            matches = item.filter((e2: any) => {
+              return e1.VendorId === e2.VendorId;
+            });
+            if (matches.length == 0) {
+              idVendors.push(e1.VendorId);
+            }
+            return idVendors;
+          }, []);
+
+        for (let i: number = 0; i < idVendors.length; i++) {
+          let value = idVendors[i].toString();
+          distinctMap[value] = null;
+        }
+        _uniqueVendorName = Object.keys(distinctMap);
+
+        if (_uniqueVendorName.length) {
+          for (let i: number = 0; _uniqueVendorName.length > i; i++) {
+            filLastVendor = res.filter((e: any) => {
+              return e.VendorId === Number(_uniqueVendorName[i]);
+            })[0];
+            let data: any = {};
+            const column: IVendorDetail = Config.VendorDetail;
+            data[column.ID] = filLastVendor.ID;
+            data[column.VendorId] = filLastVendor.VendorId;
+            data[column.Vendor] = filLastVendor.Vendor.Title;
+            data[column.LastYearCost] = filLastVendor.LastYearCost;
+            data[column.PO] = filLastVendor.PO;
+            data[column.Supplier] = filLastVendor.Supplier;
+            _uniqueVendor.push({ ...data });
+            if (_uniqueVendorName.length === i + 1) {
+              setVendorDetail([..._uniqueVendor]);
               _getPageName();
             }
           }
@@ -377,6 +419,7 @@ const App = (props: any): JSX.Element => {
                 dropValue={dropValue}
                 context={props.context}
                 groupUsers={groupUsers}
+                vendorDetail={vendorDetail}
               />
             ) : (
               <BudgetTrackingList groupUsers={groupUsers} />

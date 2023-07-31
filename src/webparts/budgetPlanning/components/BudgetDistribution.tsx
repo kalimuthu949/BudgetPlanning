@@ -21,6 +21,7 @@ import {
   IOverAllItem,
   IBudgetListColumn,
   IBudgetValidation,
+  IGroupUsers,
 } from "../../../globalInterFace/BudgetInterFaces";
 import {
   PeoplePicker,
@@ -34,17 +35,182 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetDistribution.module.scss";
 import Vendor from "./Vendor";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 let propDropValue: IDropdowns;
 let _isCurYear: boolean = true;
+let isUserPermissions: IGroupUsers;
+let _Items: ICurBudgetItem[] = [];
+let _groupItem: IOverAllItem[] = [];
 
 const BudgetDistribution = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   let _curYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
+  isUserPermissions = { ...props.groupUsers };
 
-  const _budgetPlanColumns: IColumn[] = [];
+  const _budgetPlanColumns: IColumn[] = [
+    {
+      key: "column1",
+      name: "Category",
+      fieldName: Config.BudgetListColumns.CategoryId.toString(),
+      minWidth: 200,
+      maxWidth: _isCurYear ? 200 : 280,
+      onRender: (item: ICurBudgetItem): any => {
+        return item.Category;
+      },
+    },
+    {
+      key: "column2",
+      name: "Area",
+      fieldName: Config.BudgetListColumns.Area,
+      minWidth: 150,
+      maxWidth: _isCurYear ? 150 : 230,
+      onRender: (item: ICurBudgetItem): any => {
+        return item.Area;
+      },
+    },
+    {
+      key: "column3",
+      name: "Description",
+      fieldName: Config.BudgetListColumns.Description,
+      minWidth: 300,
+      maxWidth: _isCurYear ? 330 : 400,
+      onRender: (item: ICurBudgetItem): any => {
+        return (
+          <div title={item.Description} style={{ cursor: "pointer" }}>
+            {item.Description}
+          </div>
+        );
+      },
+    },
+    {
+      key: "column4",
+      name: "Comment",
+      fieldName: Config.BudgetListColumns.Comments,
+      minWidth: 280,
+      maxWidth: 300,
+      onRender: (item: ICurBudgetItem): any => {
+        return <div>{item.Comments.trim() ? item.Comments : "N/A"}</div>;
+      },
+    },
+    {
+      key: "column5",
+      name: "Budget Required",
+      fieldName: Config.BudgetListColumns.BudgetAllocated,
+      minWidth: 100,
+      maxWidth: 130,
+      onRender: (item: ICurBudgetItem): any => {
+        return <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>;
+      },
+    },
+    {
+      key: "column6",
+      name: "Used",
+      minWidth: 100,
+      maxWidth: 130,
+      onRender: (item: any) => {
+        return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
+      },
+    },
+    {
+      key: "column7",
+      name: "Remaining",
+      minWidth: 100,
+      maxWidth: 130,
+      onRender: (item: any) => {
+        return (
+          <div
+            style={
+              item.Year != _curYear
+                ? {
+                    padding: "4px 12px",
+                    backgroundImage:
+                      "linear-gradient(to right, #59e27f, #f1f1f1)",
+                    display: "inline",
+                    borderRadius: 4,
+                    color: "#000",
+                  }
+                : {
+                    padding: 0,
+                  }
+            }
+          >
+            {item.RemainingCost}
+          </div>
+        );
+      },
+    },
+    {
+      key: "column8",
+      name: "Action",
+      minWidth: 50,
+      maxWidth: 80,
+      onRender: (item: any) => {
+        return (
+          <div>
+            {item.isEdit ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6%",
+                }}
+              >
+                <Icon
+                  iconName="CheckMark"
+                  style={{
+                    color: "green",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {}}
+                />
+                <Icon
+                  iconName="Cancel"
+                  style={{
+                    color: "red",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {}}
+                />
+              </div>
+            ) : (
+              item.ID &&
+              item.Year == _curYear && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "6%",
+                  }}
+                >
+                  <Icon
+                    iconName="Edit"
+                    style={{
+                      color: "blue",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {}}
+                  />
+                  <Icon
+                    iconName="Delete"
+                    style={{
+                      color: "red",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {}}
+                  />
+                </div>
+              )
+            )}
+          </div>
+        );
+      },
+    },
+  ];
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
@@ -115,12 +281,356 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   const _getDefaultFunction = (): void => {
     setIsLoader(false);
+    filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
+    setDetailColumn([..._budgetPlanColumns]);
+    _getCategoryDatas();
+  };
+
+  const _getCategoryDatas = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.CategoryList,
+      Select:
+        "*, Year/ID, Year/Title, Country/ID, Country/Title, MasterCategory/ID",
+      Expand: "Year, Country, MasterCategory",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: filPeriodDrop,
+        },
+      ],
+      Topcount: 5000,
+    })
+      .then((resCate: any) => {
+        let _curCategory: ICurCategoryItem[] = [];
+
+        if (resCate.length) {
+          for (let i: number = 0; resCate.length > i; i++) {
+            _curCategory.push({
+              ID: resCate[i].ID,
+              CategoryAcc: resCate[i].Title
+                ? {
+                    ID: resCate[i].ID,
+                    Text: resCate[i].Title,
+                  }
+                : undefined,
+              Type: resCate[i].CategoryType ? resCate[i].CategoryType : "",
+              Area: resCate[i].Area ? resCate[i].Area : "",
+              YearAcc: resCate[i].YearId
+                ? {
+                    ID: resCate[i].Year.ID,
+                    Text: resCate[i].Year.Title,
+                  }
+                : undefined,
+              CountryAcc: resCate[i].CountryId
+                ? {
+                    ID: resCate[i].Country.ID,
+                    Text: resCate[i].Country.Title,
+                  }
+                : undefined,
+              OverAllBudgetCost: resCate[i].OverAllBudgetCost
+                ? resCate[i].OverAllBudgetCost
+                : null,
+              TotalProposed: resCate[i].TotalProposed
+                ? resCate[i].TotalProposed
+                : null,
+            });
+            i + 1 == resCate.length && _getFilterFunction([..._curCategory]);
+          }
+        } else {
+          _getFilterFunction([..._curCategory]);
+        }
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const _getFilterFunction = (_filData: ICurCategoryItem[]): void => {
+    let tempArr: ICurCategoryItem[] = [..._filData];
+    let _filArray: ICurCategoryItem[] = [];
+
+    _filArray = _filterArray(
+      isUserPermissions,
+      [...tempArr],
+      Config.Navigation.BudgetPlanning
+    );
+
+    if (_filArray.length) {
+      if (filCountryDrop != "All" && _filArray.length) {
+        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+          return arr.CountryAcc.Text == filCountryDrop;
+        });
+      }
+      if (filTypeDrop != "All" && _filArray.length) {
+        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+          return arr.Type == filTypeDrop;
+        });
+      }
+      if (filAreaDrop != "All" && _filArray.length) {
+        _filArray = _filArray.filter((arr: ICurCategoryItem) => {
+          return arr.Area == filAreaDrop;
+        });
+      }
+
+      if (_filArray.length) {
+        _getBudgetDatas([..._filArray]);
+      } else {
+        setItems([]);
+        setGroup([]);
+        setIsLoader(false);
+      }
+    } else {
+      setItems([]);
+      setGroup([]);
+      setIsLoader(false);
+    }
+  };
+
+  const _getBudgetDatas = (_arrCate: ICurCategoryItem[]): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.BudgetList,
+      Select:
+        "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title",
+      Expand: "Category, Year, Country",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          FilterValue: "1",
+          Operator: "ne",
+        },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: _arrCate[0].YearAcc.Text,
+        },
+      ],
+      Topcount: 5000,
+      Orderbydecorasc: false,
+    })
+      .then((resBudget: any) => {
+        let _curItem: ICurBudgetItem[] = [];
+        if (resBudget.length) {
+          for (let i: number = 0; resBudget.length > i; i++) {
+            _curItem.push({
+              ID: resBudget[i].ID,
+              Category: resBudget[i].CategoryId
+                ? resBudget[i].Category.Title
+                : "",
+              Country: resBudget[i].CountryId ? resBudget[i].Country.Title : "",
+              Year: resBudget[i].YearId ? resBudget[i].Year.Title : "",
+              Type: resBudget[i].CategoryType ? resBudget[i].CategoryType : "",
+              Area: resBudget[i].Area ? resBudget[i].Area : "",
+              CateId: resBudget[i].CategoryId ? resBudget[i].Category.ID : null,
+              CounId: resBudget[i].CountryId ? resBudget[i].Country.ID : null,
+              YearId: resBudget[i].YearId ? resBudget[i].Year.ID : null,
+              BudgetAllocated: resBudget[i].BudgetAllocated
+                ? resBudget[i].BudgetAllocated
+                : null,
+              BudgetProposed: resBudget[i].BudgetProposed
+                ? resBudget[i].BudgetProposed
+                : null,
+              Used: resBudget[i].Used ? resBudget[i].Used : null,
+              ApproveStatus: resBudget[i].ApproveStatus
+                ? resBudget[i].ApproveStatus
+                : "",
+              Description: resBudget[i].Description
+                ? resBudget[i].Description
+                : "",
+              Comments: resBudget[i].Comments ? resBudget[i].Comments : "",
+              RemainingCost: resBudget[i].RemainingCost
+                ? resBudget[i].RemainingCost
+                : null,
+              isDeleted: resBudget[i].isDeleted,
+              isEdit: false,
+              isDummy: false,
+            });
+            i + 1 == resBudget.length &&
+              _arrMasterCategoryData([..._arrCate], [..._curItem]);
+          }
+        } else {
+          _arrMasterCategoryData([..._arrCate], [..._curItem]);
+        }
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const _arrMasterCategoryData = (
+    _arrCate: ICurCategoryItem[],
+    _arrBudget: ICurBudgetItem[]
+  ): void => {
+    let _arrMasterCategory: IOverAllItem[] = [];
+    if (_arrCate.length) {
+      for (let i: number = 0; _arrCate.length > i; i++) {
+        _arrMasterCategory.push({
+          CategoryAcc: _arrCate[i].CategoryAcc.Text,
+          YearAcc: _arrCate[i].YearAcc.Text,
+          CountryAcc: _arrCate[i].CountryAcc.Text,
+          Type: _arrCate[i].Type,
+          Area: _arrCate[i].Area,
+          ID: _arrCate[i].ID,
+          yearID: _arrCate[i].YearAcc.ID,
+          countryID: _arrCate[i].CountryAcc.ID,
+          OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
+          TotalProposed: _arrCate[i].TotalProposed,
+          subCategory: [],
+        });
+        i + 1 == _arrCate.length &&
+          (_prepareArrMasterDatas([..._arrMasterCategory], [..._arrBudget]),
+          (_groupItem = [..._arrMasterCategory]));
+      }
+    } else {
+      setItems([]);
+      setGroup([]);
+      setIsLoader(false);
+    }
+  };
+
+  const _prepareArrMasterDatas = (
+    _arrCateDatas: IOverAllItem[],
+    _arrBudget: ICurBudgetItem[]
+  ): void => {
+    let _arrOfMaster: IOverAllItem[] = [];
+
+    for (let i: number = 0; _arrCateDatas.length > i; i++) {
+      let isDatas: boolean = true;
+      _arrCateDatas[i].subCategory = [];
+      for (let j: number = 0; _arrBudget.length > j; j++) {
+        if (
+          _arrCateDatas[i].ID == _arrBudget[j].CateId &&
+          _arrCateDatas[i].YearAcc == _arrBudget[j].Year &&
+          _arrCateDatas[i].CategoryAcc == _arrBudget[j].Category &&
+          _arrCateDatas[i].CountryAcc == _arrBudget[j].Country &&
+          _arrCateDatas[i].Type == _arrBudget[j].Type &&
+          _arrCateDatas[i].Area == _arrBudget[j].Area
+        ) {
+          isDatas = false;
+          _arrCateDatas[i].subCategory.push(_arrBudget[j]);
+        }
+        if (!isDatas && j + 1 == _arrBudget.length) {
+          _arrOfMaster.push(_arrCateDatas[i]);
+        }
+      }
+      i + 1 == _arrCateDatas.length && groups([..._arrOfMaster]);
+    }
+  };
+
+  const groups = (_filRecord: IOverAllItem[]): void => {
+    let reOrderedRecords: ICurBudgetItem[] = [];
+    let Uniquelessons: ICurBudgetItem[] = [];
+    let matches: ICurBudgetItem[] = [];
+    let _overAllCategoryArr: ICurBudgetItem[] = [];
+
+    if (_filRecord.length == 0) {
+      setItems([]);
+      setGroup([]);
+      setIsLoader(false);
+    } else {
+      for (let i: number = 0; _filRecord.length > i; i++) {
+        if (_filRecord[i].subCategory.length) {
+          Uniquelessons = _filRecord[i].subCategory.reduce(
+            (item: any, e1: any) => {
+              matches = item.filter((e2: any) => {
+                return (
+                  e1.Category === e2.CategoryAcc &&
+                  e1.Year === e2.YearAcc &&
+                  e1.Country === e2.CountryAcc &&
+                  e1.Type === e2.Type &&
+                  e1.CateId === e2.ID &&
+                  e1.Area === e2.Area
+                );
+              });
+              if (matches.length == 0) {
+                _overAllCategoryArr.push(e1);
+              }
+              return _overAllCategoryArr;
+            },
+            []
+          );
+        }
+      }
+      _filRecord.forEach((ul: any) => {
+        let FilteredData: ICurBudgetItem[] = Uniquelessons.filter(
+          (arr: any) => {
+            return (
+              arr.CateId === ul.ID &&
+              arr.Type === ul.Type &&
+              arr.Area === ul.Area
+            );
+          }
+        );
+        let sortingRecord = reOrderedRecords.concat(FilteredData);
+        reOrderedRecords = sortingRecord;
+      });
+      groupsforDL([...reOrderedRecords], [..._filRecord]);
+    }
+  };
+
+  const groupsforDL = (records: ICurBudgetItem[], arrCate: IOverAllItem[]) => {
+    let newRecords: any[] = [];
+    let varGroup: any[] = [];
+    let _recordsLength: number = 0;
+    arrCate.forEach((arr: IOverAllItem, i: number) => {
+      newRecords.push({
+        Category: arr.CategoryAcc ? arr.CategoryAcc : "",
+        Country: arr.CountryAcc ? arr.CountryAcc : "",
+        Year: arr.YearAcc ? arr.YearAcc : "",
+        Type: arr.Type ? arr.Type : "",
+        Area: arr.Area ? arr.Area : "",
+        ID: arr.ID ? arr.ID : null,
+        OverAllBudgetCost: arr.OverAllBudgetCost ? arr.OverAllBudgetCost : null,
+        TotalProposed: arr.TotalProposed ? arr.TotalProposed : null,
+        indexValue: _recordsLength,
+      });
+      _recordsLength += arr.subCategory.length;
+    });
+    newRecords.forEach((ur: any, index: number) => {
+      let recordLength: number = records.filter((arr: ICurBudgetItem) => {
+        return (
+          arr.CateId === ur.ID && arr.Type === ur.Type && arr.Area === ur.Area
+        );
+      }).length;
+      let _totalAmount: string = ur.OverAllBudgetCost
+        ? ur.OverAllBudgetCost.toString()
+        : ur.TotalProposed
+        ? ur.TotalProposed.toString()
+        : "0";
+      varGroup.push({
+        key: ur.Category,
+        name: ur.Country
+          ? `${
+              ur.Category +
+              " - " +
+              ur.Country +
+              " ( " +
+              ur.Type +
+              " ) ~ " +
+              _totalAmount
+            }`
+          : ur.Category,
+        startIndex: ur.indexValue,
+        count: recordLength,
+      });
+      if (index == newRecords.length - 1) {
+        _Items = [...records];
+        setItems([...records]);
+        setGroup([...varGroup]);
+        setIsLoader(false);
+      }
+    });
   };
 
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
-  }, []);
+  }, [filAreaDrop, filCountryDrop, filPeriodDrop, filTypeDrop]);
 
   return isLoader ? (
     <Loader />
@@ -258,7 +768,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       )}
     </div>
   ) : (
-    <Vendor />
+    <Vendor props={props} />
   );
 };
 
