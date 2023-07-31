@@ -123,7 +123,7 @@ const Vendor = (props: any) => {
   const column: IColumn[] = [
     {
       key: "1",
-      name: "Supplier",
+      name: "Vendor",
       fieldName: "Vendor",
       minWidth: 100,
       maxWidth: 500,
@@ -240,13 +240,13 @@ const Vendor = (props: any) => {
 
             style={{
               cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 14,
-              background: "#4d546a",
+              fontWeight: "600",
+              padding: "5px 10px",
+              fontSize: "14px",
+              background: "rgb(77, 84, 106)",
               display: "inline",
-              // padding: 4,
-              color: "#fff",
-              borderRadius: 4,
+              color: "rgb(255, 255, 255)",
+              borderRadius: "4px"
             }}
           >
             New Vendor Add
@@ -299,10 +299,11 @@ const Vendor = (props: any) => {
               style={{ display: "none" }}
               multiple
               onChange={(e) =>
-                setAddNewVendor({
-                  ...addNewVendor,
-                  Attachment: e.target.files[0],
-                })
+                handleInputValue(e.target.files,'Attachment')
+                // setAddNewVendor({
+                //   ...addNewVendor,
+                //   Attachment: e.target.files[0],
+                // })
               }
             />
             <label htmlFor="AttachmentFile">AttachmentFile</label>
@@ -326,12 +327,9 @@ const Vendor = (props: any) => {
               type="file"
               style={{ display: "none" }}
               multiple
+              maxLength={1}
               onChange={(e) =>{
-                
-                setAddNewVendor({
-                  ...addNewVendor,
-                  Procurement: e.target.files[0],
-                })
+                handleInputValue(e.target.files,'Procurment')
               }
               }
             />
@@ -605,6 +603,7 @@ const Vendor = (props: any) => {
     })
       .then((resAddItem) => {
         createFolder(resAddItem.data.Id);
+        setIsLoader(true)
       })
       .catch((error) => {
         getErrorFunction(error);
@@ -612,33 +611,88 @@ const Vendor = (props: any) => {
   };
 
   const createFolder = async (itemId) => {
+    
+      let Attachment=[]
+      let Procurement=[]
+    
     await sp.web.rootFolder.folders
       .getByName("DistributionLibrary")
-      .folders.addUsingPath('Master', true)
+      .folders.addUsingPath('master'+itemId, true)
       .then( async (folder) => {
         console.log('folder',folder);
-        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('test1',true)
-        .then((data)=>{
-          
+        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('Attachment',true)
+        .then( async (data)=>{          
+          for(let i=0;i<addNewVendor.Attachment.length;i++){
+            await sp.web.getFolderByServerRelativePath(data.data.ServerRelativeUrl).files.addUsingPath(addNewVendor.Attachment[i].name,addNewVendor.Attachment[i])
+            .then((result)=>{
+              Attachment.push(result.data.ServerRelativeUrl)
+            })
+            .catch(error=>console.log('error',error))
+          }
         })
         .catch((error)=>console.log('first sub folder',error))
-        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('test2',true)
-        .then((data)=>{
-          
+        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('Procurement',true)
+        .then( async (data)=>{
+          for(let i=0;i<addNewVendor.Attachment.length;i++){
+            await sp.web.getFolderByServerRelativePath(data.data.ServerRelativeUrl).files.addUsingPath(addNewVendor.Procurement[i].name,addNewVendor.Attachment[i])
+            .then((result)=>{
+              Procurement.push(result.data.ServerRelativeUrl)
+            })
+            .catch(error=>console.log('error',error))
+          }
         })
         .catch((error)=>console.log('second sub folder',error))
-                // .then(async (file) => {
-                //     await errorFunction('File created successfully:', file);
-                // })
-        
-        TypeFlag = "";
-        ConfimMsg = false;
-        setIsTrigger(!isTrigger);
+                
+        let json = {
+          AttachmentURL:JSON.stringify(Attachment),
+          ProcurementTeamQuotationURL:JSON.stringify(Procurement)
+        }
+        setattachmentJson(json,itemId)
       })
       .catch((err) => {
         getErrorFunction(err);
       });
   };
+
+  const setattachmentJson = (json,Id) =>{
+    console.log('json',json);
+    SPServices.SPUpdateItem({
+      Listname:Config.ListNames.DistributionList,
+      ID:Id,
+      RequestJSON:json
+    })
+    .then((data)=>{
+      console.log('data added succefully');
+      setIsLoader(false);
+      TypeFlag = "";
+      ConfimMsg = false;
+      setIsTrigger(!isTrigger);
+  })
+    .catch((error=>console.log('error',error)))
+  }
+
+  const handleInputValue = (files,type) =>{
+
+    let allFiles = [];
+    for(let i=0;i<files.length;i++){
+      allFiles.push(files[i])
+    }    
+    console.log('allFiles',allFiles);
+    
+
+    if(type === 'Attachment'){
+      setAddNewVendor({
+        ...addNewVendor,
+        Attachment: allFiles
+       })
+    }
+    else{
+      setAddNewVendor({
+       ...addNewVendor,
+       Procurement: allFiles
+      })        
+    }
+  }
 
   const editVendorItem = (items, index) => {
     let editItem = [...MData];
