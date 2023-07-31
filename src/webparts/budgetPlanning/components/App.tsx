@@ -5,7 +5,7 @@ import {
   IDrop,
   IDropdowns,
   IGroupUsers,
-  IVendorDetail,
+  IUserDetail,
 } from "../../../globalInterFace/BudgetInterFaces";
 import BudgetCategory from "./BudgetCategory";
 import BudgetPlan from "./BudgetPlan";
@@ -23,8 +23,6 @@ import { sp } from "@pnp/sp/presets/all";
 import { Icon, Label } from "@fluentui/react";
 import { _filAreaDrop } from "../../../CommonServices/filterCommonArray";
 import VendorCreate from "./VendorCreate";
-
-let _preYear: string = "";
 
 const App = (props: any): JSX.Element => {
   // local variable
@@ -68,7 +66,7 @@ const App = (props: any): JSX.Element => {
     ...Config.GroupUsers,
   });
   const [isOtherUser, setIsOtherUser] = useState<boolean>(false);
-  const [vendorDetail, setVendorDetail] = useState<IVendorDetail[]>([]);
+  const [adminUsers, setAdminUsers] = useState<IUserDetail[]>([]);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -77,20 +75,43 @@ const App = (props: any): JSX.Element => {
 
   const getUsers = async () => {
     let allUsers: any = { ...groupUsers };
+    let _userDetail: IUserDetail[] = [];
+
     for (let i = 0; i < _allUsers.length; i++) {
       await sp.web.siteGroups
         .getByName(_allUsers[i].groupName)
         .users.get()
         .then((result) => {
-          let authendication: boolean = [...result].some(
-            (value) => value.Email === currentUser
-          );
+          if (result.length) {
+            let authendication: boolean = [...result].some(
+              (value) => value.Email === currentUser
+            );
 
-          if (authendication) {
-            allUsers[_allUsers[i].user] = authendication;
+            if (authendication) {
+              allUsers[_allUsers[i].user] = authendication;
+            }
+
+            if (
+              _allUsers[i].user == "isSuperAdmin" ||
+              _allUsers[i].user == "isInfraAdmin" ||
+              _allUsers[i].user == "isEnterpricesAdmin" ||
+              _allUsers[i].user == "isSpecialAdmin"
+            ) {
+              for (let i: number = 0; result.length > i; i++) {
+                _userDetail.push({
+                  ID: result[i]["Id"],
+                  imageUrl: `/_layouts/15/userphoto.aspx?size=S&accountname=${result[i]["Email"]}`,
+                  text: result[i]["Title"],
+                  secondaryText: result[i]["Email"],
+                });
+              }
+            }
           }
 
-          _allUsers.length == i + 1 && getOtherUser(allUsers);
+          if (_allUsers.length == i + 1) {
+            setAdminUsers([..._userDetail]);
+            getOtherUser(allUsers);
+          }
         })
         .catch((error) => {
           _getErrorFunction("get users erroe");
@@ -131,7 +152,6 @@ const App = (props: any): JSX.Element => {
     })
       .then((resType: any[]) => {
         let _yearDrop: IDrop[] = [];
-        let beforeYear: number;
         if (resType.length) {
           resType.forEach((e: any, i: number) => {
             _yearDrop.push({
@@ -143,8 +163,6 @@ const App = (props: any): JSX.Element => {
         } else {
           _yearDrop = [{ key: 1, text: moment().format("YYYY") }];
         }
-        beforeYear = Number(_yearDrop[_yearDrop.length - 1].text) - 1;
-        _preYear = beforeYear.toString();
         dropValue.Period = _yearDrop;
 
         // get country choice function
@@ -248,7 +266,7 @@ const App = (props: any): JSX.Element => {
                         dropValue.Vendor = [..._typeVendor];
 
                         setDropValue({ ...dropValue });
-                        _getVendorsArr();
+                        _getPageName();
                       })
                       .catch((err: any) => {
                         _getErrorFunction(err);
@@ -265,81 +283,6 @@ const App = (props: any): JSX.Element => {
           .catch((err: any) => {
             _getErrorFunction(err);
           });
-      })
-      .catch((err: any) => {
-        _getErrorFunction(err);
-      });
-  };
-
-  const _getVendorsArr = (): void => {
-    SPServices.SPReadItems({
-      Listname: Config.ListNames.DistributionList,
-      Select: "*, Year/ID, Year/Title, Vendor/ID, Vendor/Title",
-      Expand: "Year, Vendor",
-      Filter: [
-        {
-          FilterKey: "isDeleted",
-          Operator: "ne",
-          FilterValue: "1",
-        },
-        {
-          FilterKey: "Year/Title",
-          Operator: "eq",
-          FilterValue: "2023",
-          // FilterValue: _preYear,
-        },
-      ],
-      Topcount: 5000,
-      Orderby: "Modified",
-      Orderbydecorasc: false,
-    })
-      .then((res: any) => {
-        let matches: any[] = [];
-        let idVendors: number[] = [];
-        let distinctMap = {};
-        let _uniqueVendorName: string[] = [];
-        let filLastVendor: any;
-        let _uniqueVendor: IVendorDetail[] = [];
-
-        res.length &&
-          res.reduce((item: any, e1: any) => {
-            matches = item.filter((e2: any) => {
-              return e1.VendorId === e2.VendorId;
-            });
-            if (matches.length == 0) {
-              idVendors.push(e1.VendorId);
-            }
-            return idVendors;
-          }, []);
-
-        for (let i: number = 0; i < idVendors.length; i++) {
-          let value = idVendors[i].toString();
-          distinctMap[value] = null;
-        }
-        _uniqueVendorName = Object.keys(distinctMap);
-
-        if (_uniqueVendorName.length) {
-          for (let i: number = 0; _uniqueVendorName.length > i; i++) {
-            filLastVendor = res.filter((e: any) => {
-              return e.VendorId === Number(_uniqueVendorName[i]);
-            })[0];
-            let data: any = {};
-            const column: IVendorDetail = Config.VendorDetail;
-            data[column.ID] = filLastVendor.ID;
-            data[column.VendorId] = filLastVendor.VendorId;
-            data[column.Vendor] = filLastVendor.Vendor.Title;
-            data[column.LastYearCost] = filLastVendor.LastYearCost;
-            data[column.PO] = filLastVendor.PO;
-            data[column.Supplier] = filLastVendor.Supplier;
-            _uniqueVendor.push({ ...data });
-            if (_uniqueVendorName.length === i + 1) {
-              setVendorDetail([..._uniqueVendor]);
-              _getPageName();
-            }
-          }
-        } else {
-          _getPageName();
-        }
       })
       .catch((err: any) => {
         _getErrorFunction(err);
@@ -417,9 +360,8 @@ const App = (props: any): JSX.Element => {
             ) : pageNave == Config.Navigation.BudgetDistribution ? (
               <BudgetDistribution
                 dropValue={dropValue}
-                context={props.context}
                 groupUsers={groupUsers}
-                vendorDetail={vendorDetail}
+                adminUsers={adminUsers}
               />
             ) : (
               <BudgetTrackingList groupUsers={groupUsers} />
@@ -466,7 +408,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 0.6
+          V - 0.7
         </div>
       </div>
     )
