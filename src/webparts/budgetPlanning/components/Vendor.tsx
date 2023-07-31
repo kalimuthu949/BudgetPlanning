@@ -22,8 +22,9 @@ import {
   IOverAllItem,
   IBudgetListColumn,
   IBudgetValidation,
-  IVendorListColumn,
-  IVendorValidation
+  IVendorItems,
+  IVendorValidation,
+  IVendorDetail,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -40,6 +41,9 @@ let ConfimMsg = false;
 
 const Vendor = (props: any) => {
   let admin = true;
+
+  let dropdownValue = props.props.dropValue.Vendor;
+  // console.log('dropdownValue',dropdownValue);
 
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
     root: {
@@ -78,13 +82,12 @@ const Vendor = (props: any) => {
         overflowY: "auto",
         overflowX: "hidden",
       },
-      ".ms-DetailsRow":{
-        
+      ".ms-DetailsRow": {
         ":hover": {
           backgroundColor: "white",
-          color:'balck'
+          color: "balck",
         },
-      }
+      },
     },
   };
 
@@ -99,6 +102,7 @@ const Vendor = (props: any) => {
       },
     },
   };
+
   const textFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       "::after": {
@@ -127,13 +131,23 @@ const Vendor = (props: any) => {
       fieldName: "Vendor",
       minWidth: 100,
       maxWidth: 500,
-      onRender: (item) => {
-        return admin && item.isEdit ? (
-          <Dropdown   
-          styles={DropdownStyle}
-          options={dropOptions}
-          selectedKey={dropOptions[0].key}
-        />
+      onRender: (item, index) => {
+        console.log("check", item.Vendor);
+
+        return item.isEdit ? (
+          <Dropdown
+            styles={DropdownStyle}
+            options={dropdownValue}
+            // selectedKey={dropdownValue[0].key}
+            selectedKey={_getFilterDropValues(
+              "Vendor",
+              { ...props.props.dropValue },
+              vendorData.Vendor ? vendorData.Vendor : "All"
+            )}
+            onChange={(e: any, text: IDrop) => {
+              handleDropdown(text, index);
+            }}
+          />
         ) : (
           <label>{item.Vendor}</label>
         );
@@ -146,12 +160,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.Description}
+            value={vendorData.Description}
             //placeholder="Enter The Description"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Description: text });
+              setVendorData({ ...vendorData, Description: text });
             }}
           />
         ) : (
@@ -166,12 +180,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.Pricing}
+            value={vendorData.Pricing}
             //placeholder="Enter The Pricing"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Pricing: text });
+              setVendorData({ ...vendorData, Pricing: text });
             }}
           />
         ) : (
@@ -186,12 +200,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.PaymentTerms}
+            value={vendorData.PaymentTerms}
             //placeholder="Enter The PaymentTerms"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, PaymentTerms: text });
+              setVendorData({ ...vendorData, PaymentTerms: text });
             }}
           />
         ) : (
@@ -206,12 +220,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.LastYearCost}
+            value={vendorData.LastYearCost}
             //placeholder="Enter The LastYearCost"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, LastYearCost: text });
+              setVendorData({ ...vendorData, LastYearCost: text });
             }}
           />
         ) : (
@@ -226,7 +240,7 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item, index) => {
-        return admin && item.isDummy ? (
+        return item.isDummy ? (
           <div
             onClick={() => {
               if (!ConfimMsg) {
@@ -237,7 +251,6 @@ const Vendor = (props: any) => {
                 ConfirmPageChange(item, index, "Add");
               }
             }}
-
             style={{
               cursor: "pointer",
               fontWeight: "600",
@@ -246,17 +259,17 @@ const Vendor = (props: any) => {
               background: "rgb(77, 84, 106)",
               display: "inline",
               color: "rgb(255, 255, 255)",
-              borderRadius: "4px"
+              borderRadius: "4px",
             }}
           >
             New Vendor Add
           </div>
-        ) : admin && item.isEdit ? (
+        ) : item.isEdit ? (
           <TextField
-            value={addNewVendor.PO}
+            value={vendorData.PO}
             //placeholder="Enter The PO"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, PO: text });
+              setVendorData({ ...vendorData, PO: text });
             }}
           />
         ) : (
@@ -271,12 +284,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.Supplier}
+            value={vendorData.Supplier}
             //placeholder="Enter The Supplier"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, Supplier: text });
+              setVendorData({ ...vendorData, Supplier: text });
             }}
           />
         ) : (
@@ -291,17 +304,17 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <div>
             <input
               id="AttachmentFile"
               type="file"
               style={{ display: "none" }}
               multiple
-              onChange={(e) =>
-                handleInputValue(e.target.files,'Attachment')
-                // setAddNewVendor({
-                //   ...addNewVendor,
+              onChange={
+                (e) => handleInputValue(e.target.files, "Attachment")
+                // setVendorData({
+                //   ...vendorData,
                 //   Attachment: e.target.files[0],
                 // })
               }
@@ -320,7 +333,7 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <div>
             <input
               id="ProcurementFile"
@@ -328,10 +341,9 @@ const Vendor = (props: any) => {
               style={{ display: "none" }}
               multiple
               maxLength={1}
-              onChange={(e) =>{
-                handleInputValue(e.target.files,'Procurment')
-              }
-              }
+              onChange={(e) => {
+                handleInputValue(e.target.files, "Procurment");
+              }}
             />
             <label htmlFor="ProcurementFile">ProcurementFile</label>
           </div>
@@ -347,12 +359,12 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        return admin && item.isEdit ? (
+        return item.isEdit ? (
           <TextField
-            value={addNewVendor.RequestedAmount}
+            value={vendorData.RequestedAmount}
             //placeholder="Enter The RequestedAmount"
             onChange={(e, text) => {
-              setAddNewVendor({ ...addNewVendor, RequestedAmount: text });
+              setVendorData({ ...vendorData, RequestedAmount: text });
             }}
           />
         ) : (
@@ -442,262 +454,319 @@ const Vendor = (props: any) => {
     },
   ];
 
-  const dropOptions = [
-    {key:0,text:'Vendor1'},
-    {key:1,text:'Vendor1'},
-    {key:2,text:'Vendor1'},
-    {key:3,text:'Vendor1'},
-    {key:4,text:'Vendor1'},
-  ]
-
   const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
-  const [MData, setMData] = useState<IVendorListColumn[]>([]);
-  const [addNewVendor, setAddNewVendor] = useState<IVendorListColumn>(null);
-  const [Validate, setValidate] = useState<IVendorValidation>({
-    Vendor: false,
-    Description: false,
-    Pricing: false,
-    PaymentTerms: false,
-    LastYearCost: false,
-    StartingDate: false,
-    PO: false,
-    Supplier: false,
-    RequestedAmount: false,
-    EntryDate: false,
-    ToDate: false,
-    Cost: false,
-    PoCurrency: false,
-    InvoiceNo: false,
+  const [MData, setMData] = useState<IVendorItems[]>([]);
+  const [vendorData, setVendorData] = useState<IVendorItems>({
+    ...Config.Vendor,
   });
+  const [Validate, setValidate] = useState<IVendorValidation>({...Config.vendorValidation});
 
   const getErrorFunction = (error) => {
-    alertify.error("Error Message");
+    alertify.error(error);
     setIsLoader(false);
   };
 
   const getDefaultFunction = () => {
     setIsLoader(true);
-    getVendorData();
+    _getVendorsArr();
+  };
+
+  const _getVendorsArr = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.DistributionList,
+      Select: "*, Year/ID, Year/Title, Vendor/ID, Vendor/Title",
+      Expand: "Year, Vendor",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+        {
+          FilterKey: "Year/Title",
+          Operator: "eq",
+          FilterValue: "2023",
+          // FilterValue: _preYear,
+        },
+      ],
+      Topcount: 5000,
+      Orderby: "Modified",
+      Orderbydecorasc: false,
+    })
+      .then((res: any) => {
+        let matches: any[] = [];
+        let idVendors: number[] = [];
+        let distinctMap = {};
+        let _uniqueVendorName: string[] = [];
+        let filLastVendor: any;
+        let _uniqueVendor: IVendorDetail[] = [];
+
+        res.length &&
+          res.reduce((item: any, e1: any) => {
+            matches = item.filter((e2: any) => {
+              return e1.VendorId === e2.VendorId;
+            });
+            if (matches.length == 0) {
+              idVendors.push(e1.VendorId);
+            }
+            return idVendors;
+          }, []);
+
+        for (let i: number = 0; i < idVendors.length; i++) {
+          let value = idVendors[i].toString();
+          distinctMap[value] = null;
+        }
+        _uniqueVendorName = Object.keys(distinctMap);
+
+        if (_uniqueVendorName.length) {
+          for (let i: number = 0; _uniqueVendorName.length > i; i++) {
+            filLastVendor = res.filter((e: any) => {
+              return e.VendorId === Number(_uniqueVendorName[i]);
+            })[0];
+            let data: any = {};
+            const column: IVendorDetail = Config.VendorDetail;
+            data[column.ID] = filLastVendor.ID;
+            data[column.VendorId] = filLastVendor.VendorId;
+            data[column.Vendor] = filLastVendor.Vendor.Title;
+            data[column.LastYearCost] = filLastVendor.LastYearCost;
+            data[column.PO] = filLastVendor.PO;
+            data[column.Supplier] = filLastVendor.Supplier;
+            _uniqueVendor.push({ ...data });
+            if (_uniqueVendorName.length === i + 1) {
+              // setVendorDetail([..._uniqueVendor]);
+              getVendorData();
+            }
+          }
+        } else {
+          getVendorData();
+        }
+      })
+      .catch((err: any) => {
+        getErrorFunction(err);
+      });
   };
 
   const getVendorData = async () => {
     await SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
+      Select: "*, Vendor/ID, Vendor/Title",
+      Expand: "Vendor",
     })
       .then((resVendor) => {
-        let getVendorData: IVendorListColumn[] = [];
+        console.log("resVendor", resVendor);
+        let getVendorData: IVendorItems[] = [];
         if (resVendor.length) {
-          resVendor.forEach((item:any) => {
+          resVendor.forEach((item: any) => {
+            console.log("check data", item);
+
             getVendorData.push({
-              VendorId: item.Id ? item.Id : null,
-              Vendor: item.Vendor ? item.Vendor : "",
+              ID: item.ID,
+              VendorId: item.VendorId,
+              Vendor: item.VendorId ? item.Vendor.Title : "",
               Description: item.Description ? item.Description : "",
               Pricing: item.Pricing ? item.Pricing : "",
               PaymentTerms: item.PaymentTerms ? item.PaymentTerms : "",
               LastYearCost: item.LastYearCost ? item.LastYearCost : "",
               PO: item.PO ? item.PO : "",
               Supplier: item.Supplier ? item.Supplier : "",
-              Attachment: "",
-              Procurement: "",
-              RequestedAmount: item.RequestedAmount
-                ? item.RequestedAmount
-                : "",
+              Attachment: item.AttachmentURL
+                ? JSON.parse(item.AttachmentURL)
+                : [],
+              Procurement: item.ProcurementTeamQuotationURL
+                ? JSON.parse(item.ProcurementTeamQuotationURL)
+                : [],
+              RequestedAmount: item.RequestedAmount ? item.RequestedAmount : "",
               BudgetId: item.BudgetId ? item.BudgetId : null,
               isDummy: false,
               isEdit: false,
             });
           });
           if (admin) {
-            getVendorData.push({
-              VendorId: null,
-              Vendor: "",
-              Description: "",
-              Pricing: "",
-              PaymentTerms: "",
-              LastYearCost: "",
-              PO: "",
-              Supplier: "",
-              Attachment: "",
-              Procurement: "",
-              RequestedAmount: "",
-              BudgetId: null,
-              isDummy: true,
-              isEdit: false,
-            });
+            getVendorData.push({ ...Config.Vendor });
           }
           setMData([...getVendorData]);
           setIsLoader(false);
         } else {
-          setMData([
-            ...MData,
-            {
-              VendorId: null,
-              Vendor: "",
-              Description: "",
-              Pricing: "",
-              PaymentTerms: "",
-              LastYearCost: "",
-              PO: "",
-              Supplier: "",
-              Attachment: "",
-              Procurement: "",
-              RequestedAmount: "",
-              BudgetId: null,
-              isDummy: true,
-              isEdit: false,
-            },
-          ]);
+          setMData([...MData, { ...Config.Vendor }]);
           setIsLoader(false);
         }
       })
       .catch((error) => getErrorFunction(error));
   };
 
-  const newVendorAdd = (item, index) => {
+  const handleDropdown = (value: IDrop, index: number) => {
+    let data = { ...vendorData };
+    console.log("data", data);
+
+    data.Vendor = value.text;
+    data.VendorId = value.key;
+    console.log("data", data);
+
+    setVendorData(data);
+  };
+
+  const newVendorAdd = (item: IVendorItems, index: number) => {
     let items = [...MData];
     items[index].isDummy = false;
     items[index].isEdit = true;
     setMData([...items]);
-    setAddNewVendor(item);
+    setVendorData(item);
   };
 
-  const addVendorCancel = (item, index) => {
+  const addVendorCancel = (item: IVendorItems, index: number) => {
     let AVendorCancel = [...MData];
     AVendorCancel[index].isDummy = true;
     AVendorCancel[index].isEdit = false;
     setMData([...AVendorCancel]);
-    setAddNewVendor({
-      VendorId: null,
-      Vendor: "",
-      Description: "",
-      Pricing: "",
-      PaymentTerms: "",
-      LastYearCost: "",
-      PO: "",
-      Supplier: "",
-      Attachment: "",
-      Procurement: "",
-      RequestedAmount: "",
-      BudgetId: null,
-      isDummy: true,
-      isEdit: false,
-    });
+    setVendorData(item);
   };
 
   const addVendor = (item) => {
     let NewJson = {
-      VendorId: 5,
-      Description: addNewVendor.Description,
+      VendorId: vendorData.VendorId,
+      Description: vendorData.Description,
       Pricing: 100,
-      PaymentTerms: addNewVendor.PaymentTerms,
-      LastYearCost: addNewVendor.LastYearCost,
-      PO: addNewVendor.PO,
-      Supplier: addNewVendor.Supplier,
-      RequestedAmount: addNewVendor.RequestedAmount,
+      PaymentTerms: vendorData.PaymentTerms,
+      LastYearCost: vendorData.LastYearCost,
+      PO: vendorData.PO,
+      Supplier: vendorData.Supplier,
+      RequestedAmount: vendorData.RequestedAmount,
     };
-    Validation();
-    SPServices.SPAddItem({
-      Listname: Config.ListNames.DistributionList,
-      RequestJSON: NewJson,
-    })
-      .then((resAddItem) => {
-        createFolder(resAddItem.data.Id);
-        setIsLoader(true)
+
+    let authendication = Validation();
+    if(authendication){
+      SPServices.SPAddItem({
+        Listname: Config.ListNames.DistributionList,
+        RequestJSON: NewJson,
       })
-      .catch((error) => {
-        getErrorFunction(error);
-      });
+        .then((resAddItem) => {
+          createFolder(resAddItem.data.Id);
+          setIsLoader(true);
+        })
+        .catch((error) => {
+          getErrorFunction("add categorty list");
+        });
+    }
   };
 
   const createFolder = async (itemId) => {
-    
-      let Attachment=[]
-      let Procurement=[]
-    
+    let Attachment = [];
+    let Procurement = [];
+
     await sp.web.rootFolder.folders
       .getByName("DistributionLibrary")
-      .folders.addUsingPath('master'+itemId, true)
-      .then( async (folder) => {
-        console.log('folder',folder);
-        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('Attachment',true)
-        .then( async (data)=>{          
-          for(let i=0;i<addNewVendor.Attachment.length;i++){
-            await sp.web.getFolderByServerRelativePath(data.data.ServerRelativeUrl).files.addUsingPath(addNewVendor.Attachment[i].name,addNewVendor.Attachment[i])
-            .then((result)=>{
-              Attachment.push(result.data.ServerRelativeUrl)
-            })
-            .catch(error=>console.log('error',error))
-          }
-        })
-        .catch((error)=>console.log('first sub folder',error))
-        await sp.web.getFolderByServerRelativePath(folder.data.ServerRelativeUrl).folders.addUsingPath('Procurement',true)
-        .then( async (data)=>{
-          for(let i=0;i<addNewVendor.Attachment.length;i++){
-            await sp.web.getFolderByServerRelativePath(data.data.ServerRelativeUrl).files.addUsingPath(addNewVendor.Procurement[i].name,addNewVendor.Attachment[i])
-            .then((result)=>{
-              Procurement.push(result.data.ServerRelativeUrl)
-            })
-            .catch(error=>console.log('error',error))
-          }
-        })
-        .catch((error)=>console.log('second sub folder',error))
-                
+      .folders.addUsingPath("Master" + itemId, true)
+      .then(async (folder) => {
+        await sp.web.lists
+          .getByTitle("DistributionLibrary")
+          .rootFolder.folders.getByName(folder.data.Name)
+          .expand("ListItemAllFields")
+          .get()
+          .then(async (_folder) => {
+            await sp.web.lists
+              .getByTitle("DistributionLibrary")
+              .items.getById(_folder["ListItemAllFields"]["ID"])
+              .update({ DistributionId: itemId })
+              .then((item1) => {
+                console.log(item1);
+              })
+              .catch((error) => console.log("id update error", error));
+
+            await sp.web
+              .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
+              .folders.addUsingPath("Attachment", true)
+              .then(async (data) => {
+                for (let i = 0; i < vendorData.Attachment.length; i++) {
+                  await sp.web
+                    .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
+                    .files.addUsingPath(
+                      vendorData.Attachment[i].name,
+                      vendorData.Attachment[i]
+                    )
+                    .then((result) => {
+                      Attachment.push(result.data.ServerRelativeUrl);
+                    })
+                    .catch((error) => console.log("error", error));
+                }
+              })
+              .catch((error) => console.log("first sub folder", error));
+            await sp.web
+              .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
+              .folders.addUsingPath("Procurement", true)
+              .then(async (data) => {
+                for (let i = 0; i < vendorData.Attachment.length; i++) {
+                  await sp.web
+                    .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
+                    .files.addUsingPath(
+                      vendorData.Procurement[i].name,
+                      vendorData.Attachment[i]
+                    )
+                    .then((result) => {
+                      Procurement.push(result.data.ServerRelativeUrl);
+                    })
+                    .catch((error) => console.log("error", error));
+                }
+              })
+              .catch((error) => console.log("second sub folder", error));
+          });
+
         let json = {
-          AttachmentURL:JSON.stringify(Attachment),
-          ProcurementTeamQuotationURL:JSON.stringify(Procurement)
-        }
-        setattachmentJson(json,itemId)
+          AttachmentURL: JSON.stringify(Attachment),
+          ProcurementTeamQuotationURL: JSON.stringify(Procurement),
+        };
+        setattachmentJson(json, itemId);
       })
       .catch((err) => {
-        getErrorFunction(err);
+        getErrorFunction("create folder");
       });
   };
 
-  const setattachmentJson = (json,Id) =>{
-    console.log('json',json);
+  // const addFiles = async (folderName,URLS,) =>{
+
+  // }
+
+  const setattachmentJson = (json, Id) => {
+    console.log("json", json);
     SPServices.SPUpdateItem({
-      Listname:Config.ListNames.DistributionList,
-      ID:Id,
-      RequestJSON:json
+      Listname: Config.ListNames.DistributionList,
+      ID: Id,
+      RequestJSON: json,
     })
-    .then((data)=>{
-      console.log('data added succefully');
-      setIsLoader(false);
-      TypeFlag = "";
-      ConfimMsg = false;
-      setIsTrigger(!isTrigger);
-  })
-    .catch((error=>console.log('error',error)))
-  }
+      .then((data) => {
+        console.log("data added succefully");
+        setIsLoader(false);
+        TypeFlag = "";
+        ConfimMsg = false;
+        setIsTrigger(!isTrigger);
+      })
+      .catch((error) => console.log("error", error));
+  };
 
-  const handleInputValue = (files,type) =>{
-
+  const handleInputValue = (files, type) => {
     let allFiles = [];
-    for(let i=0;i<files.length;i++){
-      allFiles.push(files[i])
-    }    
-    console.log('allFiles',allFiles);
-    
+    for (let i = 0; i < files.length; i++) {
+      allFiles.push(files[i]);
+    }
+    console.log("allFiles", allFiles);
 
-    if(type === 'Attachment'){
-      setAddNewVendor({
-        ...addNewVendor,
-        Attachment: allFiles
-       })
+    if (type === "Attachment") {
+      setVendorData({
+        ...vendorData,
+        Attachment: allFiles,
+      });
+    } else {
+      setVendorData({
+        ...vendorData,
+        Procurement: allFiles,
+      });
     }
-    else{
-      setAddNewVendor({
-       ...addNewVendor,
-       Procurement: allFiles
-      })        
-    }
-  }
+  };
 
   const editVendorItem = (items, index) => {
     let editItem = [...MData];
     editItem[index].isEdit = true;
-    setAddNewVendor(items);
+    setVendorData(items);
     setMData([...editItem]);
   };
 
@@ -709,29 +778,31 @@ const Vendor = (props: any) => {
 
   const vendorUpdate = (item, index) => {
     let UpdateJson = {
-      Vendor: addNewVendor.Vendor,
-      Description: addNewVendor.Description,
+      Vendor: vendorData.Vendor,
+      Description: vendorData.Description,
       Pricing: 100,
-      PaymentTerms: addNewVendor.PaymentTerms,
-      LastYearCost: addNewVendor.LastYearCost,
-      PO: addNewVendor.PO,
-      Supplier: addNewVendor.Supplier,
-      RequestedAmount: addNewVendor.RequestedAmount,
+      PaymentTerms: vendorData.PaymentTerms,
+      LastYearCost: vendorData.LastYearCost,
+      PO: vendorData.PO,
+      Supplier: vendorData.Supplier,
+      RequestedAmount: vendorData.RequestedAmount,
     };
-    Validation();
-    SPServices.SPUpdateItem({
-      Listname: Config.ListNames.DistributionList,
-      RequestJSON: UpdateJson,
-      ID: item.VendorId,
-    })
-      .then((resUpdateItem) => {
-        TypeFlag = "";
-        ConfimMsg = false;
-        setIsTrigger(!isTrigger);
+    let authendication = Validation()
+    if(authendication){
+      SPServices.SPUpdateItem({
+        Listname: Config.ListNames.DistributionList,
+        RequestJSON: UpdateJson,
+        ID: item.VendorId,
       })
-      .catch((error) => {
-        getErrorFunction(error);
-      });
+        .then((resUpdateItem) => {
+          TypeFlag = "";
+          ConfimMsg = false;
+          setIsTrigger(!isTrigger);
+        })
+        .catch((error) => {
+          getErrorFunction(error);
+        });
+    }
   };
 
   const ConfirmPageChange = (item, index, type) => {
@@ -746,22 +817,7 @@ const Vendor = (props: any) => {
         setMData([...EditChange]);
         newVendorAdd(item, index);
       } else {
-        setAddNewVendor({
-          VendorId: null,
-          Vendor: "",
-          Description: "",
-          Pricing: "",
-          PaymentTerms: "",
-          LastYearCost: "",
-          PO: "",
-          Supplier: "",
-          Attachment: "",
-          Procurement: "",
-          RequestedAmount: "",
-          BudgetId: null,
-          isDummy: true,
-          isEdit: false,
-        });
+        setVendorData({ ...Config.Vendor });
         let AddChange = [...MData];
         AddChange[AddChange.length - 1].isDummy = true;
         AddChange[AddChange.length - 1].isEdit = false;
@@ -776,12 +832,26 @@ const Vendor = (props: any) => {
   };
 
   const Validation = () => {
-    let valueCheck = { ...Validate };
-    if (addNewVendor.Vendor.trim() == "") {
-      setValidate({ ...Validate, Vendor: true });
-    } else if (addNewVendor.Description.trim() == "") {
-      setValidate({ ...Validate, Vendor: false, Description: true });
+    let isValidation = true;
+    let validationData = {...Config.vendorValidation}
+
+    if(vendorData.Vendor === 'All'){
+      validationData.Description = true
+      isValidation = false;
     }
+
+    if(!vendorData.Description){
+      validationData.Description = true
+      isValidation = false;
+    }
+
+    if(!vendorData.Pricing){
+      validationData.Pricing = true;
+      isValidation = false;
+    }
+
+    setValidate(validationData);
+    return isValidation
   };
 
   useEffect(() => {

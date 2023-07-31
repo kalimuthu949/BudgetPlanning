@@ -29,7 +29,7 @@ import {
   IDrop,
   IDropdowns,
   IGroupUsers,
-  IMasCategoryListColumn,
+  IMasCategoryItems,
 } from "../../../globalInterFace/BudgetInterFaces";
 import * as Excel from "exceljs/dist/exceljs.min.js";
 import * as FileSaver from "file-saver";
@@ -40,7 +40,7 @@ import Pagination from "office-ui-fabric-react-pagination";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 interface IimportExcelDataView {
-  removeExcelData: IMasCategoryListColumn[];
+  removeExcelData: IMasCategoryItems[];
   addExcelData: any[];
 }
 
@@ -51,7 +51,7 @@ interface IPagination {
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
-let listItems: IMasCategoryListColumn[] = [];
+let listItems: IMasCategoryItems[] = [];
 const addIcon: IIconProps = { iconName: "Add" };
 let areaExport = [];
 let _areasDrop: IDrop[] = [];
@@ -62,6 +62,8 @@ const BudgetCategory = (props: any): JSX.Element => {
   propDropValue = { ...props.dropValue };
   _areasDrop = [...props.dropValue.Area];
   _areasDrop.shift();
+  let allArea = [..._areasDrop].map((value) => value.text);
+  console.log("allArea", allArea);
 
   isUserPermissions = { ...props.groupUsers };
 
@@ -84,13 +86,14 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
-  const [MData, setMData] = useState<IMasCategoryListColumn[]>([]);
-  const [master, setMaster] = useState<IMasCategoryListColumn[]>([]);
-  const [items, setItems] = useState<IMasCategoryListColumn[]>([]);
+  const [MData, setMData] = useState<IMasCategoryItems[]>([]);
+  const [master, setMaster] = useState<IMasCategoryItems[]>([]);
+  const [items, setItems] = useState<IMasCategoryItems[]>([]);
   const [area, setArea] = useState([]);
   const [categoryPopup, setcategoryPopup] = useState<boolean>(false);
   const [importFilePopup, setImportFilePopup] = useState<boolean>(false);
   const [istrigger, setIstrigger] = useState<boolean>(false);
+  const [backupData,setBackupData] = useState<IMasCategoryItems[]>([])
   const [importExcelDataView, setImportExcelDataView] =
     useState<IimportExcelDataView>({
       removeExcelData: [],
@@ -297,7 +300,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   };
 
   const _getGenerateExcel = (): void => {
-    let _arrExport: IMasCategoryListColumn[] = [...master];
+    let _arrExport: IMasCategoryItems[] = [...master];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
     let headerRows: string[] = [];
@@ -389,13 +392,32 @@ const BudgetCategory = (props: any): JSX.Element => {
       ) {
         listItems.shift();
         setImportFilePopup(true);
-        splitCategoryData([...listItems]);
+        importFileValidation([...listItems]);
       } else {
         alertify.error("Please import correct excel format");
       }
     } else {
       alertify.error("Please import only xlsx file");
     }
+  };
+
+  const importFileValidation = (items: IMasCategoryItems[]) => {
+    let newItems = [];
+    let notMatchItems = [];
+
+    items.forEach((value: IMasCategoryItems) => {
+      let authendication = [...allArea].some(
+        (Area: string) => Area === value.Area
+      );
+      if (authendication) {
+        newItems.push(value);
+      } else {
+        notMatchItems.push(value);
+      }
+    });
+
+    splitCategoryData([...newItems]);
+    setBackupData([...notMatchItems]);
   };
 
   const _getDefaultFunction = (): void => {
@@ -445,7 +467,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       Orderbydecorasc: false,
     })
       .then((_resMasCate: any) => {
-        let _masCategory: IMasCategoryListColumn[] = [];
+        let _masCategory: IMasCategoryItems[] = [];
         if (_resMasCate.length) {
           _resMasCate.forEach((data: any, i: number) => {
             _masCategory.push({
@@ -466,8 +488,8 @@ const BudgetCategory = (props: any): JSX.Element => {
       });
   };
 
-  const _getFilteredMas = (arr: IMasCategoryListColumn[]): void => {
-    let _filArray: IMasCategoryListColumn[] = [];
+  const _getFilteredMas = (arr: IMasCategoryItems[]): void => {
+    let _filArray: IMasCategoryItems[] = [];
 
     _filArray = _filterArray(
       isUserPermissions,
@@ -486,7 +508,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
   };
 
-  const splitCategoryData = (listItems: IMasCategoryListColumn[]): void => {
+  const splitCategoryData = (listItems: IMasCategoryItems[]): void => {
     let newaddData = [];
     let DuplicateData = [];
     let dummyData = [];
@@ -563,11 +585,13 @@ const BudgetCategory = (props: any): JSX.Element => {
                 },
               ],
               removeExcelData: [],
+             
             });
             setIstrigger(!istrigger);
             setcategoryPopup(false);
             setImportFilePopup(false);
             setIsLoader(false);
+            addBackupData()
           })
           .catch((err) => _getErrorFunction(err));
       } else {
@@ -718,6 +742,15 @@ const BudgetCategory = (props: any): JSX.Element => {
     })[0].key;
 
     return filterkey;
+  };
+
+  const addBackupData = (): void => {
+    SPServices.batchInsert({
+      ListName: Config.ListNames.MasterCategoryBackupList,
+      responseData: backupData,
+    })
+    .then((data)=>console.log('backup data added succefully'))
+    .catch(error=>_getErrorFunction('backup data set'))
   };
 
   /* Life cycle of onload */

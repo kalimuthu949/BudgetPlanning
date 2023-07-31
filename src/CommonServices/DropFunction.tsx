@@ -25,6 +25,9 @@ const _getFilterDropValues = (
   if (type == "Area" && value.Area.length) {
     key = value.Area.filter((e: IDrop) => e.text == filValue)[0].key;
   }
+  if (type == "Vendor" && value.Vendor.length) {
+    key = value.Vendor.filter((e: IDrop) => e.text == filValue)[0].key;
+  }
   return key;
 };
 
