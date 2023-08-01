@@ -93,7 +93,7 @@ const BudgetCategory = (props: any): JSX.Element => {
   const [categoryPopup, setcategoryPopup] = useState<boolean>(false);
   const [importFilePopup, setImportFilePopup] = useState<boolean>(false);
   const [istrigger, setIstrigger] = useState<boolean>(false);
-  const [backupData,setBackupData] = useState<IMasCategoryItems[]>([])
+  const [backupData, setBackupData] = useState<IMasCategoryItems[]>([]);
   const [importExcelDataView, setImportExcelDataView] =
     useState<IimportExcelDataView>({
       removeExcelData: [],
@@ -249,7 +249,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       color: "#fff",
       background: "#2580e0 !important",
       borderRadius: 3,
-      marginRight: 10,
+      // marginRight: 10,
       width: "26%",
     },
     rootHovered: {
@@ -265,7 +265,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       height: 32,
       borderRadius: 3,
       border: "none",
-      // marginRight: 10,
+      marginRight: 20,
       width: "26%",
     },
     rootHovered: {
@@ -585,13 +585,12 @@ const BudgetCategory = (props: any): JSX.Element => {
                 },
               ],
               removeExcelData: [],
-             
             });
             setIstrigger(!istrigger);
             setcategoryPopup(false);
             setImportFilePopup(false);
             setIsLoader(false);
-            addBackupData()
+            addBackupData();
           })
           .catch((err) => _getErrorFunction(err));
       } else {
@@ -749,8 +748,8 @@ const BudgetCategory = (props: any): JSX.Element => {
       ListName: Config.ListNames.MasterCategoryBackupList,
       responseData: backupData,
     })
-    .then((data)=>console.log('backup data added succefully'))
-    .catch(error=>_getErrorFunction('backup data set'))
+      .then((data) => console.log("backup data added succefully"))
+      .catch((error) => _getErrorFunction("backup data set"));
   };
 
   /* Life cycle of onload */
@@ -930,18 +929,18 @@ const BudgetCategory = (props: any): JSX.Element => {
         </div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
+            styles={cancelBtnStyle}
+            text={"Cancel"}
+            onClick={() => {
+              setcategoryPopup(false);
+            }}
+          />
+          <DefaultButton
             styles={saveBtnStyle}
             text={"Save"}
             onClick={() => {
               setIsLoader(true);
               addMasterCategoryData([...importExcelDataView.addExcelData], "");
-            }}
-          />
-          <DefaultButton
-            styles={cancelBtnStyle}
-            text={"Cancel"}
-            onClick={() => {
-              setcategoryPopup(false);
             }}
           />
         </div>
@@ -1003,24 +1002,6 @@ const BudgetCategory = (props: any): JSX.Element => {
         </div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
-            styles={saveBtnStyle}
-            text="Save"
-            style={{
-              cursor: importExcelDataView.addExcelData.length
-                ? "pointer"
-                : "not-allowed",
-            }}
-            onClick={() => {
-              if (importExcelDataView.addExcelData.length) {
-                setIsLoader(true);
-                addMasterCategoryData(
-                  importExcelDataView.addExcelData,
-                  "ImportFiles"
-                );
-              }
-            }}
-          />
-          <DefaultButton
             styles={cancelBtnStyle}
             text="Cancel"
             onClick={() => {
@@ -1036,6 +1017,24 @@ const BudgetCategory = (props: any): JSX.Element => {
                 ],
               });
               setImportFilePopup(false);
+            }}
+          />
+          <DefaultButton
+            styles={saveBtnStyle}
+            text="Save"
+            style={{
+              cursor: importExcelDataView.addExcelData.length
+                ? "pointer"
+                : "not-allowed",
+            }}
+            onClick={() => {
+              if (importExcelDataView.addExcelData.length) {
+                setIsLoader(true);
+                addMasterCategoryData(
+                  importExcelDataView.addExcelData,
+                  "ImportFiles"
+                );
+              }
             }}
           />
         </div>

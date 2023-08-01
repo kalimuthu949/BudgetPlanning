@@ -12,6 +12,7 @@ import {
   IDetailsListStyles,
   NormalPeoplePicker,
   IPersonaProps,
+  IPeoplePickerItemSelectedStyles,
 } from "@fluentui/react";
 import {
   IDrop,
@@ -247,6 +248,20 @@ const BudgetDistribution = (props: any): JSX.Element => {
         height: items.length ? "58vh" : 20,
         overflowY: "auto",
         overflowX: "hidden",
+      },
+    },
+  };
+  const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
+    root: {
+      width: "66%",
+      ".ms-BasePicker-text": {
+        "::after": {
+          border: "1px solid rgb(96, 94, 92) !important",
+        },
+      },
+      ".ms-BasePicker-itemsWrapper": {
+        maxHeight: 50,
+        overflow: "auto",
       },
     },
   };
@@ -748,7 +763,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         </div>
 
         {/* btn and people picker section */}
-        <div style={{ display: "flex", alignItems: "end", width: "26%" }}>
+        <div style={{ display: "flex", alignItems: "end", width: "22%" }}>
           <div
             style={{
               display: "flex",
@@ -762,6 +777,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               inputProps={{ placeholder: "Insert person" }}
               onResolveSuggestions={GetUserDetails}
               itemLimit={10}
+              styles={peoplePickerStyle}
               selectedItems={userDatas}
               onChange={(selectedUser: any): void => {
                 if (selectedUser.length) {
