@@ -201,7 +201,7 @@ const VendorCreate = (props: any): JSX.Element => {
       color: "#fff",
       background: "#2580e0 !important",
       borderRadius: 3,
-      marginRight: 10,
+      // marginRight: 10,
       width: "26%",
     },
     rootHovered: {
@@ -217,7 +217,7 @@ const VendorCreate = (props: any): JSX.Element => {
       height: 32,
       borderRadius: 3,
       border: "none",
-      // marginRight: 10,
+      marginRight: 20,
       width: "26%",
     },
     rootHovered: {
@@ -569,19 +569,19 @@ const VendorCreate = (props: any): JSX.Element => {
         </div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
-            styles={saveBtnStyle}
-            text={"Save"}
-            onClick={() => {
-              setIsLoader(true);
-              addMasterVendorData([...newVendor]);
-            }}
-          />
-          <DefaultButton
             styles={cancelBtnStyle}
             text={"Cancel"}
             onClick={() => {
               setNewVendor([{ VendorId: null, Vendor: "", Validate: false }]);
               setVendorPopup(false);
+            }}
+          />
+          <DefaultButton
+            styles={saveBtnStyle}
+            text={"Save"}
+            onClick={() => {
+              setIsLoader(true);
+              addMasterVendorData([...newVendor]);
             }}
           />
         </div>

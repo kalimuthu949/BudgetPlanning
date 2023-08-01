@@ -152,7 +152,6 @@ const Country = (props: any) => {
       color: "#fff",
       background: "#2580e0 !important",
       borderRadius: 3,
-      marginRight: 10,
       width: "26%",
     },
     rootHovered: {
@@ -168,7 +167,7 @@ const Country = (props: any) => {
       height: 32,
       borderRadius: 3,
       border: "none",
-      // marginRight: 10,
+      marginRight: 20,
       width: "26%",
     },
     rootHovered: {
@@ -495,19 +494,19 @@ const Country = (props: any) => {
         </div>
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <DefaultButton
-            styles={saveBtnStyle}
-            text={"Save"}
-            onClick={() => {
-              setIsLoader(true);
-              addMasterCountryData([...newCountry]);
-            }}
-          />
-          <DefaultButton
             styles={cancelBtnStyle}
             text={"Cancel"}
             onClick={() => {
               setNewCountry([{ Country: "", Validate: false }]);
               setCountryPopup(false);
+            }}
+          />
+          <DefaultButton
+            styles={saveBtnStyle}
+            text={"Save"}
+            onClick={() => {
+              setIsLoader(true);
+              addMasterCountryData([...newCountry]);
             }}
           />
         </div>

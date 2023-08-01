@@ -655,22 +655,6 @@ const BudgetAnalysis = (props: any): JSX.Element => {
               <div className={styles.dropdowns}>
                 <Dropdown
                   styles={DropdownStyle}
-                  label="Period"
-                  options={[...propDropValue.Period]}
-                  selectedKey={_getFilterDropValues(
-                    "Period",
-                    { ...propDropValue },
-                    filPeriodDrop
-                  )}
-                  onChange={(e: any, text: IDrop) => {
-                    _isCurYear = text.text == currentYear ? true : false;
-                    reset(text.text);
-                  }}
-                />
-              </div>
-              <div className={styles.dropdowns}>
-                <Dropdown
-                  styles={DropdownStyle}
                   label="Country"
                   options={[...propDropValue.Country]}
                   selectedKey={_getFilterDropValues(
@@ -735,7 +719,23 @@ const BudgetAnalysis = (props: any): JSX.Element => {
                   }}
                 />
               </div>
-              <div className={styles.dropdowns}>
+              <div className={styles.smallDrpdowns}>
+                <Dropdown
+                  styles={DropdownStyle}
+                  label="Period"
+                  options={[...propDropValue.Period]}
+                  selectedKey={_getFilterDropValues(
+                    "Period",
+                    { ...propDropValue },
+                    filPeriodDrop
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    _isCurYear = text.text == currentYear ? true : false;
+                    reset(text.text);
+                  }}
+                />
+              </div>
+              <div className={styles.smallDrpdowns}>
                 <Dropdown
                   styles={DropdownStyle}
                   label="Type"

@@ -1163,24 +1163,6 @@ const BudgetPlan = (props: any): JSX.Element => {
       <div className={styles.filterSection}>
         {/* Left side section */}
         <div className={styles.filters}>
-          {/* Period section */}
-          <div style={{ width: "16%" }}>
-            <Label>Period</Label>
-            <Dropdown
-              styles={DropdownStyle}
-              options={[...propDropValue.Period]}
-              selectedKey={_getFilterDropValues(
-                "Period",
-                { ...propDropValue },
-                filPeriodDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                _isCurYear = (text.text as string) == _curYear ? true : false;
-                setFilPeriodDrop(text.text as string);
-              }}
-            />
-          </div>
-
           {/* Country section */}
           <div style={{ width: "16%" }}>
             <Label>Country</Label>
@@ -1201,24 +1183,6 @@ const BudgetPlan = (props: any): JSX.Element => {
             />
           </div>
 
-          {/* Type section */}
-          <div style={{ width: "16%" }}>
-            <Label>Type</Label>
-            <Dropdown
-              styles={DropdownStyle}
-              options={[...propDropValue.Type]}
-              selectedKey={_getFilterDropValues(
-                "Type",
-                { ...propDropValue },
-                filTypeDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                _isCurYear = filPeriodDrop == _curYear ? true : false;
-                setFilTypeDrop(text.text as string);
-              }}
-            />
-          </div>
-
           {/* Area section */}
           <div style={{ width: "16%" }}>
             <Label>Area</Label>
@@ -1233,6 +1197,42 @@ const BudgetPlan = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilAreaDrop(text.text as string);
+              }}
+            />
+          </div>
+
+          {/* Period section */}
+          <div style={{ width: "8%" }}>
+            <Label>Period</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Period]}
+              selectedKey={_getFilterDropValues(
+                "Period",
+                { ...propDropValue },
+                filPeriodDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = (text.text as string) == _curYear ? true : false;
+                setFilPeriodDrop(text.text as string);
+              }}
+            />
+          </div>
+
+          {/* Type section */}
+          <div style={{ width: "8%" }}>
+            <Label>Type</Label>
+            <Dropdown
+              styles={DropdownStyle}
+              options={[...propDropValue.Type]}
+              selectedKey={_getFilterDropValues(
+                "Type",
+                { ...propDropValue },
+                filTypeDrop
+              )}
+              onChange={(e: any, text: IDrop) => {
+                _isCurYear = filPeriodDrop == _curYear ? true : false;
+                setFilTypeDrop(text.text as string);
               }}
             />
           </div>

@@ -15,7 +15,10 @@
     gap: 2%;
     align-items: flex-end;
     .dropdowns {
-      width: 13%;
+      width: 15%;
+    }
+    .smallDrpdowns {
+      width: 10%;
     }
     .icon {
       width: 5%;
@@ -69,8 +72,8 @@
 
 .importExport {
   display: flex;
-  gap: 2%;
-  width: 13%;
+  gap: 8%;
+  width: 16%;
   justify-content: flex-end;
 }
 
