@@ -242,17 +242,19 @@ export interface IVendorItems {
   VendorId: number;
   Vendor: string;
   Description: string;
-  Pricing: string;
   PaymentTerms: string;
   LastYearCost: string;
   PO: string;
   Supplier: string;
   RequestedAmount: string;
-  Attachment: any;
-  Procurement: any;
+  Attachment: any[];
+  Procurement: any[];
   BudgetId: number;
+  Pricing: Number;
   isDummy: boolean;
   isEdit: boolean;
+  AttachmentURL: string[];
+  ProcurementURL: string[];
 }
 
 // Interface for gruop authendication

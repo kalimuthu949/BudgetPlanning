@@ -210,17 +210,19 @@ export namespace Config {
     VendorId: null,
     Vendor: "All",
     Description: "",
-    Pricing: "",
+    Pricing: 0,
     PaymentTerms: "",
     LastYearCost: "",
     PO: "",
     Supplier: "",
-    Attachment: "",
-    Procurement: "",
+    Attachment: [],
+    Procurement: [],
     RequestedAmount: "",
     BudgetId: null,
     isDummy: true,
     isEdit: false,
+    AttachmentURL:[],
+    ProcurementURL:[]
   };
   export const vendorValidation = {
     Vendor: false,

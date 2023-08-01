@@ -12,6 +12,7 @@ import {
   IDropdownStyles,
   IDetailsListStyles,
   ITextFieldStyles,
+  Checkbox,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -35,12 +36,14 @@ import styles from "./Vendor.module.scss";
 import { config } from "exceljs";
 import { sp } from "@pnp/sp/presets/all";
 import { truncate } from "@microsoft/sp-lodash-subset";
+import { DefaultButton } from "office-ui-fabric-react";
 
 let TypeFlag = "";
 let ConfimMsg = false;
 
 const Vendor = (props: any) => {
   let admin = true;
+  // console.log('props',props);
 
   let dropdownValue = props.props.dropValue.Vendor;
   // console.log('dropdownValue',dropdownValue);
@@ -132,8 +135,6 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item, index) => {
-        console.log("check", item.Vendor);
-
         return item.isEdit ? (
           <Dropdown
             styles={DropdownStyle}
@@ -149,7 +150,7 @@ const Vendor = (props: any) => {
             }}
           />
         ) : (
-          <label>{item.Vendor}</label>
+          <label>{!item.isDummy ? item.Vendor : ""}</label>
         );
       },
     },
@@ -165,7 +166,7 @@ const Vendor = (props: any) => {
             value={vendorData.Description}
             //placeholder="Enter The Description"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, Description: text });
+              setVendorData({ ...vendorData, Description: text.trimStart() });
             }}
           />
         ) : (
@@ -182,14 +183,19 @@ const Vendor = (props: any) => {
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
-            value={vendorData.Pricing}
+            value={vendorData.Pricing.toString()}
             //placeholder="Enter The Pricing"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, Pricing: text });
+              if (/^[0-9]+$|^$/.test(text)) {
+                setVendorData({
+                  ...vendorData,
+                  Pricing: Number(text.trimStart()),
+                });
+              }
             }}
           />
         ) : (
-          <label>{item.Pricing}</label>
+          <label>{!item.isDummy && item.Pricing}</label>
         );
       },
     },
@@ -205,7 +211,7 @@ const Vendor = (props: any) => {
             value={vendorData.PaymentTerms}
             //placeholder="Enter The PaymentTerms"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, PaymentTerms: text });
+              setVendorData({ ...vendorData, PaymentTerms: text.trimStart() });
             }}
           />
         ) : (
@@ -225,7 +231,7 @@ const Vendor = (props: any) => {
             value={vendorData.LastYearCost}
             //placeholder="Enter The LastYearCost"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, LastYearCost: text });
+              setVendorData({ ...vendorData, LastYearCost: text.trimStart() });
             }}
           />
         ) : (
@@ -269,7 +275,7 @@ const Vendor = (props: any) => {
             value={vendorData.PO}
             //placeholder="Enter The PO"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, PO: text });
+              setVendorData({ ...vendorData, PO: text.trimStart() });
             }}
           />
         ) : (
@@ -289,7 +295,7 @@ const Vendor = (props: any) => {
             value={vendorData.Supplier}
             //placeholder="Enter The Supplier"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, Supplier: text });
+              setVendorData({ ...vendorData, Supplier: text.trimStart() });
             }}
           />
         ) : (
@@ -311,19 +317,26 @@ const Vendor = (props: any) => {
               type="file"
               style={{ display: "none" }}
               multiple
-              onChange={
-                (e) => handleInputValue(e.target.files, "Attachment")
-                // setVendorData({
-                //   ...vendorData,
-                //   Attachment: e.target.files[0],
-                // })
-              }
+              onChange={(e) => handleInputValue(e.target.files, "Attachment")}
             />
-            <label htmlFor="AttachmentFile">AttachmentFile</label>
+            <label htmlFor="AttachmentFile">
+              {vendorData.AttachmentURL.length
+                ? vendorData.AttachmentURL[0].split("/").pop()
+                : "AttachmentFile"}
+            </label>
           </div>
-        ) : (
-          <label></label>
-        );
+        ) : !item.isDummy && item.AttachmentURL.length ? (
+          <a href={item.AttachmentURL[0]}>
+            <Icon
+              iconName="OpenFile"
+              style={{
+                color: "green",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            />
+          </a>
+        ) : null;
       },
     },
     {
@@ -345,11 +358,24 @@ const Vendor = (props: any) => {
                 handleInputValue(e.target.files, "Procurment");
               }}
             />
-            <label htmlFor="ProcurementFile">ProcurementFile</label>
+            <label htmlFor="ProcurementFile">
+              {vendorData.ProcurementURL.length
+                ? vendorData.ProcurementURL[0].split("/").pop()
+                : "ProcurementFile"}
+            </label>
           </div>
-        ) : (
-          <label></label>
-        );
+        ) : !item.isDummy && item.ProcurementURL.length ? (
+          <a href={item.ProcurementURL[0]}>
+            <Icon
+              iconName="OpenFile"
+              style={{
+                color: "green",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            />
+          </a>
+        ) : null;
       },
     },
     {
@@ -364,7 +390,10 @@ const Vendor = (props: any) => {
             value={vendorData.RequestedAmount}
             //placeholder="Enter The RequestedAmount"
             onChange={(e, text) => {
-              setVendorData({ ...vendorData, RequestedAmount: text });
+              setVendorData({
+                ...vendorData,
+                RequestedAmount: text.trimStart(),
+              });
             }}
           />
         ) : (
@@ -457,12 +486,15 @@ const Vendor = (props: any) => {
   const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
+  const [isRenual,setIsRenusla] = useState(true)
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
-  const [Validate, setValidate] = useState<IVendorValidation>({...Config.vendorValidation});
-
-  const getErrorFunction = (error) => {
+  const [Validate, setValidate] = useState<IVendorValidation>({
+    ...Config.vendorValidation,
+  });
+  
+  const getErrorFunction = (error: any) => {
     alertify.error(error);
     setIsLoader(false);
   };
@@ -547,19 +579,16 @@ const Vendor = (props: any) => {
       });
   };
 
-  const getVendorData = async () => {
-    await SPServices.SPReadItems({
+  const getVendorData = (): void => {
+    SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
       Select: "*, Vendor/ID, Vendor/Title",
       Expand: "Vendor",
     })
-      .then((resVendor) => {
-        console.log("resVendor", resVendor);
+      .then((resVendor: any) => {
         let getVendorData: IVendorItems[] = [];
         if (resVendor.length) {
           resVendor.forEach((item: any) => {
-            console.log("check data", item);
-
             getVendorData.push({
               ID: item.ID,
               VendorId: item.VendorId,
@@ -570,16 +599,18 @@ const Vendor = (props: any) => {
               LastYearCost: item.LastYearCost ? item.LastYearCost : "",
               PO: item.PO ? item.PO : "",
               Supplier: item.Supplier ? item.Supplier : "",
-              Attachment: item.AttachmentURL
+              AttachmentURL: item.AttachmentURL
                 ? JSON.parse(item.AttachmentURL)
                 : [],
-              Procurement: item.ProcurementTeamQuotationURL
+              ProcurementURL: item.ProcurementTeamQuotationURL
                 ? JSON.parse(item.ProcurementTeamQuotationURL)
                 : [],
               RequestedAmount: item.RequestedAmount ? item.RequestedAmount : "",
               BudgetId: item.BudgetId ? item.BudgetId : null,
               isDummy: false,
               isEdit: false,
+              Attachment: [],
+              Procurement: [],
             });
           });
           if (admin) {
@@ -592,41 +623,236 @@ const Vendor = (props: any) => {
           setIsLoader(false);
         }
       })
-      .catch((error) => getErrorFunction(error));
+      .catch((error: any) => getErrorFunction(error));
   };
 
-  const handleDropdown = (value: IDrop, index: number) => {
+  const handleDropdown = (value: IDrop, index: number): void => {
     let data = { ...vendorData };
-    console.log("data", data);
 
     data.Vendor = value.text;
     data.VendorId = value.key;
-    console.log("data", data);
 
     setVendorData(data);
   };
 
-  const newVendorAdd = (item: IVendorItems, index: number) => {
-    let items = [...MData];
+  const newVendorAdd = (item: IVendorItems, index: number): void => {
+    let items: IVendorItems[] = [...MData];
     items[index].isDummy = false;
     items[index].isEdit = true;
     setMData([...items]);
     setVendorData(item);
   };
 
-  const addVendorCancel = (item: IVendorItems, index: number) => {
-    let AVendorCancel = [...MData];
+  const addVendorCancel = (item: IVendorItems, index: number): void => {
+    let AVendorCancel: IVendorItems[] = [...MData];
     AVendorCancel[index].isDummy = true;
     AVendorCancel[index].isEdit = false;
     setMData([...AVendorCancel]);
     setVendorData(item);
   };
 
-  const addVendor = (item) => {
+  const addVendor = (item: IVendorItems): void => {
     let NewJson = {
       VendorId: vendorData.VendorId,
       Description: vendorData.Description,
-      Pricing: 100,
+      Pricing: vendorData.Pricing,
+      PaymentTerms: vendorData.PaymentTerms,
+      LastYearCost: vendorData.LastYearCost,
+      PO: vendorData.PO,
+      Supplier: vendorData.Supplier,
+      RequestedAmount: vendorData.RequestedAmount,
+    };
+
+    let authendication: boolean = Validation();
+
+    if (authendication) {
+      setIsLoader(true);
+
+      SPServices.SPAddItem({
+        Listname: Config.ListNames.DistributionList,
+        RequestJSON: NewJson,
+      })
+        .then((resAddItem: any) => {
+          createMasterFolder(resAddItem.data.Id);
+        })
+        .catch((error: any) => {
+          getErrorFunction("add categorty list");
+        });
+    }
+  };
+
+  const createMasterFolder = async (itemId: number) => {
+    await sp.web.rootFolder.folders
+      .getByName(Config.ListNames.DistributionLibrary)
+      .folders.addUsingPath(itemId.toString(), true)
+      .then(async (folder: any) => {
+        await sp.web.lists
+          .getByTitle(Config.ListNames.DistributionLibrary)
+          .rootFolder.folders.getByName(folder.data.Name)
+          .expand("ListItemAllFields")
+          .get()
+          .then(async (_folder: any) => {
+            await sp.web.lists
+              .getByTitle(Config.ListNames.DistributionLibrary)
+              .items.getById(_folder["ListItemAllFields"]["ID"])
+              .update({ DistributionId: itemId })
+              .then((item1: any) => {})
+              .catch((error: any) => getErrorFunction("id update error"));
+          });
+
+        createSubFolder(folder, itemId);
+      })
+      .catch((err) => {
+        getErrorFunction("create folder");
+      });
+  };
+
+  const createSubFolder = async (folder: any, itemId: number) => {
+    let Attachment: string[] = [];
+    let Procurement: string[] = [];
+    await sp.web
+      .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
+      .folders.addUsingPath("Attachment", true)
+      .then(async (data) => {
+        for (let i = 0; i < vendorData.Attachment.length; i++) {
+          await sp.web
+            .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
+            .files.addUsingPath(
+              vendorData.Attachment[i].name,
+              vendorData.Attachment[i],
+              { Overwrite: true }
+            )
+            .then((result) => {
+              Attachment.push(result.data.ServerRelativeUrl);
+            })
+            .catch((error) => console.log("error", error));
+        }
+      })
+      .catch((error) => console.log("first sub folder", error));
+    await sp.web
+      .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
+      .folders.addUsingPath("Procurement", true)
+      .then(async (data) => {
+        for (let i = 0; i < vendorData.Procurement.length; i++) {
+          await sp.web
+            .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
+            .files.addUsingPath(
+              vendorData.Procurement[i].name,
+              vendorData.Procurement[i],
+              { Overwrite: true }
+            )
+            .then((result) => {
+              Procurement.push(result.data.ServerRelativeUrl);
+            })
+            .catch((error) => console.log("error", error));
+        }
+      })
+      .catch((error) => console.log("second sub folder", error));
+
+    updateJson(Attachment, Procurement, itemId, "Add");
+  };
+
+  const updateJson = (
+    Attachment: string[],
+    Procurement: string[],
+    itemId: number,
+    type: string
+  ) => {
+    let json = {
+      AttachmentURL: JSON.stringify(Attachment),
+      ProcurementTeamQuotationURL: JSON.stringify(Procurement),
+    };
+
+    setattachmentJson(json, itemId, type);
+  };
+
+  const setattachmentJson = (json: any, Id: number, type: string) => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.DistributionList,
+      ID: Id,
+      RequestJSON: json,
+    })
+      .then((data) => {
+        let newData = {
+          ...vendorData,
+          ID: Id,
+          AttachmentURL: JSON.parse(json.AttachmentURL),
+          ProcurementURL: JSON.parse(json.ProcurementTeamQuotationURL),
+          isEdit: false,
+        };
+        console.log("newData", newData);
+
+        let masterData = [...MData];
+
+        if (type === "Add") {
+          masterData.pop();
+          masterData.push(newData, Config.Vendor);
+        } else {
+          let index = [...MData].findIndex((value) => value.ID === Id);
+          masterData.splice(index, 1, { ...newData });
+        }
+
+        console.log("masterData", [...masterData]);
+
+        TypeFlag = "";
+        ConfimMsg = false;
+        setIsLoader(false);
+        setMData([...masterData]);
+      })
+      .catch((error) => console.log("error", error));
+  };
+
+  const handleInputValue = (files: any, type: string) => {
+    console.log("files", files);
+
+    let allFiles = [];
+    let allURL = []
+    for (let i = 0; i < files.length; i++) {
+      allFiles.push(files[i]);
+      let authendication = [...allURL].some(value=>value === files[i].name);
+      if(authendication){
+        allURL = [...allURL].filter((value,index) => index !== allURL.indexOf(value));
+        allURL.unshift(files[i].name)
+      }
+      else{
+        allURL.unshift(files[i].name)
+      }
+    }
+   
+    
+    if (type === "Attachment") {
+      setVendorData({
+        ...vendorData,
+        Attachment: allFiles,
+        AttachmentURL: allURL,
+      });
+    } else {
+      setVendorData({
+        ...vendorData,
+        Procurement: allFiles,
+        ProcurementURL: allURL,
+      });
+    }
+  };
+
+  const editVendorItem = (items: IVendorItems, index: number) => {
+    let editItem = [...MData];
+    editItem[index].isEdit = true;
+    setVendorData(items);
+    setMData([...editItem]);
+  };
+
+  const editVendorCancel = (item: IVendorItems, index: number) => {
+    let EVendorCancel = [...MData];
+    EVendorCancel[index].isEdit = false;
+    setMData([...EVendorCancel]);
+  };
+
+  const vendorUpdate = (item: IVendorItems, index: number) => {
+    let UpdateJson = {
+      VendorId: vendorData.VendorId,
+      Description: vendorData.Description,
+      Pricing: vendorData.Pricing,
       PaymentTerms: vendorData.PaymentTerms,
       LastYearCost: vendorData.LastYearCost,
       PO: vendorData.PO,
@@ -635,177 +861,78 @@ const Vendor = (props: any) => {
     };
 
     let authendication = Validation();
-    if(authendication){
-      SPServices.SPAddItem({
-        Listname: Config.ListNames.DistributionList,
-        RequestJSON: NewJson,
-      })
-        .then((resAddItem) => {
-          createFolder(resAddItem.data.Id);
-          setIsLoader(true);
-        })
-        .catch((error) => {
-          getErrorFunction("add categorty list");
-        });
-    }
-  };
 
-  const createFolder = async (itemId) => {
-    let Attachment = [];
-    let Procurement = [];
-
-    await sp.web.rootFolder.folders
-      .getByName("DistributionLibrary")
-      .folders.addUsingPath("Master" + itemId, true)
-      .then(async (folder) => {
-        await sp.web.lists
-          .getByTitle("DistributionLibrary")
-          .rootFolder.folders.getByName(folder.data.Name)
-          .expand("ListItemAllFields")
-          .get()
-          .then(async (_folder) => {
-            await sp.web.lists
-              .getByTitle("DistributionLibrary")
-              .items.getById(_folder["ListItemAllFields"]["ID"])
-              .update({ DistributionId: itemId })
-              .then((item1) => {
-                console.log(item1);
-              })
-              .catch((error) => console.log("id update error", error));
-
-            await sp.web
-              .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
-              .folders.addUsingPath("Attachment", true)
-              .then(async (data) => {
-                for (let i = 0; i < vendorData.Attachment.length; i++) {
-                  await sp.web
-                    .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
-                    .files.addUsingPath(
-                      vendorData.Attachment[i].name,
-                      vendorData.Attachment[i]
-                    )
-                    .then((result) => {
-                      Attachment.push(result.data.ServerRelativeUrl);
-                    })
-                    .catch((error) => console.log("error", error));
-                }
-              })
-              .catch((error) => console.log("first sub folder", error));
-            await sp.web
-              .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
-              .folders.addUsingPath("Procurement", true)
-              .then(async (data) => {
-                for (let i = 0; i < vendorData.Attachment.length; i++) {
-                  await sp.web
-                    .getFolderByServerRelativePath(data.data.ServerRelativeUrl)
-                    .files.addUsingPath(
-                      vendorData.Procurement[i].name,
-                      vendorData.Attachment[i]
-                    )
-                    .then((result) => {
-                      Procurement.push(result.data.ServerRelativeUrl);
-                    })
-                    .catch((error) => console.log("error", error));
-                }
-              })
-              .catch((error) => console.log("second sub folder", error));
-          });
-
-        let json = {
-          AttachmentURL: JSON.stringify(Attachment),
-          ProcurementTeamQuotationURL: JSON.stringify(Procurement),
-        };
-        setattachmentJson(json, itemId);
-      })
-      .catch((err) => {
-        getErrorFunction("create folder");
-      });
-  };
-
-  // const addFiles = async (folderName,URLS,) =>{
-
-  // }
-
-  const setattachmentJson = (json, Id) => {
-    console.log("json", json);
-    SPServices.SPUpdateItem({
-      Listname: Config.ListNames.DistributionList,
-      ID: Id,
-      RequestJSON: json,
-    })
-      .then((data) => {
-        console.log("data added succefully");
-        setIsLoader(false);
-        TypeFlag = "";
-        ConfimMsg = false;
-        setIsTrigger(!isTrigger);
-      })
-      .catch((error) => console.log("error", error));
-  };
-
-  const handleInputValue = (files, type) => {
-    let allFiles = [];
-    for (let i = 0; i < files.length; i++) {
-      allFiles.push(files[i]);
-    }
-    console.log("allFiles", allFiles);
-
-    if (type === "Attachment") {
-      setVendorData({
-        ...vendorData,
-        Attachment: allFiles,
-      });
-    } else {
-      setVendorData({
-        ...vendorData,
-        Procurement: allFiles,
-      });
-    }
-  };
-
-  const editVendorItem = (items, index) => {
-    let editItem = [...MData];
-    editItem[index].isEdit = true;
-    setVendorData(items);
-    setMData([...editItem]);
-  };
-
-  const editVendorCancel = (item, index) => {
-    let EVendorCancel = [...MData];
-    EVendorCancel[index].isEdit = false;
-    setMData([...EVendorCancel]);
-  };
-
-  const vendorUpdate = (item, index) => {
-    let UpdateJson = {
-      Vendor: vendorData.Vendor,
-      Description: vendorData.Description,
-      Pricing: 100,
-      PaymentTerms: vendorData.PaymentTerms,
-      LastYearCost: vendorData.LastYearCost,
-      PO: vendorData.PO,
-      Supplier: vendorData.Supplier,
-      RequestedAmount: vendorData.RequestedAmount,
-    };
-    let authendication = Validation()
-    if(authendication){
+    if (authendication) {
+      setIsLoader(true);
       SPServices.SPUpdateItem({
         Listname: Config.ListNames.DistributionList,
         RequestJSON: UpdateJson,
-        ID: item.VendorId,
+        ID: item.ID,
       })
         .then((resUpdateItem) => {
-          TypeFlag = "";
-          ConfimMsg = false;
-          setIsTrigger(!isTrigger);
+          getMasterFolder(item.ID);
         })
         .catch((error) => {
-          getErrorFunction(error);
+          getErrorFunction("update distribution error");
         });
     }
   };
 
-  const ConfirmPageChange = (item, index, type) => {
+  const getMasterFolder = (itemId: number) => {
+    console.log(itemId.toString());
+
+    sp.web.lists
+      .getByTitle(Config.ListNames.DistributionLibrary)
+      .rootFolder.folders.getByName(itemId.toString())
+      .expand("ListItemAllFields")
+      .get()
+      .then((folder) => {
+        console.log("folder", folder);
+        getSubfolders(folder, itemId);
+      })
+      .catch((error) => getErrorFunction("update get master folder"));
+  };
+
+  const getSubfolders = async (folder: any, itemId) => {
+    let Attachment: string[] = [...vendorData.AttachmentURL];
+    let Procurement: string[] = [...vendorData.ProcurementURL];
+
+    for (let i = 0; i < vendorData.Attachment.length; i++) {
+      await sp.web
+        .getFolderByServerRelativePath(folder.ServerRelativeUrl + "/Attachment")
+        .files.addUsingPath(
+          vendorData.Attachment[i].name,
+          vendorData.Attachment[i],
+          { Overwrite: true }
+        )
+        .then((data) => {
+          Attachment.unshift(data.data.ServerRelativeUrl);
+        })
+        .catch((err) => console.log("err", err));
+    }
+    for (let i = 0; i < vendorData.Procurement.length; i++) {
+      await sp.web
+        .getFolderByServerRelativePath(
+          folder.ServerRelativeUrl + "/Procurement"
+        )
+        .files.addUsingPath(
+          vendorData.Procurement[i].name,
+          vendorData.Procurement[i],
+          { Overwrite: true }
+        )
+        .then((data) => {
+          Procurement.unshift(data.data.ServerRelativeUrl);
+        })
+        .catch((err) => console.log("err", err));
+    }
+    updateJson(Attachment, Procurement, itemId, "Update");
+  };
+
+  const ConfirmPageChange = (
+    item: IVendorItems,
+    index: number,
+    type: string
+  ) => {
     if (confirm("page change")) {
       if (type == "Add") {
         TypeFlag = "Add";
@@ -831,27 +958,27 @@ const Vendor = (props: any) => {
     }
   };
 
-  const Validation = () => {
-    let isValidation = true;
-    let validationData = {...Config.vendorValidation}
+  const Validation = (): boolean => {
+    let isValidation: boolean = true;
+    let validationData: IVendorValidation = { ...Config.vendorValidation };
 
-    if(vendorData.Vendor === 'All'){
-      validationData.Description = true
+    if (vendorData.Vendor === "All") {
+      validationData.Description = true;
       isValidation = false;
     }
 
-    if(!vendorData.Description){
-      validationData.Description = true
+    if (!vendorData.Description) {
+      validationData.Description = true;
       isValidation = false;
     }
 
-    if(!vendorData.Pricing){
+    if (!vendorData.Pricing) {
       validationData.Pricing = true;
       isValidation = false;
     }
 
     setValidate(validationData);
-    return isValidation
+    return isValidation;
   };
 
   useEffect(() => {
@@ -862,12 +989,62 @@ const Vendor = (props: any) => {
     <Loader />
   ) : (
     <div>
+      <div style={{
+        display:'flex',
+        width:'100%',
+        justifyContent:'space-between'
+      }}>
+        <div style={{
+          display:'flex',
+          width:'60%',
+          gap:'2%'
+        }}>
+          <div style={{width:'15%'}}>
+            <TextField label="Period" value="one" disabled={true}/>
+          </div>
+          <div style={{width:'15%'}}>
+            <TextField label="Country" value="one" disabled={true}/>
+          </div>
+          <div style={{width:'15%'}}>
+            <TextField label="Type" value="one" disabled={true}/>
+          </div>
+          <div style={{width:'15%'}}>
+            <TextField label="Area" value="one" disabled={true}/>
+          </div>
+          <div style={{width:'40%'}}>
+            <label>Renewal Type</label>
+            <div style={{
+              display:'flex',
+              gap:'2%'
+            }}>
+              <Checkbox label="New" checked={isRenual}/>
+              <Checkbox label="Existing" checked={!isRenual}/>
+            </div>
+          </div>
+        </div>
+       
+        <div style={{
+          display:'flex',
+          gap:'2%'
+        }}>
+          {
+            admin ? 
+            <DefaultButton text="Submit"/>
+            :
+            <>
+              <DefaultButton text="Review"/>
+              <DefaultButton text="Approve"/>
+            </>
+          }
+        </div>
+      </div>
       <DetailsList
         columns={column}
         items={MData}
         styles={_DetailsListStyle}
         selectionMode={SelectionMode.none}
       />
+      {/* <button onClick={()=>{props.setVendorDetail({...props.vendorDetails,isVendor:true})}}>click</button> */}
     </div>
   );
 };
