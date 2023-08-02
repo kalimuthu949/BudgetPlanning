@@ -344,12 +344,14 @@ const CategoryConfig = (props: any): JSX.Element => {
         });
 
         if (_filterdArray.length == i + 1) {
+          setPagination({ ...pagination, pagenumber: 1 });
           setCateOpt([..._filterMasterArr]);
           setItems([..._filterdArray]);
           setIsLoader(false);
         }
       }
     } else {
+      setPagination({ ...pagination, pagenumber: 1 });
       setCateOpt([..._filterMasterArr]);
       setItems([..._filterdArray]);
       setIsLoader(false);
@@ -512,6 +514,8 @@ const CategoryConfig = (props: any): JSX.Element => {
                 filCountryDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                setFilMasCateKey([]);
+                _numCate = [];
                 setFilCountryDrop(text.text as string);
                 _strCountry = text.text as string;
                 _getOnChange();
@@ -533,6 +537,8 @@ const CategoryConfig = (props: any): JSX.Element => {
                 filAreaDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                setFilMasCateKey([]);
+                _numCate = [];
                 setFilAreaDrop(text.text as string);
                 _strArea = text.text as string;
                 _getOnChange();
@@ -555,6 +561,8 @@ const CategoryConfig = (props: any): JSX.Element => {
                 filTypeDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                setFilMasCateKey([]);
+                _numCate = [];
                 setFilTypeDrop(text.text as string);
                 _strCateType = text.text as string;
                 _getOnChange();
@@ -586,7 +594,7 @@ const CategoryConfig = (props: any): JSX.Element => {
                 size="small"
                 multiple
                 disableCloseOnSelect
-                options={cateOpt.length ? [...cateOpt] : [..._masterCateOption]}
+                options={[...cateOpt]}
                 getOptionLabel={(option) => option.text}
                 value={[...filMasCateKey]}
                 defaultValue={[...filMasCateKey]}

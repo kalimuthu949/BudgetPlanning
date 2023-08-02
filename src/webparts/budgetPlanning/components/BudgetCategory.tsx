@@ -56,6 +56,8 @@ const addIcon: IIconProps = { iconName: "Add" };
 let areaExport = [];
 let _areasDrop: IDrop[] = [];
 let isUserPermissions: IGroupUsers;
+let _strSearch: string = "";
+let _strArea: string = "";
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
@@ -63,7 +65,6 @@ const BudgetCategory = (props: any): JSX.Element => {
   _areasDrop = [...props.dropValue.Area];
   _areasDrop.shift();
   let allArea = [..._areasDrop].map((value) => value.text);
-  console.log("allArea", allArea);
 
   isUserPermissions = { ...props.groupUsers };
 
@@ -110,6 +111,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     totalPageItems: 10,
     pagenumber: 1,
   });
+  const [filArea, setFilArea] = useState<string>("");
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -210,7 +212,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const dropDownStyle = {
     root: {
-      width: "48%",
+      width: "100%",
     },
   };
 
@@ -307,8 +309,8 @@ const BudgetCategory = (props: any): JSX.Element => {
     let _isAdmin: boolean = true;
 
     worksheet.columns = [
-      { header: "Categorys", key: "Category", width: 100 },
-      { header: "Areas", key: "Area", width: 50 },
+      { header: "Category", key: "Category", width: 100 },
+      { header: "Area", key: "Area", width: 50 },
     ];
     for (let i: number = 0; 1000 > i; i++) {
       if (_arrExport.length > i) {
@@ -387,10 +389,13 @@ const BudgetCategory = (props: any): JSX.Element => {
       document.getElementById("fileUpload")["value"] = "";
       if (
         worksheet.name.toLowerCase() == "my sheet" &&
-        listItems[0].Title.toLowerCase() == "categorys" &&
-        listItems[0].Area.toLowerCase() == "areas"
+        listItems[0].Title.toLowerCase() == "category" &&
+        listItems[0].Area.toLowerCase() == "area"
       ) {
         listItems.shift();
+        listItems = listItems.filter(
+          (e: any) => e.Title.trim() !== "" && e.Area.trim() !== ""
+        );
         setImportFilePopup(true);
         importFileValidation([...listItems]);
       } else {
@@ -724,14 +729,21 @@ const BudgetCategory = (props: any): JSX.Element => {
     return newAddData;
   };
 
-  const searchData = (data: string): void => {
+  const searchData = (): void => {
     setPagination({ ...pagination, pagenumber: 1 });
-    let searchdata = [...MData].filter((value) => {
-      return (
-        value.Title.toLowerCase().includes(data.trim().toLowerCase()) ||
-        value.Area.toLowerCase().includes(data.trim().toLowerCase())
+    let searchdata: any[] = [...MData];
+
+    searchdata = searchdata.filter((value) => {
+      return value.Title.toLowerCase().includes(
+        _strSearch.trim().toLowerCase()
       );
     });
+    if (_strArea !== "All" && _strArea !== "") {
+      searchdata = searchdata.filter((e: any) => {
+        return e.Area === _strArea;
+      });
+    }
+
     setMaster([...searchdata]);
   };
 
@@ -777,12 +789,36 @@ const BudgetCategory = (props: any): JSX.Element => {
       <div className={styles.btnContainer}>
         {/* btn sections */}
         <div className={styles.rightBtns}>
+          {/* search section */}
           <div style={{ width: "15%" }}>
-            {/* search section */}
             <SearchBox
               styles={searchStyle}
               placeholder="Search"
-              onChange={(val, text) => searchData(text)}
+              onChange={(val, text) => {
+                _strSearch = text;
+                searchData();
+              }}
+            />
+          </div>
+
+          {/* Area dropdown section */}
+          <div style={{ width: "15%" }}>
+            <Dropdown
+              options={[...propDropValue.Area]}
+              styles={dropDownStyle}
+              placeholder="Select The Area"
+              selectedKey={
+                filArea
+                  ? [...propDropValue.Area].filter((e: IDrop) => {
+                      return e.text === filArea;
+                    })[0].key
+                  : 0
+              }
+              onChange={(e: any, item: IDrop) => {
+                _strArea = item.text as string;
+                setFilArea(item.text as string);
+                searchData();
+              }}
             />
           </div>
 

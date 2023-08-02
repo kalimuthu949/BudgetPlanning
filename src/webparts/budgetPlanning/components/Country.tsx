@@ -10,15 +10,13 @@ import {
   Modal,
   TextField,
   IDetailsListStyles,
-  ITextFieldStyles,
   SearchBox,
   DefaultButton,
   IIconProps,
   IconButton,
   ISearchBoxStyles,
-  IButtonStyles,
-  IModalStyles,
-  Dropdown,
+  Icon,
+  ITextFieldStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import Loader from "./Loader";
@@ -33,6 +31,7 @@ interface ICountryList {
   Country: string;
   Validate: boolean;
 }
+
 interface IPagination {
   totalPageItems: number;
   pagenumber: number;
@@ -40,20 +39,91 @@ interface IPagination {
 
 const addIcon: IIconProps = { iconName: "Add" };
 
-const Country = (props: any) => {
+const Country = (props: any): JSX.Element => {
+  /* Variable creation */
   const Columns: IColumn[] = [
     {
       key: "column1",
       name: "Country",
       fieldName: "Country",
+      minWidth: 400,
+      maxWidth: 500,
+      onRender: (item: any) => {
+        return item.isEdit ? (
+          <div>
+            <TextField
+              value={editCountry.Country ? editCountry.Country : ""}
+              styles={isValid ? errtxtFieldStyle : textFieldStyle}
+              placeholder="Enter Here"
+              onChange={(e: any) => {
+                editCountry.Country = e.target.value.trimStart();
+                setEditCountry({ ...editCountry });
+              }}
+            />
+          </div>
+        ) : (
+          item.Country
+        );
+      },
+    },
+    {
+      key: "column2",
+      name: "Action",
       minWidth: 200,
       maxWidth: 500,
+      onRender: (item: any) => {
+        return item.isEdit ? (
+          <div
+            style={{
+              display: "flex",
+              gap: "1%",
+            }}
+          >
+            <Icon
+              iconName="CheckMark"
+              style={{
+                color: "green",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                _getValidation();
+              }}
+            />
+            <Icon
+              iconName="Cancel"
+              style={{
+                color: "red",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                _getEditFunction({ ...item }, "Cancel");
+              }}
+            />
+          </div>
+        ) : (
+          <Icon
+            iconName="Edit"
+            style={{
+              color: "blue",
+              fontSize: "16px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              _getEditFunction({ ...item }, "Edit");
+            }}
+          />
+        );
+      },
     },
   ];
+
+  /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [istrigger, setIstrigger] = useState<boolean>(false);
   const [countryPopup, setCountryPopup] = useState<boolean>(false);
-  const [MData, setMData] = useState<ICountryList[]>([]);
+  const [MData, setMData] = useState<any[]>([]);
   const [master, setMaster] = useState<ICountryList[]>([]);
   const [items, setItems] = useState<ICountryList[]>([]);
   const [newCountry, setNewCountry] = useState<ICountryList[]>([
@@ -66,6 +136,8 @@ const Country = (props: any) => {
     totalPageItems: 10,
     pagenumber: 1,
   });
+  const [editCountry, setEditCountry] = useState<any>();
+  const [isValid, setIsValid] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -203,12 +275,33 @@ const Country = (props: any) => {
     },
   };
 
+  const textFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      "::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+
+  const errtxtFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      border: "1px solid red",
+      "::after": {
+        border: "1px solid red",
+      },
+      ":hover": {
+        border: "1px solid red",
+      },
+    },
+  };
+
+  /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error("Error Message");
     setIsLoader(false);
   };
 
-  const getMasterCountryData = () => {
+  const getMasterCountryData = (): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CountryList,
       Topcount: 5000,
@@ -219,7 +312,9 @@ const Country = (props: any) => {
         if (resMasCountry.length) {
           resMasCountry.forEach((countryData) => {
             countryListData.push({
+              ID: countryData["ID"],
               Country: countryData[Config.CountryListColumns.Title],
+              isEdit: false,
             });
           });
           setMData([...countryListData]);
@@ -369,6 +464,78 @@ const Country = (props: any) => {
     setMaster([...searchdata]);
   };
 
+  const _getEditFunction = (_Item: any, type: string): void => {
+    let _preArray: any[] = [];
+    if (type === "Edit") {
+      for (let i: number = 0; MData.length > i; i++) {
+        if (_Item.ID === MData[i].ID) {
+          MData[i].isEdit = true;
+          _preArray.push({ ...MData[i] });
+        } else {
+          MData[i].isEdit = false;
+          _preArray.push({ ...MData[i] });
+        }
+
+        if (MData.length === _preArray.length) {
+          setEditCountry({ ..._Item });
+          setIsValid(false);
+          setMData([..._preArray]);
+          setMaster([..._preArray]);
+        }
+      }
+    } else {
+      for (let i: number = 0; MData.length > i; i++) {
+        MData[i].isEdit = false;
+        _preArray.push({ ...MData[i] });
+
+        if (MData.length === _preArray.length) {
+          setIsValid(false);
+          setMData([..._preArray]);
+          setMaster([..._preArray]);
+        }
+      }
+    }
+  };
+
+  const _getValidation = (): void => {
+    let _isValid: boolean = false;
+    if (!editCountry.Country) {
+      _isValid = true;
+      setIsValid(true);
+    }
+
+    !_isValid && (setIsLoader(true), _getUpdateFun());
+  };
+
+  const _getUpdateFun = (): void => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.CountryList,
+      ID: editCountry.ID,
+      RequestJSON: {
+        Title: editCountry.Country,
+      },
+    })
+      .then((res: any) => {
+        let _masArray: any[] = [...MData];
+        let index: number = [...MData].findIndex(
+          (value) => value.ID === editCountry.ID
+        );
+        editCountry.isEdit = false;
+        _masArray.splice(index, 1, { ...editCountry });
+
+        if (MData.length === _masArray.length) {
+          setMData([..._masArray]);
+          setMaster([..._masArray]);
+          setIsValid(false);
+          setIsLoader(false);
+          alertify.success("The country name was updated successfully");
+        }
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
   useEffect(() => {
     let masterData = commonServices.paginateFunction(
       pagination.totalPageItems,
@@ -386,7 +553,10 @@ const Country = (props: any) => {
     <Loader />
   ) : (
     <div>
+      {/* Header section */}
       <Label className={styles.HeaderLable}>Budget Country</Label>
+
+      {/* Filter & btn section */}
       <div className={styles.countryModalBtnSec}>
         <div className={styles.countryModalSearchBox}>
           {/* search section */}
@@ -406,6 +576,7 @@ const Country = (props: any) => {
           />
         </div>
       </div>
+
       {/* Details list section */}
       <DetailsList
         items={[...items]}
@@ -427,6 +598,7 @@ const Country = (props: any) => {
           }
         />
       )}
+      
       {/*Country Modal */}
       <Modal isOpen={countryPopup} styles={countryPopupStyle}>
         <div className={styles.modalHeader}>
