@@ -86,7 +86,19 @@ const BudgetDistribution = (props: any): JSX.Element => {
       minWidth: 280,
       maxWidth: 300,
       onRender: (item: ICurBudgetItem): any => {
-        return <div>{item.Comments.trim() ? item.Comments : "N/A"}</div>;
+        return (
+          <div
+            title={item.Comments}
+            style={{
+              cursor: "pointer",
+              width: "98%",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
+            {item.Comments.trim() ? item.Comments : "N/A"}
+          </div>
+        );
       },
     },
     {
@@ -817,7 +829,11 @@ const BudgetDistribution = (props: any): JSX.Element => {
       )}
     </div>
   ) : (
-    <Vendor props={props} vendorDetails={vendorDetails} setVendorDetails={setVendorDetails}/>
+    <Vendor
+      props={props}
+      vendorDetails={vendorDetails}
+      setVendorDetails={setVendorDetails}
+    />
   );
 };
 

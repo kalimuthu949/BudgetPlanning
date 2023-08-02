@@ -14,6 +14,7 @@ import {
   ITextFieldStyles,
   Modal,
   IModalStyles,
+  IconButton,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -33,6 +34,9 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetPlanning.module.scss";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
+
+// image and gif variables
+const deleteGif = require("../../../ExternalRef/Images/Delete.gif");
 
 let propDropValue: IDropdowns;
 let _Items: ICurBudgetItem[] = [];
@@ -137,7 +141,17 @@ const BudgetPlan = (props: any): JSX.Element => {
       maxWidth: 300,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
-          <div>{item.Comments.trim() ? item.Comments : "N/A"}</div>
+          <div
+            title={item.Comments}
+            style={{
+              cursor: "pointer",
+              width: "98%",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
+            {item.Comments.trim() ? item.Comments : "N/A"}
+          </div>
         ) : (
           <div>
             <TextField
@@ -1274,6 +1288,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       <Modal isOpen={isDeleteModal} isBlocking={false} styles={modalStyles}>
         <div>
           {/* Content section */}
+          <img src={`${deleteGif}`} />
+          {/* <IconButton
+            className={styles.deleteImg}
+            iconProps={{ iconName: "Delete" }}
+          /> */}
           <Label
             style={{
               color: "red",
@@ -1282,6 +1301,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           >
             Do you want to delete this item?
           </Label>
+          {/* gif or img */}
 
           {/* btn section */}
           <div

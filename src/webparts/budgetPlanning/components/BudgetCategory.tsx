@@ -19,6 +19,8 @@ import {
   IButtonStyles,
   IModalStyles,
   Dropdown,
+  IDropdownStyles,
+  Icon,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import Loader from "./Loader";
@@ -210,9 +212,25 @@ const BudgetCategory = (props: any): JSX.Element => {
     },
   };
 
-  const dropDownStyle = {
+  const dropDownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "100%",
+      width: "48%",
+    },
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+  const filterdropDownStyle: Partial<IDropdownStyles> = {
+    root: {
+      // width: "100%",
+      width: 240,
+    },
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
     },
   };
 
@@ -787,10 +805,12 @@ const BudgetCategory = (props: any): JSX.Element => {
 
       {/* filter and btn section */}
       <div className={styles.btnContainer}>
-        {/* btn sections */}
-        <div className={styles.rightBtns}>
+        <div className={styles.leftSection}>
           {/* search section */}
-          <div style={{ width: "15%" }}>
+          <div
+          // style={{ width: "100%" }}
+          >
+            <Label>Category</Label>
             <SearchBox
               styles={searchStyle}
               placeholder="Search"
@@ -802,10 +822,13 @@ const BudgetCategory = (props: any): JSX.Element => {
           </div>
 
           {/* Area dropdown section */}
-          <div style={{ width: "15%" }}>
+          <div
+          // style={{ width: "100%" }}
+          >
+            <Label>Type</Label>
             <Dropdown
               options={[...propDropValue.Area]}
-              styles={dropDownStyle}
+              styles={filterdropDownStyle}
               placeholder="Select The Area"
               selectedKey={
                 filArea
@@ -821,7 +844,18 @@ const BudgetCategory = (props: any): JSX.Element => {
               }}
             />
           </div>
+          <Icon
+            iconName="Refresh"
+            className={styles.refresh}
+            // onClick={() => {
+            //   _isCurYear = true;
+            //   reset(currentYear);
+            // }}
+          />
+        </div>
 
+        {/* btn sections */}
+        <div className={styles.rightBtns}>
           {/* New btn section */}
           <DefaultButton
             text="New item"

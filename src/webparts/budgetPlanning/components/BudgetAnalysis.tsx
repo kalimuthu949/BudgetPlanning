@@ -36,6 +36,9 @@ import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import { IButtonStyles } from "office-ui-fabric-react";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
+// image and gif variables
+const importGif = require("../../../ExternalRef/Images/Import.gif");
+
 let _isCurYear: boolean = true;
 let listItems = [];
 let propDropValue: IDropdowns;
@@ -181,7 +184,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filCtgryDrop, setFilCtgryDrop] = useState<string>("All");
   const [fillAreaDrop, setFillAreaDrop] = useState<string>("All");
-  const [isModal,setIsmodal] = useState(false)
+  const [isModal, setIsmodal] = useState(false);
   const [ctgryDropOptions, setCtgryDropOptions] =
     useState<IDropdowns>(propDropValue);
   const [filPeriodDrop, setFilPeriodDrop] = useState<string>(
@@ -620,7 +623,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         listItems[0].OverAllBudgetCost.toLowerCase() == "total"
       ) {
         listItems.shift();
-        setIsmodal(true)
+        setIsmodal(true);
       } else {
         alertify.error("Please import correct excel format");
       }
@@ -823,69 +826,73 @@ const BudgetAnalysis = (props: any): JSX.Element => {
 
           {/* modal section*/}
           <Modal isOpen={isModal} isBlocking={false} styles={modalStyles}>
-        <div>
-          {/* Content section */}
-          <Label
-            style={{
-              color: "red",
-              fontSize: 16,
-            }}
-          >
-            Do you want to import the exel file?
-          </Label>
+            <div>
+              {/* Content section */}
+              <img src={`${importGif}`} />
+              {/* <IconButton
+            className={styles.importImg}
+            iconProps={{ iconName: "Delete" }}
+          /> */}
+              <Label
+                style={{
+                  color: "red",
+                  fontSize: 16,
+                }}
+              >
+                Do you want to import the exel file?
+              </Label>
 
-          {/* btn section */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "6%",
-              marginTop: "20px",
-            }}
-          >
-            <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
-              onClick={() => {
-                // _curItem = undefined;
-                // setIsModal(false);
-                setIsmodal(false)
-              }}
-            >
-              No
-            </button>
-            <button
-              style={{
-                width: "26%",
-                height: 32,
-                color: "#FFF",
-                background: "#2580e0",
-                border: "none",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
-              onClick={() => {
-                // setIsLoader(true);
-                // _getUnlink();
-                getUpdateImportDatas(listItems);
-                setIsmodal(false)
-              }}
-            >
-              Yes
-            </button>
-          </div>
-        </div>
-      </Modal>
-
+              {/* btn section */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "6%",
+                  marginTop: "20px",
+                }}
+              >
+                <button
+                  style={{
+                    width: "26%",
+                    height: 32,
+                    background: "#dc3120",
+                    border: "none",
+                    color: "#FFF",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    padding: "4px 0px",
+                  }}
+                  onClick={() => {
+                    // _curItem = undefined;
+                    // setIsModal(false);
+                    setIsmodal(false);
+                  }}
+                >
+                  No
+                </button>
+                <button
+                  style={{
+                    width: "26%",
+                    height: 32,
+                    color: "#FFF",
+                    background: "#2580e0",
+                    border: "none",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    padding: "4px 0px",
+                  }}
+                  onClick={() => {
+                    // setIsLoader(true);
+                    // _getUnlink();
+                    getUpdateImportDatas(listItems);
+                    setIsmodal(false);
+                  }}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </Modal>
 
           {/* Details List section */}
           <DetailsList
