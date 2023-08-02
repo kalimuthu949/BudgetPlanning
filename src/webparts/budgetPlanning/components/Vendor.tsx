@@ -39,6 +39,7 @@ import { config } from "exceljs";
 import { sp } from "@pnp/sp/presets/all";
 import { truncate } from "@microsoft/sp-lodash-subset";
 import { DefaultButton } from "office-ui-fabric-react";
+import { Selection } from "@fluentui/react";
 
 let TypeFlag = "";
 let ConfimMsg = false;
@@ -508,26 +509,12 @@ const Vendor = (props: any) => {
 
   const newColumn = [...column];
   newColumn.pop();
-  // newColumn.unshift({
-  //   key: "1",
-  //   name: "Vendor",
-  //   fieldName: "Vendor",
-  //   minWidth: 100,
-  //   maxWidth: 500,
-  //   onRender: (item, index) => {
-  //     return item.isEdit ? (
 
-  //     ) : (
-  //       <label>{!item.isDummy ? item.Vendor : ""}</label>
-  //     );
-  //   },
-  // });
-
-  const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
   const [vendorDetails, setVendorDetails] = useState<IVendorDetail[]>([]);
   const [isRenual, setIsRenual] = useState(true);
+  const [selectedItems, setselectedItems] = useState<any[]>([]);
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
@@ -539,6 +526,7 @@ const Vendor = (props: any) => {
     alertify.error(error);
     setIsLoader(false);
   };
+  console.log("selectedItems", selectedItems);
 
   const getDefaultFunction = () => {
     setIsLoader(true);
@@ -560,8 +548,8 @@ const Vendor = (props: any) => {
         {
           FilterKey: "Year/Title",
           Operator: "eq",
-          FilterValue: "2023",
-          // FilterValue: (Number(props.vendorDetails.Item.Year)-1).toString(),
+          // FilterValue: "2023",
+          FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
         },
       ],
       Topcount: 5000,
@@ -638,15 +626,28 @@ const Vendor = (props: any) => {
           FilterKey: "Budget/ID",
           Operator: "eq",
           FilterValue: props.vendorDetails.Item.ID,
-          // FilterValue: _preYear,
         },
       ],
     })
       .then((resVendor: any) => {
-        console.log("resVendor", resVendor);
         let getVendorData: IVendorItems[] = [];
         if (resVendor.length) {
-          resVendor.forEach((item: any) => {
+          console.log("resVendor", resVendor);
+
+          let allDatas = [...resVendor].filter((value) => {
+            console.log("status", value.Status);
+
+            if (admin) {
+              return (
+                value.Status === "Not Started" || value.Status === "Rejected"
+              );
+            } else {
+              return value.Status === "Pending" || value.Status === "Approved";
+            }
+          });
+          console.log("allDatas", allDatas);
+
+          allDatas.forEach((item: any) => {
             getVendorData.push({
               ID: item.ID,
               VendorId: item.VendorId,
@@ -669,6 +670,7 @@ const Vendor = (props: any) => {
               isEdit: false,
               Attachment: [],
               Procurement: [],
+              Status: item.Status ? item.Status : "",
             });
           });
           if (admin) {
@@ -677,7 +679,9 @@ const Vendor = (props: any) => {
           setMData([...getVendorData]);
           setIsLoader(false);
         } else {
-          setMData([...MData, { ...Config.Vendor }]);
+          if (admin) {
+            setMData([...MData, { ...Config.Vendor }]);
+          }
           setIsLoader(false);
         }
       })
@@ -1067,9 +1071,44 @@ const Vendor = (props: any) => {
     setVendorData({ ...newVendorData });
   };
 
+  const handleItemInvoked = (item) => {
+    console.log("Selected item:", item);
+  };
+
+  const selection = new Selection({
+    onSelectionChanged: () => {
+      let item = selection.getSelection();
+      item = item.filter((value) => value["ID"] !== null);
+      setselectedItems([...item]);
+      return item;
+    },
+  });
+
+  const setStatus = (type: string) => {
+    let updateItems = [...selectedItems].map((value) => {
+      return {
+        ID: value.ID,
+        Status: type,
+      };
+    });
+    console.log("updateItems", updateItems);
+
+    if (selectedItems.length) {
+      SPServices.batchUpdate({
+        ListName: Config.ListNames.DistributionList,
+        responseData: [...updateItems],
+      })
+        .then(() => {
+          setIsLoader(true);
+          getVendorData();
+        })
+        .catch((error) => getErrorFunction("update status"));
+    }
+  };
+
   useEffect(() => {
     getDefaultFunction();
-  }, [isTrigger]);
+  }, []);
 
   return isLoader ? (
     <Loader />
@@ -1140,32 +1179,32 @@ const Vendor = (props: any) => {
               disabled={true}
             />
           </div>
-         {admin &&
-           <div style={{ width: "40%" }}>
-           <label>Renewal Type</label>
-           <div
-             style={{
-               display: "flex",
-               gap: "2%",
-             }}
-           >
-             <Checkbox
-               label="New"
-               checked={isRenual}
-               onChange={() => {
-                 isChangeRenual && setIsRenual(true);
-               }}
-             />
-             <Checkbox
-               label="Existing"
-               checked={!isRenual}
-               onChange={() => {
-                 isChangeRenual && setIsRenual(false);
-               }}
-             />
-           </div>
-         </div>
-         }
+          {admin && (
+            <div style={{ width: "40%" }}>
+              <label>Renewal Type</label>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "2%",
+                }}
+              >
+                <Checkbox
+                  label="New"
+                  checked={isRenual}
+                  onChange={() => {
+                    isChangeRenual && setIsRenual(true);
+                  }}
+                />
+                <Checkbox
+                  label="Existing"
+                  checked={!isRenual}
+                  onChange={() => {
+                    isChangeRenual && setIsRenual(false);
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div
@@ -1175,23 +1214,37 @@ const Vendor = (props: any) => {
           }}
         >
           {admin ? (
-            <DefaultButton text="Submit" />
+            <DefaultButton text="Submit" onClick={() => setStatus("Pending")} />
           ) : (
             <>
-              <DefaultButton text="Review" />
-              <DefaultButton text="Approve" />
+              <DefaultButton
+                text="Review"
+                onClick={() => setStatus("Rejected")}
+              />
+              <DefaultButton
+                text="Approve"
+                onClick={() => setStatus("Approved")}
+              />
             </>
           )}
         </div>
       </div>
       <DetailsList
-        columns={admin ?  [...column] : [...newColumn]}
+        columns={admin ? [...column] : [...newColumn]}
         items={MData}
         styles={_DetailsListStyle}
-        selectionMode={admin ? SelectionMode.none : SelectionMode.multiple }
-        onActiveItemChanged={(e)=>console.log('e',e)}
+        selectionMode={SelectionMode.multiple}
+        // onActiveItemChanged={(e,t)=>console.log('e',e,'t',t)}
+        // // onRenderItemColumn={(item, index, column) => {
+
+        // // }}
+        // onItemInvoked={(item)=>handleItemInvoked(item)}
+        setKey="set"
+        // selectionMode={SelectionMode.single}
+        selection={selection}
       />
       {/* <button >click</button> */}
+      {!MData.length ? <div>No data found</div> : null}
     </div>
   );
 };
