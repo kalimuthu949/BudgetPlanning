@@ -12,6 +12,7 @@ import {
   IColumn,
   Icon,
   IModalStyles,
+  IconButton,
 } from "@fluentui/react";
 import {
   ICategory,
@@ -33,6 +34,9 @@ import { Modal } from "office-ui-fabric-react";
 import commonServices from "../../../CommonServices/CommonServices";
 import Pagination from "office-ui-fabric-react-pagination";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
+
+// image and gif variables
+const unlinkGif = require("../../../ExternalRef/Images/unlink.gif");
 
 let propDropValue: IDropdowns;
 let _isBack: boolean = false;
@@ -694,6 +698,14 @@ const CategoryConfig = (props: any): JSX.Element => {
       <Modal isOpen={isModal} isBlocking={false} styles={modalStyles}>
         <div>
           {/* Content section */}
+          {/* gif or img */}
+
+          <img src={`${unlinkGif}`} />
+          {/* <IconButton
+            className={styles.unlinkImg}
+            iconProps={{ iconName: "RemoveLinkChain" }}
+          /> */}
+
           <Label
             style={{
               color: "red",
