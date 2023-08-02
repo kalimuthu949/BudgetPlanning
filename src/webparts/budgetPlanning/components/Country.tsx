@@ -498,10 +498,18 @@ const Country = (props: any): JSX.Element => {
   };
 
   const _getValidation = (): void => {
+    let _masCountry: any[] = [...MData];
     let _isValid: boolean = false;
+
     if (!editCountry.Country) {
       _isValid = true;
-      setIsValid(true);
+      setIsValid(_isValid);
+    } else {
+      _isValid = _masCountry.some(
+        (e: any) =>
+          e.Country.toLowerCase() === editCountry.Country.toLowerCase()
+      );
+      setIsValid(_isValid);
     }
 
     !_isValid && (setIsLoader(true), _getUpdateFun());
@@ -598,7 +606,7 @@ const Country = (props: any): JSX.Element => {
           }
         />
       )}
-      
+
       {/*Country Modal */}
       <Modal isOpen={countryPopup} styles={countryPopupStyle}>
         <div className={styles.modalHeader}>

@@ -408,7 +408,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 0.7
+          V - 0.8
         </div>
       </div>
     )
