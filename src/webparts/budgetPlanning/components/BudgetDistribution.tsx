@@ -817,7 +817,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       )}
     </div>
   ) : (
-    <Vendor props={props} vendorDetails={vendorDetails} />
+    <Vendor props={props} vendorDetails={vendorDetails} setVendorDetails={setVendorDetails}/>
   );
 };
 
