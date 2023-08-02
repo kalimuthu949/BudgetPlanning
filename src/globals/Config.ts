@@ -222,7 +222,8 @@ export namespace Config {
     isDummy: true,
     isEdit: false,
     AttachmentURL:[],
-    ProcurementURL:[]
+    ProcurementURL:[],
+    Status:''
   };
   export const vendorValidation = {
     Vendor: false,

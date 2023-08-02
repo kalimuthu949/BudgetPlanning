@@ -255,6 +255,7 @@ export interface IVendorItems {
   isEdit: boolean;
   AttachmentURL: string[];
   ProcurementURL: string[];
+  Status:string;
 }
 
 // Interface for gruop authendication
