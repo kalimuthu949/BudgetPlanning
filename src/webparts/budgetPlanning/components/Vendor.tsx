@@ -42,10 +42,11 @@ import { DefaultButton } from "office-ui-fabric-react";
 
 let TypeFlag = "";
 let ConfimMsg = false;
+let isChangeRenual = true;
 
 const Vendor = (props: any) => {
   let admin = true;
-  console.log('props',props);
+  // console.log("props", props);
 
   let dropdownValue = props.props.dropValue.Vendor;
   // console.log('dropdownValue',dropdownValue);
@@ -160,7 +161,11 @@ const Vendor = (props: any) => {
               vendorData.Vendor ? vendorData.Vendor : "All"
             )}
             onChange={(e: any, text: IDrop) => {
-              handleDropdown(text, index);
+              if (isRenual) {
+                handleDropdown(text, index);
+              } else {
+                handelVendorData(text);
+              }
             }}
           />
         ) : (
@@ -260,9 +265,10 @@ const Vendor = (props: any) => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item, index) => {
-        return item.isDummy ? (
+        return item.isDummy && admin ? (
           <div
             onClick={() => {
+              isChangeRenual = false;
               if (!ConfimMsg) {
                 ConfimMsg = !ConfimMsg;
                 newVendorAdd(item, index);
@@ -433,6 +439,7 @@ const Vendor = (props: any) => {
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  isChangeRenual = true;
                   if (TypeFlag == "Add") {
                     addVendor(item);
                   } else {
@@ -448,6 +455,7 @@ const Vendor = (props: any) => {
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  isChangeRenual = true;
                   if (TypeFlag == "Add") {
                     ConfimMsg = !ConfimMsg;
                     addVendorCancel(item, index);
@@ -469,6 +477,7 @@ const Vendor = (props: any) => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
+                    isChangeRenual = false;
                     if (!ConfimMsg) {
                       ConfimMsg = !ConfimMsg;
                       TypeFlag = "Edit";
@@ -497,17 +506,35 @@ const Vendor = (props: any) => {
     },
   ];
 
+  const newColumn = [...column];
+  newColumn.pop();
+  // newColumn.unshift({
+  //   key: "1",
+  //   name: "Vendor",
+  //   fieldName: "Vendor",
+  //   minWidth: 100,
+  //   maxWidth: 500,
+  //   onRender: (item, index) => {
+  //     return item.isEdit ? (
+
+  //     ) : (
+  //       <label>{!item.isDummy ? item.Vendor : ""}</label>
+  //     );
+  //   },
+  // });
+
   const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
-  const [isRenual,setIsRenual] = useState(true)
+  const [vendorDetails, setVendorDetails] = useState<IVendorDetail[]>([]);
+  const [isRenual, setIsRenual] = useState(true);
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
   const [Validate, setValidate] = useState<IVendorValidation>({
     ...Config.vendorValidation,
   });
-  
+
   const getErrorFunction = (error: any) => {
     alertify.error(error);
     setIsLoader(false);
@@ -517,6 +544,7 @@ const Vendor = (props: any) => {
     setIsLoader(true);
     _getVendorsArr();
   };
+  // console.log("vendorDetails", vendorDetails);
 
   const _getVendorsArr = (): void => {
     SPServices.SPReadItems({
@@ -533,7 +561,7 @@ const Vendor = (props: any) => {
           FilterKey: "Year/Title",
           Operator: "eq",
           FilterValue: "2023",
-          // FilterValue: _preYear,
+          // FilterValue: (Number(props.vendorDetails.Item.Year)-1).toString(),
         },
       ],
       Topcount: 5000,
@@ -580,7 +608,7 @@ const Vendor = (props: any) => {
             data[column.Supplier] = filLastVendor.Supplier;
             _uniqueVendor.push({ ...data });
             if (_uniqueVendorName.length === i + 1) {
-              // setVendorDetail([..._uniqueVendor]);
+              setVendorDetails([..._uniqueVendor]);
               getVendorData();
             }
           }
@@ -594,12 +622,28 @@ const Vendor = (props: any) => {
   };
 
   const getVendorData = (): void => {
+    console.log("id", props.vendorDetails.Item.ID);
+
     SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
-      Select: "*, Vendor/ID, Vendor/Title",
-      Expand: "Vendor",
+      Select: "*, Vendor/ID, Vendor/Title,Budget/ID,Year/ID,Year/Title ",
+      Expand: "Vendor,Budget,Year",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+        {
+          FilterKey: "Budget/ID",
+          Operator: "eq",
+          FilterValue: props.vendorDetails.Item.ID,
+          // FilterValue: _preYear,
+        },
+      ],
     })
       .then((resVendor: any) => {
+        console.log("resVendor", resVendor);
         let getVendorData: IVendorItems[] = [];
         if (resVendor.length) {
           resVendor.forEach((item: any) => {
@@ -637,7 +681,7 @@ const Vendor = (props: any) => {
           setIsLoader(false);
         }
       })
-      .catch((error: any) => getErrorFunction(error));
+      .catch((error: any) => getErrorFunction("get data"));
   };
 
   const handleDropdown = (value: IDrop, index: number): void => {
@@ -675,6 +719,8 @@ const Vendor = (props: any) => {
       PO: vendorData.PO,
       Supplier: vendorData.Supplier,
       RequestedAmount: vendorData.RequestedAmount,
+      BudgetId: props.vendorDetails.Item.ID,
+      YearId: props.vendorDetails.Item.YearId,
     };
 
     let authendication: boolean = Validation();
@@ -820,20 +866,20 @@ const Vendor = (props: any) => {
     console.log("files", files);
 
     let allFiles = [];
-    let allURL = []
+    let allURL = [];
     for (let i = 0; i < files.length; i++) {
       allFiles.push(files[i]);
-      let authendication = [...allURL].some(value=>value === files[i].name);
-      if(authendication){
-        allURL = [...allURL].filter((value,index) => index !== allURL.indexOf(value));
-        allURL.unshift(files[i].name)
-      }
-      else{
-        allURL.unshift(files[i].name)
+      let authendication = [...allURL].some((value) => value === files[i].name);
+      if (authendication) {
+        allURL = [...allURL].filter(
+          (value, index) => index !== allURL.indexOf(value)
+        );
+        allURL.unshift(files[i].name);
+      } else {
+        allURL.unshift(files[i].name);
       }
     }
-   
-    
+
     if (type === "Attachment") {
       setVendorData({
         ...vendorData,
@@ -995,6 +1041,32 @@ const Vendor = (props: any) => {
     return isValidation;
   };
 
+  const handelVendorData = (text: IDrop) => {
+    console.log(text.key);
+
+    let data = [...vendorDetails].filter(
+      (value) => Number(text.key) === Number(value.VendorId)
+    );
+    console.log("data", data);
+    let newVendorData = { ...vendorData };
+    if (data.length) {
+      newVendorData.Vendor = text.text;
+      newVendorData.VendorId = text.key;
+      newVendorData.PO = data[0].PO ? data[0].PO : "0";
+      newVendorData.LastYearCost = data[0].LastYearCost
+        ? data[0].LastYearCost
+        : "0";
+      newVendorData.Supplier = data[0].Supplier;
+    } else {
+      newVendorData.Vendor = text.text;
+      newVendorData.VendorId = text.key;
+      newVendorData.PO = "0";
+      newVendorData.LastYearCost = "0";
+      newVendorData.Supplier = "";
+    }
+    setVendorData({ ...newVendorData });
+  };
+
   useEffect(() => {
     getDefaultFunction();
   }, [isTrigger]);
@@ -1004,79 +1076,120 @@ const Vendor = (props: any) => {
   ) : (
     <div>
       <div>
-      <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              margin: "10px 0px 20px 0px",
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "10px 0px 20px 0px",
+          }}
+        >
+          <IconButton
+            styles={IconStyle}
+            iconProps={{ iconName: "Back" }}
+            onClick={() => {
+              props.setVendorDetails({
+                ...props.vendorDetails,
+                isVendor: true,
+              });
             }}
-          >
-            <IconButton
-              styles={IconStyle}
-              iconProps={{ iconName: "Back" }}
-              onClick={() => {
-                props.setVendorDetails({...props.vendorDetails,isVendor:true})
-              }}
-            />
-            <h2 style={{ margin: 0, fontSize: 20, color: '#202945' }}>
-              Budget Distribution
-            </h2>
-          </div>
-      </div>
-      <div style={{
-        display:'flex',
-        width:'100%',
-        justifyContent:'space-between'
-      }}>
-        <div style={{
-          display:'flex',
-          width:'60%',
-          gap:'2%'
-        }}>
-          <div style={{width:'15%'}}>
-            <TextField label="Period" value="one" disabled={true}/>
-          </div>
-          <div style={{width:'15%'}}>
-            <TextField label="Country" value="one" disabled={true}/>
-          </div>
-          <div style={{width:'15%'}}>
-            <TextField label="Type" value="one" disabled={true}/>
-          </div>
-          <div style={{width:'15%'}}>
-            <TextField label="Area" value="one" disabled={true}/>
-          </div>
-          <div style={{width:'40%'}}>
-            <label>Renewal Type</label>
-            <div style={{
-              display:'flex',
-              gap:'2%'
-            }}>
-              <Checkbox label="New" checked={isRenual} onChange={(event,checked)=>{setIsRenual(true)}}/>
-              <Checkbox label="Existing" checked={!isRenual} onChange={(event,checked)=>{setIsRenual(false)}}/>
-            </div>
-          </div>
+          />
+          <h2 style={{ margin: 0, fontSize: 20, color: "#202945" }}>
+            Budget Distribution
+          </h2>
         </div>
-       
-        <div style={{
-          display:'flex',
-          gap:'2%'
-        }}>
-          {
-            admin ? 
-            <DefaultButton text="Submit"/>
-            :
+      </div>
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            width: "60%",
+            gap: "2%",
+          }}
+        >
+          <div style={{ width: "15%" }}>
+            <TextField
+              label="Period"
+              value={props.vendorDetails.Item.Year}
+              disabled={true}
+            />
+          </div>
+          <div style={{ width: "15%" }}>
+            <TextField
+              label="Country"
+              value={props.vendorDetails.Item.Country}
+              disabled={true}
+            />
+          </div>
+          <div style={{ width: "15%" }}>
+            <TextField
+              label="Type"
+              value={props.vendorDetails.Item.Type}
+              disabled={true}
+            />
+          </div>
+          <div style={{ width: "15%" }}>
+            <TextField
+              label="Area"
+              value={props.vendorDetails.Item.Area}
+              disabled={true}
+            />
+          </div>
+         {admin &&
+           <div style={{ width: "40%" }}>
+           <label>Renewal Type</label>
+           <div
+             style={{
+               display: "flex",
+               gap: "2%",
+             }}
+           >
+             <Checkbox
+               label="New"
+               checked={isRenual}
+               onChange={() => {
+                 isChangeRenual && setIsRenual(true);
+               }}
+             />
+             <Checkbox
+               label="Existing"
+               checked={!isRenual}
+               onChange={() => {
+                 isChangeRenual && setIsRenual(false);
+               }}
+             />
+           </div>
+         </div>
+         }
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "2%",
+          }}
+        >
+          {admin ? (
+            <DefaultButton text="Submit" />
+          ) : (
             <>
-              <DefaultButton text="Review"/>
-              <DefaultButton text="Approve"/>
+              <DefaultButton text="Review" />
+              <DefaultButton text="Approve" />
             </>
-          }
+          )}
         </div>
       </div>
       <DetailsList
-        columns={column}
+        columns={admin ?  [...column] : [...newColumn]}
         items={MData}
         styles={_DetailsListStyle}
-        selectionMode={SelectionMode.none}
+        selectionMode={admin ? SelectionMode.none : SelectionMode.multiple }
+        onActiveItemChanged={(e)=>console.log('e',e)}
       />
       {/* <button >click</button> */}
     </div>
