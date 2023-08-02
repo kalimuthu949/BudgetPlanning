@@ -29,6 +29,8 @@ import {
   TextField,
   ITextFieldStyles,
   DefaultButton,
+  Modal,
+  IModalStyles,
 } from "@fluentui/react";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import { IButtonStyles } from "office-ui-fabric-react";
@@ -107,7 +109,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             />
           );
         } else {
-          return item.Total ? item.Total : item.PropsedTotal;
+          return item.Total;
         }
       },
     },
@@ -179,6 +181,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filCtgryDrop, setFilCtgryDrop] = useState<string>("All");
   const [fillAreaDrop, setFillAreaDrop] = useState<string>("All");
+  const [isModal,setIsmodal] = useState(false)
   const [ctgryDropOptions, setCtgryDropOptions] =
     useState<IDropdowns>(propDropValue);
   const [filPeriodDrop, setFilPeriodDrop] = useState<string>(
@@ -287,6 +290,21 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     },
   };
 
+  const modalStyles: Partial<IModalStyles> = {
+    main: {
+      width: "20%",
+      minHeight: 128,
+      background: "#f7f9fa",
+      padding: 10,
+      height: "auto",
+      borderRadius: 4,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+  };
+
   // functions creations
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error(errMsg);
@@ -331,7 +349,11 @@ const BudgetAnalysis = (props: any): JSX.Element => {
               Year: value.Year.Title ? value.Year.Title : "",
               Type: value.CategoryType ? value.CategoryType : "",
               ID: value.ID ? value.ID : null,
-              Total: value.OverAllBudgetCost ? value.OverAllBudgetCost : 0,
+              Total: value.OverAllBudgetCost
+                ? value.OverAllBudgetCost
+                : value.TotalProposed
+                ? value.TotalProposed
+                : 0,
               isEdit: false,
               Area: value.Area ? value.Area : "",
               PropsedTotal: value.TotalProposed ? value.TotalProposed : 0,
@@ -502,6 +524,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   };
 
   const generateExcel = (items: ICurBudgetAnalysis[]): void => {
+    let newItems = [...items].map;
+
     let _arrExport: ICurBudgetAnalysis[] = [...items];
     const workbook: any = new Excel.Workbook();
     const worksheet: any = workbook.addWorksheet("My Sheet");
@@ -595,9 +619,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         listItems[0].ID.toLowerCase() == "id" &&
         listItems[0].OverAllBudgetCost.toLowerCase() == "total"
       ) {
-        setIsLoader(true);
         listItems.shift();
-        getUpdateImportDatas(listItems);
+        setIsmodal(true)
       } else {
         alertify.error("Please import correct excel format");
       }
@@ -607,6 +630,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
   };
 
   const getUpdateImportDatas = (datas: any[]): void => {
+    setIsLoader(true);
     SPServices.batchUpdate({
       ListName: Config.ListNames.CategoryList,
       responseData: [...datas],
@@ -796,6 +820,72 @@ const BudgetAnalysis = (props: any): JSX.Element => {
               />
             </div>
           </div>
+
+          {/* modal section*/}
+          <Modal isOpen={isModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          {/* Content section */}
+          <Label
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            Do you want to import the exel file?
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                // _curItem = undefined;
+                // setIsModal(false);
+                setIsmodal(false)
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                // setIsLoader(true);
+                // _getUnlink();
+                getUpdateImportDatas(listItems);
+                setIsmodal(false)
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
 
           {/* Details List section */}
           <DetailsList

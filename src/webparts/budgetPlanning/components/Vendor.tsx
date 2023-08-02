@@ -13,6 +13,8 @@ import {
   IDetailsListStyles,
   ITextFieldStyles,
   Checkbox,
+  IconButton,
+  IButtonStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -43,7 +45,7 @@ let ConfimMsg = false;
 
 const Vendor = (props: any) => {
   let admin = true;
-  // console.log('props',props);
+  console.log('props',props);
 
   let dropdownValue = props.props.dropValue.Vendor;
   // console.log('dropdownValue',dropdownValue);
@@ -124,6 +126,18 @@ const Vendor = (props: any) => {
       ".ms-Dropdown-container": {
         width: "100%",
       },
+    },
+  };
+
+  const IconStyle: Partial<IButtonStyles> = {
+    root: {
+      marginRight: 10,
+      color: "#000 !important",
+      background: "transparent !important",
+    },
+    icon: {
+      fontSize: 20,
+      background: "transparent !important",
     },
   };
 
@@ -486,7 +500,7 @@ const Vendor = (props: any) => {
   const [isTrigger, setIsTrigger] = useState<boolean>(false);
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
-  const [isRenual,setIsRenusla] = useState(true)
+  const [isRenual,setIsRenual] = useState(true)
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
@@ -989,6 +1003,26 @@ const Vendor = (props: any) => {
     <Loader />
   ) : (
     <div>
+      <div>
+      <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              margin: "10px 0px 20px 0px",
+            }}
+          >
+            <IconButton
+              styles={IconStyle}
+              iconProps={{ iconName: "Back" }}
+              onClick={() => {
+                props.setVendorDetails({...props.vendorDetails,isVendor:true})
+              }}
+            />
+            <h2 style={{ margin: 0, fontSize: 20, color: '#202945' }}>
+              Budget Distribution
+            </h2>
+          </div>
+      </div>
       <div style={{
         display:'flex',
         width:'100%',
@@ -1017,8 +1051,8 @@ const Vendor = (props: any) => {
               display:'flex',
               gap:'2%'
             }}>
-              <Checkbox label="New" checked={isRenual}/>
-              <Checkbox label="Existing" checked={!isRenual}/>
+              <Checkbox label="New" checked={isRenual} onChange={(event,checked)=>{setIsRenual(true)}}/>
+              <Checkbox label="Existing" checked={!isRenual} onChange={(event,checked)=>{setIsRenual(false)}}/>
             </div>
           </div>
         </div>
@@ -1044,7 +1078,7 @@ const Vendor = (props: any) => {
         styles={_DetailsListStyle}
         selectionMode={SelectionMode.none}
       />
-      {/* <button onClick={()=>{props.setVendorDetail({...props.vendorDetails,isVendor:true})}}>click</button> */}
+      {/* <button >click</button> */}
     </div>
   );
 };
