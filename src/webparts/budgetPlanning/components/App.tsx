@@ -364,7 +364,10 @@ const App = (props: any): JSX.Element => {
                 adminUsers={adminUsers}
               />
             ) : (
-              <BudgetTrackingList groupUsers={groupUsers} />
+              <BudgetTrackingList
+                dropValue={dropValue}
+                groupUsers={groupUsers}
+              />
             )}
           </div>
         ) : (
