@@ -239,7 +239,6 @@ export interface IEdit {
 // Vendor page interface
 export interface IVendorItems {
   ID: number;
-  VendorId: number;
   Vendor: string;
   Description: string;
   PaymentTerms: string;
@@ -247,15 +246,23 @@ export interface IVendorItems {
   PO: string;
   Supplier: string;
   RequestedAmount: string;
+  Status: string;
   Attachment: any[];
   Procurement: any[];
   BudgetId: number;
   Pricing: Number;
   isDummy: boolean;
   isEdit: boolean;
+  isClick: boolean;
   AttachmentURL: string[];
   ProcurementURL: string[];
-  Status:string;
+}
+
+export interface IApprovalStatus {
+  NotStarted: string;
+  Pending: string;
+  Rejected: string;
+  Approved: string;
 }
 
 // Interface for gruop authendication
@@ -316,4 +323,38 @@ export interface IVendorProp {
   isVendor: boolean;
   isAdmin: boolean;
   Item: ICurBudgetItem;
+}
+
+// Interface of butget track dis
+export interface IBudTrackDistribution {
+  ID: Number;
+  Cost: Number;
+  BudgetId: Number;
+  Vendor: string;
+  Po: string;
+  PoCurrency: string;
+  InvoiceNo: string;
+  StartDate: string;
+  EntryDate: string;
+  ToDate: string;
+  Area: string;
+  Item?: string;
+  Type?: string;
+}
+
+// Interface of over all butget track dis
+export interface IOverAllTrackItem {
+  CategoryAcc: string;
+  YearAcc: string;
+  CountryAcc: string;
+  Type: string;
+  Area: string;
+  ID: number;
+  yearID: number;
+  countryID: number;
+  OverAllBudgetCost: number;
+  TotalProposed: number;
+  isAdmin?: boolean;
+  isManager?: boolean;
+  VendorDetails: IBudTrackDistribution[];
 }
