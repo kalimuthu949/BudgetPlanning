@@ -17,6 +17,7 @@ import {
   IVendorDetail,
   IVendorProp,
   IVendorItems,
+  IApprovalStatus,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -207,8 +208,9 @@ export namespace Config {
 
   export const Vendor: IVendorItems = {
     ID: null,
-    VendorId: null,
-    Vendor: "All",
+    // VendorId: null,
+    // Vendor: "All",
+    Vendor:"",
     Description: "",
     Pricing: 0,
     PaymentTerms: "",
@@ -223,11 +225,19 @@ export namespace Config {
     isEdit: false,
     AttachmentURL:[],
     ProcurementURL:[],
-    Status:''
+    Status:'',
+    isClick:false,
   };
   export const vendorValidation = {
     Vendor: false,
     Description: false,
     Pricing: false,
   };
+
+  export const ApprovalStatus:IApprovalStatus = {
+    NotStarted:'Not Started',
+    Pending:'Pending',
+    Rejected:'Rejected',
+    Approved:'Approved'
+  }
 }

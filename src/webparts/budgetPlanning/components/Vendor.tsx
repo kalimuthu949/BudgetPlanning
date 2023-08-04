@@ -6,7 +6,6 @@ import {
   DetailsList,
   SelectionMode,
   IColumn,
-  DetailsListLayoutMode,
   Icon,
   TextField,
   IDropdownStyles,
@@ -15,6 +14,8 @@ import {
   Checkbox,
   IconButton,
   IButtonStyles,
+  Modal,
+  IModalStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -41,12 +42,17 @@ import { truncate } from "@microsoft/sp-lodash-subset";
 import { DefaultButton } from "office-ui-fabric-react";
 import { Selection } from "@fluentui/react";
 
-let TypeFlag = "";
-let ConfimMsg = false;
-let isChangeRenual = true;
+// image and gif variables
+const deleteGif = require("../../../ExternalRef/Images/Delete.gif");
+
+let TypeFlag: string = "";
+let ConfimMsg: boolean = false;
+let isChangeRenual: boolean = true;
+let isAllSelect: boolean = false;
+let isSubmit: boolean = true;
 
 const Vendor = (props: any) => {
-  let admin = true;
+  let admin: boolean = true;
   // console.log("props", props);
 
   let dropdownValue = props.props.dropValue.Vendor;
@@ -143,7 +149,22 @@ const Vendor = (props: any) => {
     },
   };
 
-  const column: IColumn[] = [
+  const modalStyles: Partial<IModalStyles> = {
+    main: {
+      width: "20%",
+      minHeight: 128,
+      background: "#f7f9fa",
+      padding: 10,
+      height: "auto",
+      borderRadius: 4,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+  };
+
+  const column: any[] = [
     {
       key: "1",
       name: "Vendor",
@@ -152,22 +173,27 @@ const Vendor = (props: any) => {
       maxWidth: 500,
       onRender: (item, index) => {
         return item.isEdit ? (
-          <Dropdown
-            styles={DropdownStyle}
-            options={dropdownValue}
-            // selectedKey={dropdownValue[0].key}
-            selectedKey={_getFilterDropValues(
-              "Vendor",
-              { ...props.props.dropValue },
-              vendorData.Vendor ? vendorData.Vendor : "All"
-            )}
-            onChange={(e: any, text: IDrop) => {
+          <TextField
+            // styles={DropdownStyle}
+            // options={dropdownValue}
+            // // selectedKey={dropdownValue[0].key}
+            // selectedKey={_getFilterDropValues(
+            //   "Vendor",
+            //   { ...props.props.dropValue },
+            //   vendorData.Vendor ? vendorData.Vendor : "All"
+            // )}
+            value={vendorData.Vendor}
+            styles={Validate.Vendor ? errtxtFieldStyle : textFieldStyle}
+            onChange={(e: any, text: string) => {
               if (isRenual) {
-                handleDropdown(text, index);
+                // handleDropdown(text, index);
+                setVendorData({ ...vendorData, Vendor: text.trimStart() });
               } else {
                 handelVendorData(text);
               }
             }}
+            // onBlur={(event)=>{console.log('event',event)}}
+            // onMouseLeave={(event)=>{console.log('event',event)}}
           />
         ) : (
           <label>{!item.isDummy ? item.Vendor : ""}</label>
@@ -184,6 +210,7 @@ const Vendor = (props: any) => {
         return item.isEdit ? (
           <TextField
             value={vendorData.Description}
+            styles={Validate.Description ? errtxtFieldStyle : textFieldStyle}
             //placeholder="Enter The Description"
             onChange={(e, text) => {
               setVendorData({ ...vendorData, Description: text.trimStart() });
@@ -204,6 +231,7 @@ const Vendor = (props: any) => {
         return item.isEdit ? (
           <TextField
             value={vendorData.Pricing.toString()}
+            styles={Validate.Pricing ? errtxtFieldStyle : textFieldStyle}
             //placeholder="Enter The Pricing"
             onChange={(e, text) => {
               if (/^[0-9]+$|^$/.test(text)) {
@@ -271,7 +299,7 @@ const Vendor = (props: any) => {
             onClick={() => {
               isChangeRenual = false;
               if (!ConfimMsg) {
-                ConfimMsg = !ConfimMsg;
+                ConfimMsg = true;
                 newVendorAdd(item, index);
                 TypeFlag = "Add";
               } else {
@@ -338,6 +366,7 @@ const Vendor = (props: any) => {
               type="file"
               style={{ display: "none" }}
               multiple
+              accept=".xlsx,.docx,.txt"
               onChange={(e) => handleInputValue(e.target.files, "Attachment")}
             />
             <label htmlFor="AttachmentFile">
@@ -374,7 +403,7 @@ const Vendor = (props: any) => {
               type="file"
               style={{ display: "none" }}
               multiple
-              maxLength={1}
+              accept=".xlsx,.docx,.txt"
               onChange={(e) => {
                 handleInputValue(e.target.files, "Procurment");
               }}
@@ -423,98 +452,151 @@ const Vendor = (props: any) => {
       },
     },
     {
+      key: "11",
+      name: "Status",
+      fieldName: "Status",
+      minWidth: 100,
+      maxWidth: 500,
+      onRender: (item) => {
+        return false ? (
+          <TextField
+            value={vendorData.Status}
+            //placeholder="Enter The RequestedAmount"
+            disabled={true}
+          />
+        ) : (
+          <label>{item.Status}</label>
+        );
+      },
+    },
+    {
       key: "15",
       name: "Action",
       fieldName: "Action",
       minWidth: 100,
       maxWidth: 500,
       onRender: (item, index) => {
-        return admin ? (
-          item.isEdit ? (
-            <div>
-              <Icon
-                iconName="CheckMark"
-                style={{
-                  color: "green",
-                  fontSize: "20px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  isChangeRenual = true;
-                  if (TypeFlag == "Add") {
-                    addVendor(item);
-                  } else {
-                    vendorUpdate(item, index);
-                  }
-                }}
-              />
-              <Icon
-                iconName="Cancel"
-                style={{
-                  color: "red",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  isChangeRenual = true;
-                  if (TypeFlag == "Add") {
-                    ConfimMsg = !ConfimMsg;
-                    addVendorCancel(item, index);
-                  } else {
-                    ConfimMsg = !ConfimMsg;
-                    editVendorCancel(item, index);
-                  }
-                }}
-              />
-            </div>
-          ) : (
-            !item.isDummy && (
+        let isActionView = item.Status !== Config.ApprovalStatus.Approved;
+
+        if (isActionView) {
+          return admin ? (
+            item.isEdit ? (
               <div>
                 <Icon
-                  iconName="Edit"
+                  iconName="CheckMark"
                   style={{
-                    color: "blue",
-                    fontSize: "16px",
+                    color: "green",
+                    fontSize: "20px",
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    isChangeRenual = false;
-                    if (!ConfimMsg) {
-                      ConfimMsg = !ConfimMsg;
-                      TypeFlag = "Edit";
-                      editVendorItem(item, index);
+                    isChangeRenual = true;
+                    if (TypeFlag == "Add") {
+                      addVendor(item);
                     } else {
-                      ConfirmPageChange(item, index, "Edit");
+                      vendorUpdate(item, index);
                     }
                   }}
                 />
                 <Icon
-                  iconName="Delete"
+                  iconName="Cancel"
                   style={{
                     color: "red",
                     fontSize: "16px",
                     cursor: "pointer",
                   }}
-                  onClick={() => {}}
+                  onClick={() => {
+                    isChangeRenual = true;
+                    if (TypeFlag == "Add") {
+                      ConfimMsg = !ConfimMsg;
+                      addVendorCancel(item, index);
+                    } else {
+                      ConfimMsg = !ConfimMsg;
+                      editVendorCancel(item, index);
+                    }
+                  }}
                 />
               </div>
+            ) : (
+              !item.isDummy && (
+                <div>
+                  <Icon
+                    iconName="Edit"
+                    style={{
+                      color: "blue",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      isChangeRenual = false;
+                      if (!ConfimMsg) {
+                        ConfimMsg = !ConfimMsg;
+                        TypeFlag = "Edit";
+                        editVendorItem(item, index);
+                      } else {
+                        ConfirmPageChange(item, index, "Edit");
+                      }
+                    }}
+                  />
+                  <Icon
+                    iconName="Delete"
+                    style={{
+                      color: "red",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setIsDelModal(true);
+                      setVendorData(item);
+                    }}
+                  />
+                </div>
+              )
             )
-          )
-        ) : (
-          <div></div>
-        );
+          ) : (
+            <div></div>
+          );
+        }
       },
     },
   ];
 
-  const newColumn = [...column];
+  const newColumn: any[] = [...column];
   newColumn.pop();
+  newColumn.unshift({
+    key: "0",
+    name: (
+      <Checkbox
+        checked={isAllSelect}
+        onChange={(event, checked) => {
+          handleAllSelectedUsers(checked);
+        }}
+      />
+    ),
+    fieldName: "Vendor",
+    minWidth: 100,
+    maxWidth: 500,
+    onRender: (item, index) => {
+      if (!item.isDummy && !item.isEdit) {
+        return (
+          <Checkbox
+            disabled={item.isDisable}
+            checked={item.isClick}
+            onChange={(event, checked) =>
+              handleSelectedUsers(item, index, checked)
+            }
+          />
+        );
+      }
+    },
+  });
 
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
-  const [vendorDetails, setVendorDetails] = useState<IVendorDetail[]>([]);
-  const [isRenual, setIsRenual] = useState(true);
+  const [vendorDetails, setVendorDetails] = useState<any[]>([]);
+  const [isRenual, setIsRenual] = useState<boolean>(true);
   const [selectedItems, setselectedItems] = useState<any[]>([]);
+  const [isDelModal, setIsDelModal] = useState<boolean>(false);
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
@@ -526,7 +608,6 @@ const Vendor = (props: any) => {
     alertify.error(error);
     setIsLoader(false);
   };
-  console.log("selectedItems", selectedItems);
 
   const getDefaultFunction = () => {
     setIsLoader(true);
@@ -537,8 +618,8 @@ const Vendor = (props: any) => {
   const _getVendorsArr = (): void => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
-      Select: "*, Year/ID, Year/Title, Vendor/ID, Vendor/Title",
-      Expand: "Year, Vendor",
+      Select: "*, Year/ID, Year/Title",
+      Expand: "Year",
       Filter: [
         {
           FilterKey: "isDeleted",
@@ -548,8 +629,8 @@ const Vendor = (props: any) => {
         {
           FilterKey: "Year/Title",
           Operator: "eq",
-          // FilterValue: "2023",
-          FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
+          FilterValue: "2023",
+          // FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
         },
       ],
       Topcount: 5000,
@@ -557,8 +638,10 @@ const Vendor = (props: any) => {
       Orderbydecorasc: false,
     })
       .then((res: any) => {
+        console.log("res", res);
+
         let matches: any[] = [];
-        let idVendors: number[] = [];
+        let strVendors: string[] = [];
         let distinctMap = {};
         let _uniqueVendorName: string[] = [];
         let filLastVendor: any;
@@ -567,16 +650,16 @@ const Vendor = (props: any) => {
         res.length &&
           res.reduce((item: any, e1: any) => {
             matches = item.filter((e2: any) => {
-              return e1.VendorId === e2.VendorId;
+              return e1.Vendor.toLowerCase() === e2.toLowerCase();
             });
             if (matches.length == 0) {
-              idVendors.push(e1.VendorId);
+              strVendors.push(e1.Vendor);
             }
-            return idVendors;
+            return strVendors;
           }, []);
 
-        for (let i: number = 0; i < idVendors.length; i++) {
-          let value = idVendors[i].toString();
+        for (let i: number = 0; i < strVendors.length; i++) {
+          let value: string = strVendors[i];
           distinctMap[value] = null;
         }
         _uniqueVendorName = Object.keys(distinctMap);
@@ -584,18 +667,21 @@ const Vendor = (props: any) => {
         if (_uniqueVendorName.length) {
           for (let i: number = 0; _uniqueVendorName.length > i; i++) {
             filLastVendor = res.filter((e: any) => {
-              return e.VendorId === Number(_uniqueVendorName[i]);
+              return (
+                e.Vendor.toLowerCase() === _uniqueVendorName[i].toLowerCase()
+              );
             })[0];
             let data: any = {};
             const column: IVendorDetail = Config.VendorDetail;
             data[column.ID] = filLastVendor.ID;
-            data[column.VendorId] = filLastVendor.VendorId;
-            data[column.Vendor] = filLastVendor.Vendor.Title;
+            data[column.Vendor] = filLastVendor.Vendor;
             data[column.LastYearCost] = filLastVendor.LastYearCost;
             data[column.PO] = filLastVendor.PO;
             data[column.Supplier] = filLastVendor.Supplier;
             _uniqueVendor.push({ ...data });
             if (_uniqueVendorName.length === i + 1) {
+              console.log([..._uniqueVendor]);
+
               setVendorDetails([..._uniqueVendor]);
               getVendorData();
             }
@@ -605,17 +691,15 @@ const Vendor = (props: any) => {
         }
       })
       .catch((err: any) => {
-        getErrorFunction(err);
+        getErrorFunction("get previous year vendor");
       });
   };
 
   const getVendorData = (): void => {
-    console.log("id", props.vendorDetails.Item.ID);
-
     SPServices.SPReadItems({
       Listname: Config.ListNames.DistributionList,
-      Select: "*, Vendor/ID, Vendor/Title,Budget/ID,Year/ID,Year/Title ",
-      Expand: "Vendor,Budget,Year",
+      Select: "*,Budget/ID,Year/ID,Year/Title ",
+      Expand: "Budget,Year",
       Filter: [
         {
           FilterKey: "isDeleted",
@@ -632,26 +716,26 @@ const Vendor = (props: any) => {
       .then((resVendor: any) => {
         let getVendorData: IVendorItems[] = [];
         if (resVendor.length) {
-          console.log("resVendor", resVendor);
-
-          let allDatas = [...resVendor].filter((value) => {
-            console.log("status", value.Status);
-
+          let allDatas: IVendorItems[] = [...resVendor].filter((value) => {
             if (admin) {
               return (
-                value.Status === "Not Started" || value.Status === "Rejected"
+                value.Status === Config.ApprovalStatus.NotStarted ||
+                value.Status === Config.ApprovalStatus.Rejected ||
+                value.Status === Config.ApprovalStatus.Approved
               );
             } else {
-              return value.Status === "Pending" || value.Status === "Approved";
+              return value.Status === Config.ApprovalStatus.Pending;
             }
           });
-          console.log("allDatas", allDatas);
+          setIsSubmit([...allDatas]);
 
+          
           allDatas.forEach((item: any) => {
+            // let disabled:boolean = item.Status === 'Approved' || item.Status === 'Pending'
             getVendorData.push({
               ID: item.ID,
-              VendorId: item.VendorId,
-              Vendor: item.VendorId ? item.Vendor.Title : "",
+              // VendorId: item.VendorId,
+              Vendor: item.Vendor ? item.Vendor : "",
               Description: item.Description ? item.Description : "",
               Pricing: item.Pricing ? item.Pricing : "",
               PaymentTerms: item.PaymentTerms ? item.PaymentTerms : "",
@@ -671,8 +755,11 @@ const Vendor = (props: any) => {
               Attachment: [],
               Procurement: [],
               Status: item.Status ? item.Status : "",
+              isClick: false,
+              // isDisable:disabled
             });
           });
+
           if (admin) {
             getVendorData.push({ ...Config.Vendor });
           }
@@ -686,15 +773,6 @@ const Vendor = (props: any) => {
         }
       })
       .catch((error: any) => getErrorFunction("get data"));
-  };
-
-  const handleDropdown = (value: IDrop, index: number): void => {
-    let data = { ...vendorData };
-
-    data.Vendor = value.text;
-    data.VendorId = value.key;
-
-    setVendorData(data);
   };
 
   const newVendorAdd = (item: IVendorItems, index: number): void => {
@@ -715,7 +793,7 @@ const Vendor = (props: any) => {
 
   const addVendor = (item: IVendorItems): void => {
     let NewJson = {
-      VendorId: vendorData.VendorId,
+      Vendor: vendorData.Vendor,
       Description: vendorData.Description,
       Pricing: vendorData.Pricing,
       PaymentTerms: vendorData.PaymentTerms,
@@ -725,6 +803,7 @@ const Vendor = (props: any) => {
       RequestedAmount: vendorData.RequestedAmount,
       BudgetId: props.vendorDetails.Item.ID,
       YearId: props.vendorDetails.Item.YearId,
+      Area: props.vendorDetails.Item.Area,
     };
 
     let authendication: boolean = Validation();
@@ -764,16 +843,15 @@ const Vendor = (props: any) => {
               .catch((error: any) => getErrorFunction("id update error"));
           });
 
-        createSubFolder(folder, itemId);
+          createFirstSubFolder(folder, itemId);
       })
       .catch((err) => {
         getErrorFunction("create folder");
       });
   };
 
-  const createSubFolder = async (folder: any, itemId: number) => {
+  const createFirstSubFolder = async (folder: any, itemId: number) => {
     let Attachment: string[] = [];
-    let Procurement: string[] = [];
     await sp.web
       .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
       .folders.addUsingPath("Attachment", true)
@@ -786,13 +864,19 @@ const Vendor = (props: any) => {
               vendorData.Attachment[i],
               { Overwrite: true }
             )
-            .then((result) => {
-              Attachment.push(result.data.ServerRelativeUrl);
+            .then(async (result) => {
+              await Attachment.push(result.data.ServerRelativeUrl);
             })
             .catch((error) => console.log("error", error));
         }
+        
+        createSecondSubFolder(folder,itemId,Attachment)
       })
       .catch((error) => console.log("first sub folder", error));
+  };
+
+  const createSecondSubFolder = async (folder:any,itemId:number,Attachment:string[]) =>{
+    let Procurement: string[] = [];
     await sp.web
       .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
       .folders.addUsingPath("Procurement", true)
@@ -805,16 +889,16 @@ const Vendor = (props: any) => {
               vendorData.Procurement[i],
               { Overwrite: true }
             )
-            .then((result) => {
-              Procurement.push(result.data.ServerRelativeUrl);
+            .then(async (result) => {
+              await Procurement.push(result.data.ServerRelativeUrl);
             })
             .catch((error) => console.log("error", error));
         }
+        
+        updateJson(Attachment,Procurement,itemId,'Add')
       })
-      .catch((error) => console.log("second sub folder", error));
-
-    updateJson(Attachment, Procurement, itemId, "Add");
-  };
+      .catch((error) => console.log("first sub folder", error));
+  }
 
   const updateJson = (
     Attachment: string[],
@@ -844,22 +928,23 @@ const Vendor = (props: any) => {
           ProcurementURL: JSON.parse(json.ProcurementTeamQuotationURL),
           isEdit: false,
         };
-        console.log("newData", newData);
 
-        let masterData = [...MData];
+        let masterData: IVendorItems[] = [...MData];
 
         if (type === "Add") {
           masterData.pop();
-          masterData.push(newData, Config.Vendor);
+          masterData.push(
+            { ...newData, Status: Config.ApprovalStatus.NotStarted },
+            Config.Vendor
+          );
         } else {
           let index = [...MData].findIndex((value) => value.ID === Id);
           masterData.splice(index, 1, { ...newData });
         }
 
-        console.log("masterData", [...masterData]);
-
         TypeFlag = "";
         ConfimMsg = false;
+        setIsSubmit([...masterData]);
         setIsLoader(false);
         setMData([...masterData]);
       })
@@ -867,7 +952,6 @@ const Vendor = (props: any) => {
   };
 
   const handleInputValue = (files: any, type: string) => {
-    console.log("files", files);
 
     let allFiles = [];
     let allURL = [];
@@ -902,7 +986,9 @@ const Vendor = (props: any) => {
   const editVendorItem = (items: IVendorItems, index: number) => {
     let editItem = [...MData];
     editItem[index].isEdit = true;
-    setVendorData(items);
+    console.log('items',items);
+    
+    setVendorData({...items});
     setMData([...editItem]);
   };
 
@@ -914,7 +1000,7 @@ const Vendor = (props: any) => {
 
   const vendorUpdate = (item: IVendorItems, index: number) => {
     let UpdateJson = {
-      VendorId: vendorData.VendorId,
+      Vendor: vendorData.Vendor,
       Description: vendorData.Description,
       Pricing: vendorData.Pricing,
       PaymentTerms: vendorData.PaymentTerms,
@@ -951,15 +1037,14 @@ const Vendor = (props: any) => {
       .expand("ListItemAllFields")
       .get()
       .then((folder) => {
-        console.log("folder", folder);
-        getSubfolders(folder, itemId);
+        // console.log("folder", folder);
+        getFisrtSubFolder(folder, itemId);
       })
       .catch((error) => getErrorFunction("update get master folder"));
   };
 
-  const getSubfolders = async (folder: any, itemId) => {
+  const getFisrtSubFolder = async (folder: any, itemId: number) => {
     let Attachment: string[] = [...vendorData.AttachmentURL];
-    let Procurement: string[] = [...vendorData.ProcurementURL];
 
     for (let i = 0; i < vendorData.Attachment.length; i++) {
       await sp.web
@@ -974,6 +1059,12 @@ const Vendor = (props: any) => {
         })
         .catch((err) => console.log("err", err));
     }
+    getSecondSubFolder(folder, itemId,Attachment)
+  };
+
+  const getSecondSubFolder = async (folder: any, itemId: number ,Attachment:string[]) => {
+    let Procurement: string[] = [...vendorData.ProcurementURL];
+
     for (let i = 0; i < vendorData.Procurement.length; i++) {
       await sp.web
         .getFolderByServerRelativePath(
@@ -990,7 +1081,7 @@ const Vendor = (props: any) => {
         .catch((err) => console.log("err", err));
     }
     updateJson(Attachment, Procurement, itemId, "Update");
-  };
+  }
 
   const ConfirmPageChange = (
     item: IVendorItems,
@@ -1026,8 +1117,8 @@ const Vendor = (props: any) => {
     let isValidation: boolean = true;
     let validationData: IVendorValidation = { ...Config.vendorValidation };
 
-    if (vendorData.Vendor === "All") {
-      validationData.Description = true;
+    if (!vendorData.Vendor) {
+      validationData.Vendor = true;
       isValidation = false;
     }
 
@@ -1045,25 +1136,19 @@ const Vendor = (props: any) => {
     return isValidation;
   };
 
-  const handelVendorData = (text: IDrop) => {
-    console.log(text.key);
+  const handelVendorData = (text: string) => {
 
-    let data = [...vendorDetails].filter(
-      (value) => Number(text.key) === Number(value.VendorId)
-    );
-    console.log("data", data);
+    let data = [...vendorDetails].filter((value) => value.Vendor === text);
     let newVendorData = { ...vendorData };
     if (data.length) {
-      newVendorData.Vendor = text.text;
-      newVendorData.VendorId = text.key;
+      newVendorData.Vendor = text;
       newVendorData.PO = data[0].PO ? data[0].PO : "0";
       newVendorData.LastYearCost = data[0].LastYearCost
         ? data[0].LastYearCost
         : "0";
       newVendorData.Supplier = data[0].Supplier;
     } else {
-      newVendorData.Vendor = text.text;
-      newVendorData.VendorId = text.key;
+      newVendorData.Vendor = text;
       newVendorData.PO = "0";
       newVendorData.LastYearCost = "0";
       newVendorData.Supplier = "";
@@ -1071,40 +1156,114 @@ const Vendor = (props: any) => {
     setVendorData({ ...newVendorData });
   };
 
-  const handleItemInvoked = (item) => {
-    console.log("Selected item:", item);
+  const handleSelectedUsers = (
+    item: IVendorItems,
+    index: number,
+    value: boolean
+  ) => {
+    let newMData: IVendorItems[] = [...MData];
+    newMData[index].isClick = value;
+
+    // console.log("newMData", newMData);
+    //
+    let slctdItems: IVendorItems[] = [...newMData].filter(
+      (value) => value.isClick === true
+    );
+    let authendication = [...newMData]
+      .filter((value) => value.ID !== null)
+      .every((value) => value.isClick === true);
+
+    // console.log("authendication", authendication);
+
+    isAllSelect = authendication;
+    setselectedItems([...slctdItems]);
+    setMData([...newMData]);
   };
 
-  const selection = new Selection({
-    onSelectionChanged: () => {
-      let item = selection.getSelection();
-      item = item.filter((value) => value["ID"] !== null);
-      setselectedItems([...item]);
-      return item;
-    },
-  });
+  const handleAllSelectedUsers = (checked: boolean) => {
+    let newMdata: IVendorItems[] = [...MData].map((value) => {
+      checked ? (value.isClick = true) : (value.isClick = false);
+      return value;
+    });
+
+    let slctdItems: IVendorItems[] = checked
+      ? newMdata.filter((value) => value.ID !== null)
+      : [];
+    isAllSelect = checked;
+    setMData([...newMdata]);
+    setselectedItems([...slctdItems]);
+  };
 
   const setStatus = (type: string) => {
-    let updateItems = [...selectedItems].map((value) => {
+    setIsLoader(true);
+    let updateItems = [...selectedItems];
+    if (type === Config.ApprovalStatus.Pending) {
+      updateItems = [...MData].filter(
+        (value) =>
+          value.Status === Config.ApprovalStatus.NotStarted ||
+          value.Status === Config.ApprovalStatus.Rejected
+      );
+    }
+
+    updateItems = [...updateItems].map((value) => {
       return {
         ID: value.ID,
         Status: type,
       };
     });
-    console.log("updateItems", updateItems);
 
-    if (selectedItems.length) {
+    if (updateItems.length && isChangeRenual) {
       SPServices.batchUpdate({
         ListName: Config.ListNames.DistributionList,
         responseData: [...updateItems],
       })
         .then(() => {
-          setIsLoader(true);
+          isAllSelect = false;
           getVendorData();
         })
         .catch((error) => getErrorFunction("update status"));
     }
   };
+
+  const handleDelete = () => {
+    setIsLoader(true);
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.DistributionList,
+      RequestJSON: { isDeleted: true },
+      ID: vendorData.ID,
+    })
+      .then((resUpdateItem) => {
+        let index: number = [...MData].findIndex(
+          (value) => value.ID === vendorData.ID
+        );
+        let items: IVendorItems[] = [...MData];
+        items.splice(index, 1);
+
+        setIsSubmit([...items]);
+        setMData(items);
+        setIsDelModal(false);
+        setIsLoader(false);
+      })
+      .catch((error) => {
+        getErrorFunction("update distribution error");
+      });
+  };
+
+  const setIsSubmit = (allDatas: any[]) => {
+    isSubmit = [...allDatas].find(
+      (value) =>
+        value.Status === Config.ApprovalStatus.NotStarted ||
+        value.Status === Config.ApprovalStatus.Rejected
+    );
+  };
+
+  // const setActionView = (item:IVendorItems) =>{
+  //   let isAction = true
+  //   if(item.Status === "Pending"){
+  //     isAction = false
+  //   }
+  //   return isAction
+  // }
 
   useEffect(() => {
     getDefaultFunction();
@@ -1214,16 +1373,21 @@ const Vendor = (props: any) => {
           }}
         >
           {admin ? (
-            <DefaultButton text="Submit" onClick={() => setStatus("Pending")} />
+            isSubmit && (
+              <DefaultButton
+                text="Submit"
+                onClick={() => setStatus(Config.ApprovalStatus.Pending)}
+              />
+            )
           ) : (
             <>
               <DefaultButton
                 text="Review"
-                onClick={() => setStatus("Rejected")}
+                onClick={() => setStatus(Config.ApprovalStatus.Rejected)}
               />
               <DefaultButton
                 text="Approve"
-                onClick={() => setStatus("Approved")}
+                onClick={() => setStatus(Config.ApprovalStatus.Approved)}
               />
             </>
           )}
@@ -1233,18 +1397,76 @@ const Vendor = (props: any) => {
         columns={admin ? [...column] : [...newColumn]}
         items={MData}
         styles={_DetailsListStyle}
-        selectionMode={SelectionMode.multiple}
-        // onActiveItemChanged={(e,t)=>console.log('e',e,'t',t)}
-        // // onRenderItemColumn={(item, index, column) => {
-
-        // // }}
-        // onItemInvoked={(item)=>handleItemInvoked(item)}
-        setKey="set"
-        // selectionMode={SelectionMode.single}
-        selection={selection}
+        selectionMode={SelectionMode.none}
       />
       {/* <button >click</button> */}
       {!MData.length ? <div>No data found</div> : null}
+
+      {/* Delete Modal section */}
+      <Modal isOpen={isDelModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          {/* Content section */}
+          <img src={`${deleteGif}`} />
+          {/* <IconButton
+            className={styles.deleteImg}
+            iconProps={{ iconName: "Delete" }}
+          /> */}
+          <Label
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            Do you want to delete this item?
+          </Label>
+          {/* gif or img */}
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsDelModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                handleDelete();
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
