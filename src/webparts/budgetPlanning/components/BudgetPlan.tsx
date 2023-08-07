@@ -35,9 +35,6 @@ import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetPlanning.module.scss";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
-// image and gif variables
-const deleteGif = require("../../../ExternalRef/Images/Delete.gif");
-
 let propDropValue: IDropdowns;
 let _Items: ICurBudgetItem[] = [];
 let _groupItem: IOverAllItem[] = [];
@@ -443,6 +440,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
+      overflow: "unset",
     },
   };
 
@@ -1288,11 +1286,12 @@ const BudgetPlan = (props: any): JSX.Element => {
       <Modal isOpen={isDeleteModal} isBlocking={false} styles={modalStyles}>
         <div>
           {/* Content section */}
-          <img src={`${deleteGif}`} />
-          {/* <IconButton
-            className={styles.deleteImg}
-            iconProps={{ iconName: "Delete" }}
-          /> */}
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "Delete" }}
+            />
+          </div>
           <Label
             style={{
               color: "red",

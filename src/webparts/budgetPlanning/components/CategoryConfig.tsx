@@ -207,6 +207,7 @@ const CategoryConfig = (props: any): JSX.Element => {
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
+      overflow: "unset",
     },
   };
 
@@ -698,13 +699,13 @@ const CategoryConfig = (props: any): JSX.Element => {
       <Modal isOpen={isModal} isBlocking={false} styles={modalStyles}>
         <div>
           {/* Content section */}
-          {/* gif or img */}
-
-          <img src={`${unlinkGif}`} />
-          {/* <IconButton
-            className={styles.unlinkImg}
-            iconProps={{ iconName: "RemoveLinkChain" }}
-          /> */}
+          {/* img */}
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.unlinkImg}
+              iconProps={{ iconName: "RemoveLinkChain" }}
+            />
+          </div>
 
           <Label
             style={{
