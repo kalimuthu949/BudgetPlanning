@@ -16,6 +16,7 @@ import {
   IButtonStyles,
   Modal,
   IModalStyles,
+  ICheckStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -50,13 +51,11 @@ let ConfimMsg: boolean = false;
 let isChangeRenual: boolean = true;
 let isAllSelect: boolean = false;
 let isSubmit: boolean = true;
+let confirmBoxText: string = "";
+let Status: string = "";
 
-const Vendor = (props: any) => {
+const Vendor = (props: any): JSX.Element => {
   let admin: boolean = true;
-  // console.log("props", props);
-
-  let dropdownValue = props.props.dropValue.Vendor;
-  // console.log('dropdownValue',dropdownValue);
 
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
     root: {
@@ -164,13 +163,33 @@ const Vendor = (props: any) => {
     },
   };
 
-  const column: any[] = [
+  const saveBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      height: 32,
+      color: "#fff",
+      fontSize: 16,
+      background: "#2580e0 !important",
+      borderRadius: 3,
+      // marginRight: 10,
+      width: "26%",
+      span: {
+        fontWeight: 100,
+      },
+    },
+    rootHovered: {
+      background: "#2580e0",
+      color: "#fff",
+    },
+  };
+
+  const column: IColumn[] = [
     {
       key: "1",
       name: "Vendor",
       fieldName: "Vendor",
       minWidth: 100,
-      maxWidth: 500,
+      maxWidth: 300,
       onRender: (item, index) => {
         return item.isEdit ? (
           <TextField
@@ -186,14 +205,11 @@ const Vendor = (props: any) => {
             styles={Validate.Vendor ? errtxtFieldStyle : textFieldStyle}
             onChange={(e: any, text: string) => {
               if (isRenual) {
-                // handleDropdown(text, index);
                 setVendorData({ ...vendorData, Vendor: text.trimStart() });
               } else {
                 handelVendorData(text);
               }
             }}
-            // onBlur={(event)=>{console.log('event',event)}}
-            // onMouseLeave={(event)=>{console.log('event',event)}}
           />
         ) : (
           <label>{!item.isDummy ? item.Vendor : ""}</label>
@@ -204,8 +220,8 @@ const Vendor = (props: any) => {
       key: "2",
       name: "Description",
       fieldName: "Description",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 150,
+      maxWidth: 300,
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
@@ -251,8 +267,8 @@ const Vendor = (props: any) => {
       key: "4",
       name: "PaymentTerms",
       fieldName: "PaymentTerms",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 200,
+      maxWidth: 300,
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
@@ -271,8 +287,8 @@ const Vendor = (props: any) => {
       key: "5",
       name: "LastYearCost",
       fieldName: "LastYearCost",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 200,
+      maxWidth: 300,
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
@@ -336,8 +352,8 @@ const Vendor = (props: any) => {
       key: "7",
       name: "Supplier",
       fieldName: "Supplier",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 200,
+      maxWidth: 300,
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
@@ -432,8 +448,8 @@ const Vendor = (props: any) => {
       key: "10",
       name: "RequestedAmount",
       fieldName: "RequestedAmount",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 200,
+      maxWidth: 300,
       onRender: (item) => {
         return item.isEdit ? (
           <TextField
@@ -455,8 +471,8 @@ const Vendor = (props: any) => {
       key: "11",
       name: "Status",
       fieldName: "Status",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 200,
+      maxWidth: 300,
       onRender: (item) => {
         return false ? (
           <TextField
@@ -470,7 +486,7 @@ const Vendor = (props: any) => {
       },
     },
     {
-      key: "15",
+      key: "12",
       name: "Action",
       fieldName: "Action",
       minWidth: 100,
@@ -546,8 +562,10 @@ const Vendor = (props: any) => {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      setIsDelModal(true);
-                      setVendorData(item);
+                      if (isChangeRenual) {
+                        setIsDelModal(true);
+                        setVendorData(item);
+                      }
                     }}
                   />
                 </div>
@@ -579,13 +597,20 @@ const Vendor = (props: any) => {
     onRender: (item, index) => {
       if (!item.isDummy && !item.isEdit) {
         return (
-          <Checkbox
-            disabled={item.isDisable}
-            checked={item.isClick}
-            onChange={(event, checked) =>
-              handleSelectedUsers(item, index, checked)
-            }
-          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Checkbox
+              disabled={item.isDisable}
+              checked={item.isClick}
+              onChange={(event, checked) =>
+                handleSelectedUsers(item, index, checked)
+              }
+            />
+          </div>
         );
       }
     },
@@ -597,6 +622,7 @@ const Vendor = (props: any) => {
   const [isRenual, setIsRenual] = useState<boolean>(true);
   const [selectedItems, setselectedItems] = useState<any[]>([]);
   const [isDelModal, setIsDelModal] = useState<boolean>(false);
+  const [isConfirmModal, setIsConfirmModal] = useState(false);
   const [vendorData, setVendorData] = useState<IVendorItems>({
     ...Config.Vendor,
   });
@@ -613,7 +639,6 @@ const Vendor = (props: any) => {
     setIsLoader(true);
     _getVendorsArr();
   };
-  // console.log("vendorDetails", vendorDetails);
 
   const _getVendorsArr = (): void => {
     SPServices.SPReadItems({
@@ -632,14 +657,17 @@ const Vendor = (props: any) => {
           FilterValue: "2023",
           // FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
         },
+        {
+          FilterKey: "Status",
+          Operator: "eq",
+          FilterValue: "Approved",
+        },
       ],
       Topcount: 5000,
       Orderby: "Modified",
       Orderbydecorasc: false,
     })
       .then((res: any) => {
-        console.log("res", res);
-
         let matches: any[] = [];
         let strVendors: string[] = [];
         let distinctMap = {};
@@ -680,8 +708,6 @@ const Vendor = (props: any) => {
             data[column.Supplier] = filLastVendor.Supplier;
             _uniqueVendor.push({ ...data });
             if (_uniqueVendorName.length === i + 1) {
-              console.log([..._uniqueVendor]);
-
               setVendorDetails([..._uniqueVendor]);
               getVendorData();
             }
@@ -729,7 +755,6 @@ const Vendor = (props: any) => {
           });
           setIsSubmit([...allDatas]);
 
-          
           allDatas.forEach((item: any) => {
             // let disabled:boolean = item.Status === 'Approved' || item.Status === 'Pending'
             getVendorData.push({
@@ -843,7 +868,7 @@ const Vendor = (props: any) => {
               .catch((error: any) => getErrorFunction("id update error"));
           });
 
-          createFirstSubFolder(folder, itemId);
+        createFirstSubFolder(folder, itemId);
       })
       .catch((err) => {
         getErrorFunction("create folder");
@@ -867,15 +892,21 @@ const Vendor = (props: any) => {
             .then(async (result) => {
               await Attachment.push(result.data.ServerRelativeUrl);
             })
-            .catch((error) => console.log("error", error));
+            .catch((error) =>
+              getErrorFunction("create file for first sub folder")
+            );
         }
-        
-        createSecondSubFolder(folder,itemId,Attachment)
+
+        createSecondSubFolder(folder, itemId, Attachment);
       })
-      .catch((error) => console.log("first sub folder", error));
+      .catch((error) => getErrorFunction("create first sub folder"));
   };
 
-  const createSecondSubFolder = async (folder:any,itemId:number,Attachment:string[]) =>{
+  const createSecondSubFolder = async (
+    folder: any,
+    itemId: number,
+    Attachment: string[]
+  ) => {
     let Procurement: string[] = [];
     await sp.web
       .getFolderByServerRelativePath(folder.data.ServerRelativeUrl)
@@ -892,13 +923,15 @@ const Vendor = (props: any) => {
             .then(async (result) => {
               await Procurement.push(result.data.ServerRelativeUrl);
             })
-            .catch((error) => console.log("error", error));
+            .catch((error) =>
+              getErrorFunction("create file for second sub folder")
+            );
         }
-        
-        updateJson(Attachment,Procurement,itemId,'Add')
+
+        updateJson(Attachment, Procurement, itemId, "Add");
       })
-      .catch((error) => console.log("first sub folder", error));
-  }
+      .catch((error) => getErrorFunction("create second sub folder"));
+  };
 
   const updateJson = (
     Attachment: string[],
@@ -935,7 +968,7 @@ const Vendor = (props: any) => {
           masterData.pop();
           masterData.push(
             { ...newData, Status: Config.ApprovalStatus.NotStarted },
-            Config.Vendor
+            { ...Config.Vendor, isDummy: true }
           );
         } else {
           let index = [...MData].findIndex((value) => value.ID === Id);
@@ -948,11 +981,10 @@ const Vendor = (props: any) => {
         setIsLoader(false);
         setMData([...masterData]);
       })
-      .catch((error) => console.log("error", error));
+      .catch((error) => getErrorFunction("update attachment"));
   };
 
   const handleInputValue = (files: any, type: string) => {
-
     let allFiles = [];
     let allURL = [];
     for (let i = 0; i < files.length; i++) {
@@ -986,9 +1018,7 @@ const Vendor = (props: any) => {
   const editVendorItem = (items: IVendorItems, index: number) => {
     let editItem = [...MData];
     editItem[index].isEdit = true;
-    console.log('items',items);
-    
-    setVendorData({...items});
+    setVendorData({ ...items });
     setMData([...editItem]);
   };
 
@@ -1029,18 +1059,15 @@ const Vendor = (props: any) => {
   };
 
   const getMasterFolder = (itemId: number) => {
-    console.log(itemId.toString());
-
     sp.web.lists
       .getByTitle(Config.ListNames.DistributionLibrary)
       .rootFolder.folders.getByName(itemId.toString())
       .expand("ListItemAllFields")
       .get()
       .then((folder) => {
-        // console.log("folder", folder);
         getFisrtSubFolder(folder, itemId);
       })
-      .catch((error) => getErrorFunction("update get master folder"));
+      .catch((error) => getErrorFunction("get master folder"));
   };
 
   const getFisrtSubFolder = async (folder: any, itemId: number) => {
@@ -1057,12 +1084,16 @@ const Vendor = (props: any) => {
         .then((data) => {
           Attachment.unshift(data.data.ServerRelativeUrl);
         })
-        .catch((err) => console.log("err", err));
+        .catch((err) => getErrorFunction("update first sub folder files"));
     }
-    getSecondSubFolder(folder, itemId,Attachment)
+    getSecondSubFolder(folder, itemId, Attachment);
   };
 
-  const getSecondSubFolder = async (folder: any, itemId: number ,Attachment:string[]) => {
+  const getSecondSubFolder = async (
+    folder: any,
+    itemId: number,
+    Attachment: string[]
+  ) => {
     let Procurement: string[] = [...vendorData.ProcurementURL];
 
     for (let i = 0; i < vendorData.Procurement.length; i++) {
@@ -1078,10 +1109,10 @@ const Vendor = (props: any) => {
         .then((data) => {
           Procurement.unshift(data.data.ServerRelativeUrl);
         })
-        .catch((err) => console.log("err", err));
+        .catch((err) => getErrorFunction("update second sub folder files"));
     }
     updateJson(Attachment, Procurement, itemId, "Update");
-  }
+  };
 
   const ConfirmPageChange = (
     item: IVendorItems,
@@ -1137,7 +1168,6 @@ const Vendor = (props: any) => {
   };
 
   const handelVendorData = (text: string) => {
-
     let data = [...vendorDetails].filter((value) => value.Vendor === text);
     let newVendorData = { ...vendorData };
     if (data.length) {
@@ -1164,16 +1194,12 @@ const Vendor = (props: any) => {
     let newMData: IVendorItems[] = [...MData];
     newMData[index].isClick = value;
 
-    // console.log("newMData", newMData);
-    //
     let slctdItems: IVendorItems[] = [...newMData].filter(
       (value) => value.isClick === true
     );
     let authendication = [...newMData]
       .filter((value) => value.ID !== null)
       .every((value) => value.isClick === true);
-
-    // console.log("authendication", authendication);
 
     isAllSelect = authendication;
     setselectedItems([...slctdItems]);
@@ -1194,10 +1220,9 @@ const Vendor = (props: any) => {
     setselectedItems([...slctdItems]);
   };
 
-  const setStatus = (type: string) => {
-    setIsLoader(true);
+  const setStatus = () => {
     let updateItems = [...selectedItems];
-    if (type === Config.ApprovalStatus.Pending) {
+    if (Status === Config.ApprovalStatus.Pending) {
       updateItems = [...MData].filter(
         (value) =>
           value.Status === Config.ApprovalStatus.NotStarted ||
@@ -1208,17 +1233,22 @@ const Vendor = (props: any) => {
     updateItems = [...updateItems].map((value) => {
       return {
         ID: value.ID,
-        Status: type,
+        Status: Status,
       };
     });
 
     if (updateItems.length && isChangeRenual) {
+      setIsLoader(true);
+
       SPServices.batchUpdate({
         ListName: Config.ListNames.DistributionList,
         responseData: [...updateItems],
       })
         .then(() => {
           isAllSelect = false;
+          Status = "";
+          confirmBoxText = "";
+          setIsConfirmModal(false);
           getVendorData();
         })
         .catch((error) => getErrorFunction("update status"));
@@ -1299,6 +1329,7 @@ const Vendor = (props: any) => {
       <div
         style={{
           display: "flex",
+          alignItems: "flex-end",
           width: "100%",
           justifyContent: "space-between",
         }}
@@ -1306,6 +1337,7 @@ const Vendor = (props: any) => {
         <div
           style={{
             display: "flex",
+            alignItems: "flex-end",
             width: "60%",
             gap: "2%",
           }}
@@ -1340,10 +1372,13 @@ const Vendor = (props: any) => {
           </div>
           {admin && (
             <div style={{ width: "40%" }}>
-              <label>Renewal Type</label>
+              <label style={{ fontSize: 14, fontWeight: 600 }}>
+                Renewal Type
+              </label>
               <div
                 style={{
                   display: "flex",
+                  marginTop: 15,
                   gap: "2%",
                 }}
               >
@@ -1365,10 +1400,11 @@ const Vendor = (props: any) => {
             </div>
           )}
         </div>
-
         <div
           style={{
             display: "flex",
+            justifyContent: "flex-end",
+            width: "30%",
             gap: "2%",
           }}
         >
@@ -1376,18 +1412,34 @@ const Vendor = (props: any) => {
             isSubmit && (
               <DefaultButton
                 text="Submit"
-                onClick={() => setStatus(Config.ApprovalStatus.Pending)}
+                styles={saveBtnStyle}
+                onClick={() => {
+                  confirmBoxText = "Submit";
+                  Status = Config.ApprovalStatus.Pending;
+                  setIsConfirmModal(true);
+                }}
               />
             )
           ) : (
             <>
               <DefaultButton
                 text="Review"
-                onClick={() => setStatus(Config.ApprovalStatus.Rejected)}
+                styles={saveBtnStyle}
+                onClick={() => {
+                  confirmBoxText = "Review";
+                  Status = Config.ApprovalStatus.Rejected;
+                  setIsConfirmModal(true);
+                }}
               />
               <DefaultButton
                 text="Approve"
-                onClick={() => setStatus(Config.ApprovalStatus.Approved)}
+                styles={saveBtnStyle}
+                onClick={() => {
+                  confirmBoxText = "Approve";
+                  Status = Config.ApprovalStatus.Approved;
+                  // textforlable="aslkjgalskjghkja"
+                  setIsConfirmModal(true);
+                }}
               />
             </>
           )}
@@ -1406,11 +1458,11 @@ const Vendor = (props: any) => {
       <Modal isOpen={isDelModal} isBlocking={false} styles={modalStyles}>
         <div>
           {/* Content section */}
-          <img src={`${deleteGif}`} />
-          {/* <IconButton
-            className={styles.deleteImg}
+          {/* <img src={`${deleteGif}`} /> */}
+          <IconButton
+            // className={styles.deleteImg}
             iconProps={{ iconName: "Delete" }}
-          /> */}
+          />
           <Label
             style={{
               color: "red",
@@ -1460,6 +1512,61 @@ const Vendor = (props: any) => {
               }}
               onClick={() => {
                 handleDelete();
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal isOpen={isConfirmModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          <Label
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            Do you want to {confirmBoxText} this items?
+          </Label>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsConfirmModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setStatus();
               }}
             >
               Yes
