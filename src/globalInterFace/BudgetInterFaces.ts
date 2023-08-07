@@ -135,6 +135,8 @@ export interface ICurCategoryItem {
   ID: number;
   OverAllBudgetCost: number;
   TotalProposed: number;
+  OverAllPOIssuedCost?: number;
+  OverAllRemainingCost?: number;
   isAdmin?: boolean;
   isManager?: boolean;
 }
@@ -330,16 +332,23 @@ export interface IBudTrackDistribution {
   ID: Number;
   Cost: Number;
   BudgetId: Number;
+  isClick: boolean;
+  isEdit: boolean;
   Vendor: string;
   Po: string;
   PoCurrency: string;
   InvoiceNo: string;
-  StartDate: string;
-  EntryDate: string;
-  ToDate: string;
+  StartDate: Date;
+  EntryDate: Date;
+  ToDate: Date;
   Area: string;
   Item?: string;
   Type?: string;
+  Category?: string;
+  CateId?: number;
+  OverAllBudgetCost?: number;
+  OverAllPOIssuedCost?: number;
+  OverAllRemainingCost?: number;
 }
 
 // Interface of over all butget track dis
@@ -353,8 +362,18 @@ export interface IOverAllTrackItem {
   yearID: number;
   countryID: number;
   OverAllBudgetCost: number;
+  OverAllPOIssuedCost: number;
+  OverAllRemainingCost: number;
   TotalProposed: number;
-  isAdmin?: boolean;
-  isManager?: boolean;
+  isMasterClick?: boolean;
   VendorDetails: IBudTrackDistribution[];
+}
+
+// Interface of selected Items
+export interface ITrackSelectedItem {
+  StartDate: Date;
+  ToDate: Date;
+  Po: string;
+  PoCurrency: string;
+  InvoiceNo: string;
 }
