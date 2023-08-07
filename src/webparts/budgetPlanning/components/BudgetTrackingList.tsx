@@ -4,21 +4,19 @@ import styles from "./BudgetTrackingList.module.scss";
 import {
   Label,
   Dropdown,
-  DetailsList,
-  SelectionMode,
-  IColumn,
-  DetailsListLayoutMode,
   Icon,
   TextField,
   IDropdownStyles,
-  IDetailsListStyles,
-  ITextFieldStyles,
-  Modal,
-  IModalStyles,
-  IconButton,
   DefaultButton,
   IButtonStyles,
   DatePicker,
+  Checkbox,
+  Modal,
+  DetailsListLayoutMode,
+  SelectionMode,
+  DetailsList,
+  IDetailsListStyles,
+  IColumn,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -26,12 +24,10 @@ import {
   IDropdowns,
   ICurBudgetItem,
   ICurCategoryItem,
-  IOverAllItem,
-  IBudgetListColumn,
-  IBudgetValidation,
   IGroupUsers,
   IBudTrackDistribution,
   IOverAllTrackItem,
+  ITrackSelectedItem,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -47,11 +43,53 @@ let isUserPermissions: IGroupUsers;
 let _arrCategory: ICurCategoryItem[] = [];
 let _arrBudget: ICurBudgetItem[] = [];
 let _arrDistribution: IBudTrackDistribution[] = [];
+let _isSelectAll: boolean = false;
 
 const BudgetTrackingList = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   isUserPermissions = { ...props.groupUsers };
+
+  const _selectedItemColumn: IColumn[] = [
+    {
+      key: "column1",
+      name: "Entry Date",
+      fieldName: "EntryDate",
+      minWidth: 100,
+      maxWidth: 150,
+      onRender: (item: IBudTrackDistribution): any => {
+        return moment(item.EntryDate).format("MM/DD/YYYY");
+      },
+    },
+    {
+      key: "column2",
+      name: "Item",
+      fieldName: "Item",
+      minWidth: 200,
+      maxWidth: 250,
+    },
+    {
+      key: "column3",
+      name: "Cost",
+      fieldName: "Cost",
+      minWidth: 100,
+      maxWidth: 150,
+    },
+    {
+      key: "column4",
+      name: "Type",
+      fieldName: "Type",
+      minWidth: 100,
+      maxWidth: 150,
+    },
+    {
+      key: "column5",
+      name: "Vendor",
+      fieldName: "Vendor",
+      minWidth: 150,
+      maxWidth: 200,
+    },
+  ];
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
@@ -62,6 +100,11 @@ const BudgetTrackingList = (props: any): JSX.Element => {
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
   const [trackItems, setTrackItems] = useState<IOverAllTrackItem[]>([]);
+  const [selItems, setSelItems] = useState<IBudTrackDistribution[]>([]);
+  const [curEditItem, setCurEditItem] = useState<ITrackSelectedItem>({
+    ...Config.TrackSelectedItem,
+  });
+  const [isModal, setIsModal] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -74,6 +117,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       ".ms-DetailsHeader-cell": {
         ":first-child": {
           color: "#202945",
+          cursor: "pointer",
         },
         ":hover": {
           backgroundColor: "#ededed",
@@ -95,10 +139,11 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       ".ms-DetailsRow-cell": {
         fontSize: 14,
       },
-      ".ms-DetailsHeader-cellTitle": {
-        display: "flex",
-        justifyContent: "start",
-      },
+      // ".ms-DetailsList-contentWrapper": {
+      //   height: 20,
+      //   overflowY: "auto",
+      //   overflowX: "hidden",
+      // },
     },
   };
 
@@ -197,10 +242,17 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               TotalProposed: resCate[i].TotalProposed
                 ? resCate[i].TotalProposed
                 : null,
+              OverAllPOIssuedCost: resCate[i].OverAllPOIssuedCost
+                ? resCate[i].OverAllPOIssuedCost
+                : null,
+              OverAllRemainingCost: resCate[i].OverAllRemainingCost
+                ? resCate[i].OverAllRemainingCost
+                : null,
             });
             i + 1 == resCate.length && _getBudgetDatas([..._curCategory]);
           }
         } else {
+          setSelItems([]);
           setTrackItems([]);
           setIsLoader(false);
         }
@@ -272,6 +324,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               _getDistributionDatas([..._arrCate], [..._curItem]);
           }
         } else {
+          setSelItems([]);
           setTrackItems([]);
           setIsLoader(false);
         }
@@ -320,18 +373,21 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               Cost: e.Pricing ? e.Pricing : null,
               Vendor: e.Vendor ? e.Vendor : "",
               Po: e.PO ? e.PO : "",
-              PoCurrency: "",
-              InvoiceNo: "",
+              PoCurrency: e.PoCurrency ? e.PoCurrency : "",
+              InvoiceNo: e.InvoiceNo ? e.InvoiceNo : "",
               Area: e.Area ? e.Area : "",
-              EntryDate: moment(e.Created).format("MM/DD/YYYY"),
-              StartDate: null,
-              ToDate: null,
+              EntryDate: new Date(e.Created),
+              StartDate: e.StartDate ? new Date(e.StartDate) : null,
+              ToDate: e.ToDate ? new Date(e.ToDate) : null,
+              isClick: false,
+              isEdit: false,
             });
           });
 
           resDis.length == _arrDis.length &&
             _areaFilterFun([..._arrCate], [..._arrBud], [..._arrDis]);
         } else {
+          setSelItems([]);
           setTrackItems([]);
           setIsLoader(false);
         }
@@ -368,10 +424,12 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       if (_arrCategory.length && _arrBudget.length && _arrDistribution.length) {
         _getFilterFunction();
       } else {
+        setSelItems([]);
         setTrackItems([]);
         setIsLoader(false);
       }
     } else {
+      setSelItems([]);
       setTrackItems([]);
       setIsLoader(false);
     }
@@ -399,6 +457,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     if (tempArr.length) {
       _arrMasterCategoryData([...tempArr]);
     } else {
+      setSelItems([]);
       setTrackItems([]);
       setIsLoader(false);
     }
@@ -418,10 +477,14 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         yearID: tempArr[i].YearAcc.ID,
         countryID: tempArr[i].CountryAcc.ID,
         OverAllBudgetCost: tempArr[i].OverAllBudgetCost,
+        OverAllPOIssuedCost: tempArr[i].OverAllPOIssuedCost,
+        OverAllRemainingCost: tempArr[i].OverAllRemainingCost,
         TotalProposed: tempArr[i].TotalProposed,
+        isMasterClick: false,
         VendorDetails: [],
       });
-      i + 1 == tempArr.length && _getPrepareArray([..._arrMasterCategory]);
+      _arrMasterCategory.length == tempArr.length &&
+        _getPrepareArray([..._arrMasterCategory]);
     }
   };
 
@@ -429,6 +492,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     let _arrTrack: IOverAllTrackItem[] = [];
 
     for (let i: number = 0; _cateArray.length > i; i++) {
+      let _isTrack: Boolean = false;
       for (let j: number = 0; _arrBudget.length > j; j++) {
         if (
           _cateArray[i].ID === _arrBudget[j].CateId &&
@@ -436,20 +500,28 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           _cateArray[i].CountryAcc === _arrBudget[j].Country &&
           _cateArray[i].YearAcc === _arrBudget[j].Year &&
           _cateArray[i].Type === _arrBudget[j].Type &&
-          _cateArray[i].Area === _arrBudget[j].Area
+          _cateArray[i].Area === _arrBudget[j].Area &&
+          !_isTrack
         ) {
-          let _isTrack: Boolean = false;
-
           for (let k: number = 0; _arrDistribution.length > k; k++) {
             if (_arrBudget[j].ID === _arrDistribution[k].BudgetId) {
               _isTrack = true;
               _arrDistribution[k].Item = _arrBudget[j].Description;
               _arrDistribution[k].Type = _arrBudget[j].Type;
+              _arrDistribution[k].Category = _cateArray[i].CategoryAcc;
+              _arrDistribution[k].CateId = _cateArray[i].ID;
+              _arrDistribution[k].OverAllBudgetCost =
+                _cateArray[i].OverAllBudgetCost;
+              _arrDistribution[k].OverAllPOIssuedCost =
+                _cateArray[i].OverAllPOIssuedCost;
+              _arrDistribution[k].OverAllRemainingCost =
+                _cateArray[i].OverAllRemainingCost;
 
               _cateArray[i].VendorDetails.push({ ..._arrDistribution[k] });
             }
 
             if (_isTrack && k + 1 === _arrDistribution.length) {
+              _isTrack = false;
               _arrTrack.push({ ..._cateArray[i] });
             }
           }
@@ -458,12 +530,214 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     }
 
     if (_arrTrack.length) {
-      console.log([..._arrTrack]);
-      setTrackItems([..._arrTrack]);
-      setIsLoader(false);
+      _getUniqueValues([..._arrTrack]);
     } else {
+      setSelItems([]);
       setTrackItems([]);
       setIsLoader(false);
+    }
+  };
+
+  const _getUniqueValues = (_arrTrack: IOverAllTrackItem[]) => {
+    let _arrBudgetTrackList: IOverAllTrackItem[] = [];
+    let matches: any[] = [];
+    let idTrack: number[] = [];
+    let _uniqueTrackList: string[] = [];
+    let distinctMap = {};
+    let _objBudget: IOverAllTrackItem;
+
+    _arrTrack.reduce((item: number[], e1: IOverAllTrackItem) => {
+      matches = item.filter((e2: number) => {
+        return e1.ID === e2;
+      });
+      if (matches.length == 0) {
+        idTrack.push(e1.ID);
+      }
+      return idTrack;
+    }, []);
+
+    for (let i: number = 0; i < idTrack.length; i++) {
+      let value: number = idTrack[i];
+      distinctMap[value] = null;
+    }
+    _uniqueTrackList = Object.keys(distinctMap);
+
+    if (_uniqueTrackList.length) {
+      for (let i: number = 0; _uniqueTrackList.length > i; i++) {
+        _objBudget = [..._arrTrack].filter((e: IOverAllTrackItem) => {
+          return e.ID === Number(_uniqueTrackList[i]);
+        })[0];
+        _arrBudgetTrackList.push({ ..._objBudget });
+
+        if (_uniqueTrackList.length === i + 1) {
+          setSelItems([]);
+          setTrackItems([..._arrBudgetTrackList]);
+          setIsLoader(false);
+        }
+      }
+    } else {
+      setSelItems([]);
+      setTrackItems([]);
+      setIsLoader(false);
+    }
+  };
+
+  const _getEditItem = (
+    masIndex: number,
+    subIndex: number,
+    type: string
+  ): void => {
+    let _masterArray: IOverAllTrackItem[] = [...trackItems];
+
+    for (let i: number = 0; _masterArray.length > i; i++) {
+      _masterArray[i].isMasterClick = false;
+      [..._masterArray[i].VendorDetails].map(
+        (e: IBudTrackDistribution) => ((e.isClick = false), (e.isEdit = false))
+      );
+    }
+
+    if (trackItems.length === _masterArray.length) {
+      if (type === "edit") {
+        _masterArray[masIndex].VendorDetails[subIndex].isEdit = true;
+        curEditItem.ToDate =
+          _masterArray[masIndex].VendorDetails[subIndex].ToDate;
+        curEditItem.StartDate =
+          _masterArray[masIndex].VendorDetails[subIndex].StartDate;
+        curEditItem.Po = _masterArray[masIndex].VendorDetails[subIndex].Po;
+        curEditItem.PoCurrency =
+          _masterArray[masIndex].VendorDetails[subIndex].PoCurrency;
+        curEditItem.InvoiceNo =
+          _masterArray[masIndex].VendorDetails[subIndex].InvoiceNo;
+
+        setSelItems([]);
+        setCurEditItem({ ...curEditItem });
+        setTrackItems([..._masterArray]);
+      } else {
+        setSelItems([]);
+        setCurEditItem({ ...Config.TrackSelectedItem });
+        setTrackItems([..._masterArray]);
+      }
+    }
+  };
+
+  const handleChecked = (
+    isChecked: boolean,
+    masIndex: number,
+    subIndex: number,
+    type: string
+  ): void => {
+    let _masCateArray: IOverAllTrackItem[] = [...trackItems];
+    let _reArrangedArray: IOverAllTrackItem[] = [];
+    let _selVendorsArray: IBudTrackDistribution[] = [];
+    let _findIndexNo: number = null;
+    _isSelectAll = false;
+
+    _findIndexNo = [...trackItems].findIndex(
+      (e: IOverAllTrackItem) => e.isMasterClick === true
+    );
+
+    if (_findIndexNo >= 0) {
+      if (type === "all" && masIndex === _findIndexNo) {
+        _masCateArray[masIndex].isMasterClick = isChecked;
+        [..._masCateArray[masIndex].VendorDetails].map(
+          (e: IBudTrackDistribution) => (
+            (e.isClick = isChecked), (e.isEdit = false)
+          )
+        );
+        _selVendorsArray = [..._masCateArray[masIndex].VendorDetails].filter(
+          (e: IBudTrackDistribution) => e.isClick === true
+        );
+        _isSelectAll = isChecked;
+        setSelItems([..._selVendorsArray]);
+        setTrackItems([..._masCateArray]);
+      } else if (type === "all") {
+        for (let i: number = 0; _masCateArray.length > i; i++) {
+          _masCateArray[i].isMasterClick = false;
+          [..._masCateArray[i].VendorDetails].map(
+            (e: IBudTrackDistribution) => (
+              (e.isClick = false), (e.isEdit = false)
+            )
+          );
+          _reArrangedArray.push({ ..._masCateArray[i] });
+        }
+        if (_masCateArray.length === _reArrangedArray.length) {
+          _reArrangedArray[masIndex].isMasterClick = isChecked;
+          [..._reArrangedArray[masIndex].VendorDetails].map(
+            (e: IBudTrackDistribution) => (
+              (e.isClick = isChecked), (e.isEdit = false)
+            )
+          );
+          _selVendorsArray = [
+            ..._reArrangedArray[masIndex].VendorDetails,
+          ].filter((e: IBudTrackDistribution) => e.isClick === true);
+          _isSelectAll = isChecked;
+          setSelItems([..._selVendorsArray]);
+          setTrackItems([..._reArrangedArray]);
+        }
+      } else if (masIndex === _findIndexNo) {
+        _masCateArray[masIndex].isMasterClick = true;
+        _masCateArray[masIndex].VendorDetails[subIndex].isClick = isChecked;
+        _selVendorsArray = [..._masCateArray[masIndex].VendorDetails].filter(
+          (e: IBudTrackDistribution) => e.isClick === true
+        );
+        _isSelectAll = [..._masCateArray[masIndex].VendorDetails].every(
+          (e: IBudTrackDistribution) => e.isClick === true
+        );
+        setSelItems([..._selVendorsArray]);
+        setTrackItems([..._masCateArray]);
+      } else {
+        for (let i: number = 0; _masCateArray.length > i; i++) {
+          _masCateArray[i].isMasterClick = false;
+          [..._masCateArray[i].VendorDetails].map(
+            (e: IBudTrackDistribution) => (
+              (e.isClick = false), (e.isEdit = false)
+            )
+          );
+          _reArrangedArray.push({ ..._masCateArray[i] });
+        }
+        if (_masCateArray.length === _reArrangedArray.length) {
+          _reArrangedArray[masIndex].isMasterClick = true;
+          [..._reArrangedArray[masIndex].VendorDetails].map(
+            (e: IBudTrackDistribution) => (e.isEdit = false)
+          );
+          _reArrangedArray[masIndex].VendorDetails[subIndex].isClick =
+            isChecked;
+          _selVendorsArray = [
+            ..._reArrangedArray[masIndex].VendorDetails,
+          ].filter((e: IBudTrackDistribution) => e.isClick === true);
+          _isSelectAll = [..._reArrangedArray[masIndex].VendorDetails].every(
+            (e: IBudTrackDistribution) => e.isClick === true
+          );
+          setSelItems([..._selVendorsArray]);
+          setTrackItems([..._reArrangedArray]);
+        }
+      }
+    } else {
+      if (type === "all") {
+        _masCateArray[masIndex].isMasterClick = isChecked;
+        [..._masCateArray[masIndex].VendorDetails].map(
+          (e: IBudTrackDistribution) => (
+            (e.isClick = isChecked), (e.isEdit = false)
+          )
+        );
+        _selVendorsArray = [..._masCateArray[masIndex].VendorDetails].filter(
+          (e: IBudTrackDistribution) => e.isClick === true
+        );
+        _isSelectAll = isChecked;
+        setSelItems([..._selVendorsArray]);
+        setTrackItems([..._masCateArray]);
+      } else {
+        _masCateArray[masIndex].isMasterClick = isChecked;
+        [..._masCateArray[masIndex].VendorDetails].map(
+          (e: IBudTrackDistribution) => (e.isEdit = false)
+        );
+        _masCateArray[masIndex].VendorDetails[subIndex].isClick = isChecked;
+        _selVendorsArray = [..._masCateArray[masIndex].VendorDetails].filter(
+          (e: IBudTrackDistribution) => e.isClick === true
+        );
+        setSelItems([..._selVendorsArray]);
+        setTrackItems([..._masCateArray]);
+      }
     }
   };
 
@@ -594,10 +868,10 @@ const BudgetTrackingList = (props: any): JSX.Element => {
             styles={buttonStyles}
             className={styles.export}
             style={{
-              cursor: true ? "pointer" : "not-allowed",
+              cursor: selItems.length ? "pointer" : "not-allowed",
             }}
             onClick={() => {
-              setIsLoader(false);
+              selItems.length && setIsModal(true);
             }}
           />
         </div>
@@ -628,6 +902,14 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 >
                   {/* table header section */}
                   <tr>
+                    <th>
+                      <Checkbox
+                        checked={item.isMasterClick ? _isSelectAll : false}
+                        onChange={(e: any, isChecked: boolean) => {
+                          handleChecked(isChecked, index, null, "all");
+                        }}
+                      />
+                    </th>
                     <th>Entry Date</th>
                     <th>Item</th>
                     <th>Cost</th>
@@ -638,6 +920,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     <th>PO#</th>
                     <th>PO Currency</th>
                     <th>Invoice No</th>
+                    <th>Action</th>
                   </tr>
 
                   {/* table body section */}
@@ -645,36 +928,146 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     (data: IBudTrackDistribution, i: number) => {
                       return (
                         <tr>
-                          <td>{data.EntryDate}</td>
+                          <td>
+                            <Checkbox
+                              checked={data.isClick}
+                              onChange={(e: any, isChecked: boolean) => {
+                                handleChecked(isChecked, index, i, "");
+                              }}
+                            />
+                          </td>
+                          <td>{moment(data.EntryDate).format("MM/DD/YYYY")}</td>
                           <td>{data.Item}</td>
                           <td>{data.Cost}</td>
                           <td>{data.Type}</td>
                           <td>{data.Vendor}</td>
                           <td>
-                            <DatePicker
-                              placeholder="MM/DD/YYYY"
-                              value={
-                                data.StartDate ? new Date(data.StartDate) : null
-                              }
-                              formatDate={(date) =>
-                                moment(date).format("MM/DD/YYYY")
-                              }
-                              onSelectDate={() => {}}
-                            />
+                            {data.isEdit ? (
+                              <DatePicker
+                                placeholder="MM/DD/YYYY"
+                                value={
+                                  curEditItem.StartDate
+                                    ? curEditItem.StartDate
+                                    : null
+                                }
+                                formatDate={(date) =>
+                                  moment(date).format("MM/DD/YYYY")
+                                }
+                                onSelectDate={(e: Date) => {
+                                  curEditItem.StartDate = e;
+                                  setCurEditItem({ ...curEditItem });
+                                }}
+                              />
+                            ) : data.StartDate ? (
+                              moment(data.StartDate).format("MM/DD/YYYY")
+                            ) : null}
                           </td>
                           <td>
-                            <DatePicker
-                              placeholder="MM/DD/YYYY"
-                              value={data.ToDate ? new Date(data.ToDate) : null}
-                              formatDate={(date) =>
-                                moment(date).format("MM/DD/YYYY")
-                              }
-                              onSelectDate={() => {}}
-                            />
+                            {data.isEdit ? (
+                              <DatePicker
+                                placeholder="MM/DD/YYYY"
+                                value={
+                                  curEditItem.ToDate ? curEditItem.ToDate : null
+                                }
+                                formatDate={(date) =>
+                                  moment(date).format("MM/DD/YYYY")
+                                }
+                                onSelectDate={(e: Date) => {
+                                  curEditItem.ToDate = e;
+                                  setCurEditItem({ ...curEditItem });
+                                }}
+                              />
+                            ) : data.ToDate ? (
+                              moment(data.ToDate).format("MM/DD/YYYY")
+                            ) : null}
                           </td>
-                          <td>{data.Po}</td>
-                          <td>{data.PoCurrency}</td>
-                          <td>{data.InvoiceNo}</td>
+                          <td>
+                            {data.isEdit ? (
+                              <TextField
+                                value={curEditItem.Po}
+                                placeholder="Enter here"
+                                onChange={(e: any) => {
+                                  curEditItem.Po = e.target.value.trimStart();
+                                  setCurEditItem({ ...curEditItem });
+                                }}
+                              />
+                            ) : (
+                              data.Po
+                            )}
+                          </td>
+                          <td>
+                            {data.isEdit ? (
+                              <TextField
+                                value={curEditItem.PoCurrency}
+                                placeholder="Enter here"
+                                onChange={(e: any) => {
+                                  curEditItem.PoCurrency =
+                                    e.target.value.trimStart();
+                                  setCurEditItem({ ...curEditItem });
+                                }}
+                              />
+                            ) : (
+                              data.PoCurrency
+                            )}
+                          </td>
+                          <td>
+                            {data.isEdit ? (
+                              <TextField
+                                value={curEditItem.InvoiceNo}
+                                placeholder="Enter here"
+                                onChange={(e: any) => {
+                                  curEditItem.InvoiceNo =
+                                    e.target.value.trimStart();
+                                  setCurEditItem({ ...curEditItem });
+                                }}
+                              />
+                            ) : (
+                              data.InvoiceNo
+                            )}
+                          </td>
+                          <td>
+                            {!data.isEdit ? (
+                              <Icon
+                                iconName="Edit"
+                                style={{
+                                  color: "blue",
+                                  fontSize: "16px",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  _getEditItem(index, i, "edit");
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "6%",
+                                }}
+                              >
+                                <Icon
+                                  iconName="CheckMark"
+                                  style={{
+                                    color: "green",
+                                    fontSize: "20px",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {}}
+                                />
+                                <Icon
+                                  iconName="Cancel"
+                                  style={{
+                                    color: "red",
+                                    fontSize: "20px",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    _getEditItem(index, i, "cancel");
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       );
                     }
@@ -682,13 +1075,97 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 </table>
 
                 {/* Over All Amount Details */}
-                <div>Deva</div>
+                <div
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "26%",
+                    }}
+                  >
+                    <div>Budget</div>
+                    <div>PO Issued</div>
+                    <div>Remaining Budget</div>
+                  </div>
+                  <div>
+                    <div>{item.OverAllBudgetCost}</div>
+                    <div>{item.OverAllPOIssuedCost}</div>
+                    <div>{item.OverAllRemainingCost}</div>
+                  </div>
+                </div>
               </div>
             </Accordion>
           );
         })
       ) : (
         <div className={styles.noRecords}>No data found !!!</div>
+      )}
+
+      {/* Modal box section */}
+      {selItems.length ? (
+        <Modal isOpen={isModal} isBlocking={false}>
+          {/* modal box header section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <Label>{selItems[0].Category}</Label>
+            <Icon
+              iconName="Cancel"
+              style={{
+                color: "red",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                _getEditItem(null, null, "cancel");
+                setIsModal(false);
+              }}
+            />
+          </div>
+
+          {/* modal box Details list section */}
+          <DetailsList
+            items={[...selItems]}
+            columns={[..._selectedItemColumn]}
+            styles={_DetailsListStyle}
+            setKey="set"
+            layoutMode={DetailsListLayoutMode.justified}
+            selectionMode={SelectionMode.none}
+          />
+
+          {/* modal box Budget Details section */}
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                width: "26%",
+              }}
+            >
+              <div>Budget</div>
+              <div>PO Issued</div>
+              <div>Remaining Budget</div>
+            </div>
+            <div>
+              <div>{selItems[0].OverAllBudgetCost}</div>
+              <div>{selItems[0].OverAllPOIssuedCost}</div>
+              <div>{selItems[0].OverAllRemainingCost}</div>
+            </div>
+          </div>
+
+          {/* modal box Footer section */}
+        </Modal>
+      ) : (
+        ""
       )}
     </div>
   );

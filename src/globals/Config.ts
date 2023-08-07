@@ -18,6 +18,7 @@ import {
   IVendorProp,
   IVendorItems,
   IApprovalStatus,
+  ITrackSelectedItem,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -210,7 +211,7 @@ export namespace Config {
     ID: null,
     // VendorId: null,
     // Vendor: "All",
-    Vendor:"",
+    Vendor: "",
     Description: "",
     Pricing: 0,
     PaymentTerms: "",
@@ -223,10 +224,10 @@ export namespace Config {
     BudgetId: null,
     isDummy: true,
     isEdit: false,
-    AttachmentURL:[],
-    ProcurementURL:[],
-    Status:'',
-    isClick:false,
+    AttachmentURL: [],
+    ProcurementURL: [],
+    Status: "",
+    isClick: false,
   };
   export const vendorValidation = {
     Vendor: false,
@@ -234,10 +235,18 @@ export namespace Config {
     Pricing: false,
   };
 
-  export const ApprovalStatus:IApprovalStatus = {
-    NotStarted:'Not Started',
-    Pending:'Pending',
-    Rejected:'Rejected',
-    Approved:'Approved'
-  }
+  export const ApprovalStatus: IApprovalStatus = {
+    NotStarted: "Not Started",
+    Pending: "Pending",
+    Rejected: "Rejected",
+    Approved: "Approved",
+  };
+
+  export const TrackSelectedItem: ITrackSelectedItem = {
+    StartDate: null,
+    ToDate: null,
+    Po: "",
+    PoCurrency: "",
+    InvoiceNo: "",
+  };
 }
