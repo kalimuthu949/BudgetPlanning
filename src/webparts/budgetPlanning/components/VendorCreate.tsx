@@ -150,7 +150,7 @@ const VendorCreate = (props: any): JSX.Element => {
     },
   };
 
-  const vendorDeletePopupStyle = {
+  const vendorDeletePopupStyle: Partial<IModalStyles> = {
     main: {
       width: "20%",
       minHeight: 128,
@@ -162,6 +162,7 @@ const VendorCreate = (props: any): JSX.Element => {
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
+      overflow: "unset",
     },
   };
 
@@ -602,6 +603,13 @@ const VendorCreate = (props: any): JSX.Element => {
               marginTop: 20,
             }}
           >
+            <div className={styles.deleteIconCircle}>
+              <IconButton
+                className={styles.deleteImg}
+                iconProps={{ iconName: "Delete" }}
+              />
+            </div>
+
             <DefaultButton
               styles={cancelBtnStyle}
               text={"No"}

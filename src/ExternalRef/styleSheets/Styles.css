@@ -169,3 +169,8 @@ button:active {
 .MuiOutlinedInput-notchedOutline {
   border: 1px solid #000 !important;
 }
+
+.is-checked .ms-Checkbox-checkbox {
+  background: #202945 !important;
+  border: 1px solid #202945 !important;
+}

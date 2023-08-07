@@ -674,7 +674,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   return isLoader ? (
     <Loader />
-  ) : vendorDetails.isVendor ? (
+  ) : false ? (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
       <Label className={styles.HeaderLable}>Budget Distribution</Label>

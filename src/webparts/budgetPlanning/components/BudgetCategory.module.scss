@@ -177,3 +177,22 @@
 .contryTextField {
   width: 77%;
 }
+
+.deleteIconCircle {
+  height: 46px;
+  width: 46px;
+  border-radius: 50%;
+  background-color: #202945;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: -26px;
+  left: 44%;
+  position: absolute;
+  .deleteImg {
+    i {
+      font-size: 22px;
+      color: #fff;
+    }
+  }
+}
