@@ -15,8 +15,9 @@ import {
   Modal,
   IModalStyles,
   IconButton,
+  DefaultButton,
+  IButtonStyles,
 } from "@fluentui/react";
-import { Config } from "../../../globals/Config";
 import {
   IDrop,
   IDropdowns,
@@ -27,13 +28,17 @@ import {
   IBudgetValidation,
   IGroupUsers,
 } from "../../../globalInterFace/BudgetInterFaces";
+import { Config } from "../../../globals/Config";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
+import * as Excel from "exceljs/dist/exceljs.min.js";
+import * as FileSaver from "file-saver";
+import * as moment from "moment";
 import Loader from "./Loader";
 import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetPlanning.module.scss";
-import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 let propDropValue: IDropdowns;
 let _Items: ICurBudgetItem[] = [];
@@ -42,6 +47,11 @@ let alertifyMSG: string = "";
 let _isBack: boolean = false;
 let _isCurYear: boolean = true;
 let isUserPermissions: IGroupUsers;
+let _arrOfMaster: IOverAllItem[] = [];
+let listItems: any[] = [];
+let _masArray: any[] = [];
+let _isMasterSubmit: boolean = false;
+let _isMasApprove: boolean = false;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
@@ -55,28 +65,82 @@ const BudgetPlan = (props: any): JSX.Element => {
       key: "column1",
       name: "Category",
       fieldName: Config.BudgetListColumns.CategoryId.toString(),
-      minWidth: 200,
-      maxWidth: _isCurYear ? 200 : 280,
+      minWidth: 130,
+      maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return item.ID ? item.Category : item.isEdit && item.Category;
+        return item.ID ? (
+          <div title={item.Category} style={{ cursor: "pointer" }}>
+            {item.Category}
+          </div>
+        ) : (
+          item.isEdit && (
+            <div title={item.Category} style={{ cursor: "pointer" }}>
+              {item.Category}
+            </div>
+          )
+        );
       },
     },
     {
       key: "column2",
       name: "Area",
       fieldName: Config.BudgetListColumns.Area,
-      minWidth: 150,
-      maxWidth: _isCurYear ? 150 : 230,
+      minWidth: 130,
+      maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return item.ID ? item.Area : item.isEdit && item.Area;
+        return item.ID ? (
+          <div title={item.Area} style={{ cursor: "pointer" }}>
+            {item.Area}
+          </div>
+        ) : (
+          item.isEdit && (
+            <div title={item.Area} style={{ cursor: "pointer" }}>
+              {item.Area}
+            </div>
+          )
+        );
       },
     },
     {
       key: "column3",
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
+      minWidth: 200,
+      maxWidth: _isCurYear ? 250 : 300,
+      onRender: (item: ICurBudgetItem): any => {
+        return !item.isEdit ? (
+          <div title={item.Description} style={{ cursor: "pointer" }}>
+            {item.Description}
+          </div>
+        ) : item.ApproveStatus === "Not Started" ||
+          isUserPermissions.isSuperAdmin ||
+          item.isApproved ? (
+          <div>
+            <TextField
+              value={curData.Description ? curData.Description : ""}
+              styles={
+                isValidation.isDescription ? errtxtFieldStyle : textFieldStyle
+              }
+              placeholder="Enter Here"
+              onChange={(e: any) => {
+                curData.Description = e.target.value;
+                setCurData({ ...curData });
+              }}
+            />
+          </div>
+        ) : (
+          <div title={item.Description} style={{ cursor: "pointer" }}>
+            {item.Description}
+          </div>
+        );
+      },
+    },
+    {
+      key: "column4",
+      name: "Comment",
+      fieldName: Config.BudgetListColumns.Comments,
       minWidth: 300,
-      maxWidth: _isCurYear ? 330 : 400,
+      maxWidth: 330,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? (
           <div
@@ -110,34 +174,6 @@ const BudgetPlan = (props: any): JSX.Element => {
             </div>
           </div>
         ) : !item.isEdit ? (
-          <div title={item.Description} style={{ cursor: "pointer" }}>
-            {item.Description}
-          </div>
-        ) : (
-          <div>
-            <TextField
-              value={curData.Description ? curData.Description : ""}
-              styles={
-                isValidation.isDescription ? errtxtFieldStyle : textFieldStyle
-              }
-              placeholder="Enter Here"
-              onChange={(e: any) => {
-                curData.Description = e.target.value;
-                setCurData({ ...curData });
-              }}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      key: "column4",
-      name: "Comment",
-      fieldName: Config.BudgetListColumns.Comments,
-      minWidth: 280,
-      maxWidth: 300,
-      onRender: (item: ICurBudgetItem): any => {
-        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
           <div
             title={item.Comments}
             style={{
@@ -149,7 +185,9 @@ const BudgetPlan = (props: any): JSX.Element => {
           >
             {item.Comments.trim() ? item.Comments : "N/A"}
           </div>
-        ) : (
+        ) : item.ApproveStatus === "Not Started" ||
+          isUserPermissions.isSuperAdmin ||
+          item.isApproved ? (
           <div>
             <TextField
               multiline
@@ -163,32 +201,72 @@ const BudgetPlan = (props: any): JSX.Element => {
               }}
             />
           </div>
+        ) : (
+          <div
+            title={item.Comments}
+            style={{
+              cursor: "pointer",
+              width: "98%",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
+            {item.Comments.trim() ? item.Comments : "N/A"}
+          </div>
         );
       },
     },
     {
       key: "column5",
       name: "Budget Required",
-      fieldName: Config.BudgetListColumns.BudgetAllocated,
+      fieldName: Config.BudgetListColumns.BudgetProposed,
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return !item.isEdit ? (
-          <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
-        ) : (
+        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
+          <div style={{ color: "#E39C5A" }}>{item.BudgetProposed}</div>
+        ) : item.ApproveStatus === "Not Started" ||
+          isUserPermissions.isSuperAdmin ||
+          item.isApproved ? (
           <div>
             <TextField
-              value={
-                curData.BudgetAllocated
-                  ? curData.BudgetAllocated.toString()
-                  : ""
-              }
+              value={curData.BudgetProposed.toString()}
               placeholder="Enter Here"
               styles={
-                isValidation.isBudgetAllocated
+                isValidation.isBudgetRequired
                   ? errtxtFieldStyle
                   : textFieldStyle
               }
+              onChange={(e: any, value: any) => {
+                if (/^[0-9]+$|^$/.test(value)) {
+                  curData.BudgetProposed = value;
+                  setCurData({ ...curData });
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div style={{ color: "#E39C5A" }}>{item.BudgetProposed}</div>
+        );
+      },
+    },
+    {
+      key: "column6",
+      name: "Budget Allocated",
+      fieldName: Config.BudgetListColumns.BudgetAllocated,
+      minWidth: 150,
+      maxWidth: 150,
+      onRender: (item: ICurBudgetItem): any => {
+        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
+          <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
+        ) : item.ApproveStatus === "Pending" ||
+          isUserPermissions.isSuperAdmin ||
+          item.isApproved ? (
+          <div>
+            <TextField
+              value={curData.BudgetAllocated.toString()}
+              placeholder="Enter Here"
+              styles={textFieldStyle}
               onChange={(e: any, value: any) => {
                 if (/^[0-9]+$|^$/.test(value)) {
                   curData.BudgetAllocated = value;
@@ -197,25 +275,31 @@ const BudgetPlan = (props: any): JSX.Element => {
               }}
             />
           </div>
+        ) : (
+          <div style={{ color: "#E39C5A" }}>
+            {item.BudgetAllocated ? item.BudgetAllocated : null}
+          </div>
         );
       },
     },
     {
-      key: "column6",
+      key: "column7",
       name: "Used",
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: any) => {
-        return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
+        return item.isDummy && !item.isEdit ? null : (
+          <div style={{ color: "#AC455E" }}>{item.Used}</div>
+        );
       },
     },
     {
-      key: "column7",
+      key: "column8",
       name: "Remaining",
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: any) => {
-        return (
+        return item.isDummy && !item.isEdit ? null : (
           <div
             style={
               item.Year != _curYear
@@ -238,7 +322,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
     {
-      key: "column8",
+      key: "column9",
       name: "Action",
       minWidth: 50,
       maxWidth: 80,
@@ -278,7 +362,9 @@ const BudgetPlan = (props: any): JSX.Element => {
               </div>
             ) : (
               item.ID &&
-              item.Year == _curYear && (
+              item.Year == _curYear &&
+              (item.ApproveStatus !== "Approved" ||
+                isUserPermissions.isSuperAdmin) && (
                 <div
                   style={{
                     display: "flex",
@@ -336,11 +422,16 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
-  const [curData, setCurData] = useState<ICurBudgetItem>(Config.curBudgetItem);
+  const [curData, setCurData] = useState<ICurBudgetItem>({
+    ...Config.curBudgetItem,
+  });
   const [isValidation, setIsValidation] = useState<IBudgetValidation>(
     Config.budgetValidation
   );
   const [isDeleteModal, setIsDeleteModal] = useState<boolean>(false);
+  const [isTrigger, setIsTrigger] = useState<boolean>(true);
+  const [isModal, setIsModal] = useState<boolean>(false);
+  const [isSubModal, setIsSubModal] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -444,6 +535,25 @@ const BudgetPlan = (props: any): JSX.Element => {
     },
   };
 
+  const btnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: _isMasterSubmit ? "#fc0362 !important" : "#05da73 !important",
+      height: 33,
+      borderRadius: 5,
+    },
+    label: {
+      fontWeight: 500,
+      color: "#fff",
+      cursor: items.length ? "pointer" : "not-allowed",
+      fontSize: 16,
+    },
+    icon: {
+      fontSize: 16,
+      color: "#fff",
+    },
+  };
+
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error("Error Message");
@@ -455,17 +565,244 @@ const BudgetPlan = (props: any): JSX.Element => {
       let dialogText =
         "You have unsaved changes, are you sure you want to leave?";
       e.returnValue = dialogText;
-      isValidation.isBudgetAllocated = false;
+      isValidation.isBudgetRequired = false;
       isValidation.isDescription = false;
       setIsValidation({ ...isValidation });
       return dialogText;
     }
   };
 
+  const _getGenerateExcel = (): void => {
+    let _arrGenExcel: IOverAllItem[] = [..._arrOfMaster];
+    let _arrExport: IOverAllItem[] = [];
+
+    for (let i: number = 0; _arrGenExcel.length > i; i++) {
+      _arrGenExcel[i].subCategory.pop();
+      _arrExport.push({ ..._arrGenExcel[i] });
+    }
+
+    if (_arrExport.length) {
+      const workbook: any = new Excel.Workbook();
+      const worksheet: any = workbook.addWorksheet("My Sheet");
+      let headerRows: string[] = [];
+
+      worksheet.columns = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Category Type", key: "CategoryType", width: 25 },
+        { header: "Status", key: "Status", width: 25 },
+        { header: "Area", key: "Area", width: 25 },
+        { header: "Category", key: "Category", width: 25 },
+        { header: "Country", key: "Country", width: 25 },
+        { header: "Year", key: "Year", width: 25 },
+        { header: "Type", key: "Type", width: 25 },
+        { header: "Description", key: "Description", width: 25 },
+        { header: "Budget Required", key: "BudgetRequired", width: 25 },
+        { header: "Budget Allocated", key: "BudgetAllocated", width: 25 },
+      ];
+
+      for (let i: number = 0; _arrExport.length > i; i++) {
+        let _curObject: any = {};
+
+        if (_arrExport[i].subCategory.length) {
+          _curObject = {
+            ID: _arrExport[i].ID,
+            CategoryType: _arrExport[i].CategoryType,
+            Status: _arrExport[i].Status,
+            Area: _arrExport[i].Area,
+            Category: _arrExport[i].CategoryAcc,
+            Country: _arrExport[i].CountryAcc,
+            Year: _arrExport[i].YearAcc,
+            Type: _arrExport[i].Type,
+            Description: "-",
+            BudgetRequired: _arrExport[i].TotalProposed,
+            BudgetAllocated: _arrExport[i].OverAllBudgetCost,
+          };
+
+          const row = worksheet.addRow({ ..._curObject });
+
+          for (const [key, val] of Object.entries({ ..._curObject })) {
+            const cell = row.getCell(key);
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "ffc9d1" },
+            };
+          }
+
+          for (let j: number = 0; _arrExport[i].subCategory.length > j; j++) {
+            worksheet.addRow({
+              ID: _arrExport[i].subCategory[j].ID,
+              CategoryType: _arrExport[i].subCategory[j].CategoryType,
+              Status: _arrExport[i].subCategory[j].ApproveStatus,
+              Area: _arrExport[i].subCategory[j].Area,
+              Category: _arrExport[i].subCategory[j].Category,
+              Country: _arrExport[i].subCategory[j].Country,
+              Year: _arrExport[i].subCategory[j].Year,
+              Type: _arrExport[i].subCategory[j].Type,
+              Description: _arrExport[i].subCategory[j].Description,
+              BudgetRequired: _arrExport[i].subCategory[j].BudgetProposed,
+              BudgetAllocated: _arrExport[i].subCategory[j].BudgetAllocated,
+            });
+          }
+        }
+      }
+
+      headerRows = [
+        "A1",
+        "B1",
+        "C1",
+        "D1",
+        "E1",
+        "F1",
+        "G1",
+        "H1",
+        "I1",
+        "J1",
+        "K1",
+      ];
+
+      worksheet.protect("", { formatCells: true });
+
+      const columnsToUnlock = ["K"];
+      columnsToUnlock.forEach((column) => {
+        worksheet
+          .getColumn(column)
+          .eachCell({ includeEmpty: true }, (cell: any) => {
+            cell.protection = { locked: false };
+          });
+      });
+
+      headerRows.map((key: any) => {
+        worksheet.getCell(key).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "88dbdf" },
+          bold: true,
+        };
+      });
+
+      headerRows.map((key: any) => {
+        worksheet.getCell(key).font = {
+          bold: true,
+        };
+      });
+
+      headerRows.map((key: any) => {
+        worksheet.getCell(key).alignment = {
+          vertical: "middle	",
+          horizontal: "center",
+        };
+      });
+
+      workbook.xlsx
+        .writeBuffer()
+        .then((buffer: any) =>
+          FileSaver.saveAs(
+            new Blob([buffer]),
+            `Budget Planning-${moment().format("MM_DD_YYYY")}.xlsx`
+          )
+        )
+        .catch((err: any) => {
+          _getErrorFunction("Error writing excel export");
+        });
+    } else {
+      alertify.error("There are no sub categories");
+    }
+  };
+
+  const _getFileImport = async (e: any) => {
+    let file: any = e;
+    let fileType: string = file.name.split(".");
+
+    if (fileType[1].toLowerCase() == "xlsx") {
+      const workbook: any = new Excel.Workbook();
+      await workbook.xlsx.load(file);
+      const worksheet: any = workbook.worksheets[0];
+      const rows: any = worksheet.getSheetValues();
+      let _removeEmptyDatas: any[] = rows.slice(1);
+
+      listItems = [];
+      listItems = _removeEmptyDatas.map((row: any, i: number) => ({
+        ID: row[1] ? row[1] : "",
+        CategoryType: row[2] ? row[2] : "",
+        Status:
+          i === 0
+            ? row[3]
+              ? row[3]
+              : ""
+            : row[3] !== "Not Started"
+            ? row[3]
+            : "Pending",
+        Area: row[4] ? row[4] : "",
+        Category: row[5] ? row[5] : "",
+        Country: row[6] ? row[6] : "",
+        Year: row[7] ? row[7] : "",
+        Type: row[8] ? row[8] : "",
+        Description: row[9] ? row[9] : "",
+        BudgetRequired: row[10] ? row[10] : 0,
+        BudgetAllocated: row[11] ? row[11] : 0,
+      }));
+
+      document.getElementById("fileUpload")["value"] = "";
+
+      if (
+        worksheet.name.toLowerCase() == "my sheet" &&
+        listItems[0].ID.toLowerCase() == "id" &&
+        listItems[0].CategoryType.toLowerCase() == "category type" &&
+        listItems[0].Status.toLowerCase() == "status" &&
+        listItems[0].Area.toLowerCase() == "area" &&
+        listItems[0].Category.toLowerCase() == "category" &&
+        listItems[0].Country.toLowerCase() == "country" &&
+        listItems[0].Year.toLowerCase() == "year" &&
+        listItems[0].Type.toLowerCase() == "type" &&
+        listItems[0].Description.toLowerCase() == "description" &&
+        listItems[0].BudgetRequired.toLowerCase() == "budget required" &&
+        listItems[0].BudgetAllocated.toLowerCase() == "budget allocated"
+      ) {
+        let _catArray: any[] = [];
+        let _subArray: any[] = [];
+        _masArray = [];
+
+        listItems.shift();
+        [...listItems].forEach((e: any) => {
+          if (e.CategoryType.toLowerCase() === "master category") {
+            _catArray.push({
+              ID: e.ID,
+              Status: e.Status,
+              OverAllBudgetCost: e.BudgetAllocated,
+            });
+          }
+          if (e.CategoryType.toLowerCase() === "sub category") {
+            _subArray.push({
+              ID: e.ID,
+              ApproveStatus: e.Status,
+              BudgetAllocated: e.BudgetAllocated,
+            });
+          }
+        });
+
+        if (
+          [...listItems].length ===
+          [..._catArray].length + [..._subArray].length
+        ) {
+          _masArray = [
+            { ListName: Config.ListNames.CategoryList, _Array: [..._catArray] },
+            { ListName: Config.ListNames.BudgetList, _Array: [..._subArray] },
+          ];
+          setIsModal(true);
+        }
+      } else {
+        alertify.error("Please import correct excel format");
+      }
+    } else {
+      alertify.error("Please import only xlsx file");
+    }
+  };
+
   const _getDefaultFunction = (): void => {
     alertifyMSG = "";
     _isBack = false;
-    isValidation.isBudgetAllocated = false;
+    isValidation.isBudgetRequired = false;
     isValidation.isDescription = false;
     setIsValidation({ ...isValidation });
     setIsLoader(true);
@@ -480,18 +817,37 @@ const BudgetPlan = (props: any): JSX.Element => {
       Select:
         "*, Year/ID, Year/Title, Country/ID, Country/Title, MasterCategory/ID",
       Expand: "Year, Country, MasterCategory",
-      Filter: [
-        {
-          FilterKey: "isDeleted",
-          Operator: "ne",
-          FilterValue: "1",
-        },
-        {
-          FilterKey: "Year/Title",
-          Operator: "eq",
-          FilterValue: year,
-        },
-      ],
+      Filter:
+        filPeriodDrop == _curYear
+          ? [
+              {
+                FilterKey: "isDeleted",
+                Operator: "ne",
+                FilterValue: "1",
+              },
+              {
+                FilterKey: "Year/Title",
+                Operator: "eq",
+                FilterValue: year,
+              },
+            ]
+          : [
+              {
+                FilterKey: "isDeleted",
+                Operator: "ne",
+                FilterValue: "1",
+              },
+              {
+                FilterKey: "Year/Title",
+                Operator: "eq",
+                FilterValue: year,
+              },
+              {
+                FilterKey: "Status",
+                Operator: "eq",
+                FilterValue: "Approved",
+              },
+            ],
       Topcount: 5000,
     })
       .then((resCate: any) => {
@@ -527,6 +883,8 @@ const BudgetPlan = (props: any): JSX.Element => {
               TotalProposed: resCate[i].TotalProposed
                 ? resCate[i].TotalProposed
                 : null,
+              CategoryType: "Master Category",
+              Status: resCate[i].Status ? resCate[i].Status : "",
             });
             i + 1 == resCate.length && _getFilterFunction([..._curCategory]);
           }
@@ -585,20 +943,39 @@ const BudgetPlan = (props: any): JSX.Element => {
       Select:
         "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title",
       Expand: "Category, Year, Country",
-      Filter: [
-        {
-          FilterKey: "isDeleted",
-          FilterValue: "1",
-          Operator: "ne",
-        },
-        {
-          FilterKey: "Year/Title",
-          Operator: "eq",
-          FilterValue: _arrCate[0].YearAcc.Text,
-        },
-      ],
+      Filter:
+        filPeriodDrop == _curYear
+          ? [
+              {
+                FilterKey: "isDeleted",
+                FilterValue: "1",
+                Operator: "ne",
+              },
+              {
+                FilterKey: "Year/Title",
+                Operator: "eq",
+                FilterValue: _arrCate[0].YearAcc.Text,
+              },
+            ]
+          : [
+              {
+                FilterKey: "isDeleted",
+                FilterValue: "1",
+                Operator: "ne",
+              },
+              {
+                FilterKey: "Year/Title",
+                Operator: "eq",
+                FilterValue: _arrCate[0].YearAcc.Text,
+              },
+              {
+                FilterKey: "ApproveStatus",
+                Operator: "eq",
+                FilterValue: "Approved",
+              },
+            ],
       Topcount: 5000,
-      Orderbydecorasc: false,
+      Orderbydecorasc: true,
     })
       .then((resBudget: any) => {
         let _curItem: ICurBudgetItem[] = [];
@@ -618,11 +995,11 @@ const BudgetPlan = (props: any): JSX.Element => {
               YearId: resBudget[i].YearId ? resBudget[i].Year.ID : null,
               BudgetAllocated: resBudget[i].BudgetAllocated
                 ? resBudget[i].BudgetAllocated
-                : null,
+                : 0,
               BudgetProposed: resBudget[i].BudgetProposed
                 ? resBudget[i].BudgetProposed
-                : null,
-              Used: resBudget[i].Used ? resBudget[i].Used : null,
+                : 0,
+              Used: resBudget[i].Used ? resBudget[i].Used : 0,
               ApproveStatus: resBudget[i].ApproveStatus
                 ? resBudget[i].ApproveStatus
                 : "",
@@ -632,10 +1009,12 @@ const BudgetPlan = (props: any): JSX.Element => {
               Comments: resBudget[i].Comments ? resBudget[i].Comments : "",
               RemainingCost: resBudget[i].RemainingCost
                 ? resBudget[i].RemainingCost
-                : null,
+                : 0,
               isDeleted: resBudget[i].isDeleted,
               isEdit: false,
               isDummy: false,
+              isApproved: false,
+              CategoryType: "Sub Category",
             });
             i + 1 == resBudget.length &&
               _arrMasterCategoryData([..._arrCate], [..._curItem]);
@@ -654,6 +1033,10 @@ const BudgetPlan = (props: any): JSX.Element => {
     _arrBudget: ICurBudgetItem[]
   ): void => {
     let _arrMasterCategory: IOverAllItem[] = [];
+    _isMasApprove = [..._arrBudget].some(
+      (e: ICurBudgetItem) => e.ApproveStatus === "Approved"
+    );
+
     if (_arrCate.length) {
       for (let i: number = 0; _arrCate.length > i; i++) {
         _arrMasterCategory.push({
@@ -667,6 +1050,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           countryID: _arrCate[i].CountryAcc.ID,
           OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
           TotalProposed: _arrCate[i].TotalProposed,
+          CategoryType: _arrCate[i].CategoryType,
+          Status: _arrCate[i].Status,
           subCategory: [],
         });
         i + 1 == _arrCate.length &&
@@ -684,8 +1069,8 @@ const BudgetPlan = (props: any): JSX.Element => {
     _arrCateDatas: IOverAllItem[],
     _arrBudget: ICurBudgetItem[]
   ): void => {
-    let _arrOfMaster: IOverAllItem[] = [];
     let _curEmptyItem: ICurBudgetItem;
+    _arrOfMaster = [];
 
     for (let i: number = 0; _arrCateDatas.length > i; i++) {
       let isDatas: boolean = true;
@@ -707,15 +1092,22 @@ const BudgetPlan = (props: any): JSX.Element => {
             _arrCateDatas[i].YearAcc == _curYear &&
             _getPrepareArrangedDatas(_arrCateDatas[i]);
           _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+          [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
+            return (e.isApproved = _isMasApprove);
+          });
           _arrOfMaster.push(_arrCateDatas[i]);
         }
       }
       if (isDatas && _arrCateDatas[i].YearAcc == _curYear) {
         _curEmptyItem = _getPrepareArrangedDatas({ ..._arrCateDatas[i] });
         _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+        [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
+          return (e.isApproved = _isMasApprove);
+        });
         _arrOfMaster.push(_arrCateDatas[i]);
       }
-      i + 1 == _arrCateDatas.length && groups([..._arrOfMaster]);
+      i + 1 == _arrCateDatas.length &&
+        _getMasterRecordsDetails([..._arrOfMaster]);
     }
   };
 
@@ -733,18 +1125,44 @@ const BudgetPlan = (props: any): JSX.Element => {
       CounId: _arrCateDatas.countryID,
       YearId: _arrCateDatas.yearID,
       Area: _arrCateDatas.Area,
-      BudgetAllocated: null,
-      BudgetProposed: null,
-      Used: null,
-      RemainingCost: null,
-      ApproveStatus: "",
+      BudgetAllocated: 0,
+      BudgetProposed: 0,
+      Used: 0,
+      RemainingCost: 0,
+      ApproveStatus: "Not Started",
       Description: "",
       Comments: "",
       isDeleted: false,
       isEdit: false,
       isDummy: true,
+      isApproved: false,
     };
     return _curSampleData;
+  };
+
+  const _getMasterRecordsDetails = (data: IOverAllItem[]): void => {
+    let _isValue: boolean = false;
+    let _arrMas: IOverAllItem[] = [...data];
+    let _curObj: ICurBudgetItem;
+
+    _master: for (let i: number = 0; _arrMas.length > i; i++) {
+      _curObj = _arrMas[i].subCategory.pop();
+
+      _isValue = _arrMas[i].subCategory.some(
+        (e: ICurBudgetItem) => e.ApproveStatus !== "Approved"
+      );
+
+      _arrMas[i].subCategory.push({ ..._curObj });
+
+      if (_isValue) {
+        _isMasterSubmit = _isValue;
+        break _master;
+      } else {
+        _isMasterSubmit = _isValue;
+      }
+    }
+
+    groups([...data]);
   };
 
   const groups = (_filRecord: IOverAllItem[]): void => {
@@ -869,11 +1287,12 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.CounId = _curItem.CounId;
     curData.YearId = _curItem.YearId;
     curData.BudgetAllocated = _curItem.BudgetAllocated;
-    curData.BudgetProposed = _curItem.BudgetAllocated;
+    curData.BudgetProposed = _curItem.BudgetProposed;
     curData.Used = _curItem.Used;
     curData.RemainingCost = _curItem.RemainingCost;
     curData.isDeleted = false;
     curData.isEdit = false;
+    curData.isApproved = _curItem.isApproved;
     setCurData({ ...curData });
 
     if (type == "Deleted") {
@@ -898,7 +1317,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getCancelItems = (): void => {
-    isValidation.isBudgetAllocated = false;
+    isValidation.isBudgetRequired = false;
     isValidation.isDescription = false;
     setIsValidation({ ...isValidation });
     setCurData({ ...Config.curBudgetItem });
@@ -914,7 +1333,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     if (curData.ID) {
       _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
-      data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
+      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
@@ -924,8 +1343,13 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.CountryId] = curData.CounId;
       data[columns.YearId] = curData.YearId;
       data[columns.Description] = curData.Description;
+      data[columns.ApproveStatus] = curData.isApproved
+        ? curData.ApproveStatus === "Approved"
+          ? curData.ApproveStatus
+          : "Pending"
+        : "Not Started";
       data[columns.CategoryType] = curData.Type;
-      data[columns.BudgetProposed] = Number(curData.BudgetAllocated);
+      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
@@ -948,11 +1372,11 @@ const BudgetPlan = (props: any): JSX.Element => {
     if (!curData.Description.trim() || _isDuplicate) {
       _isValid = false;
       isValidation.isDescription = _isDuplicate ? _isDuplicate : true;
-      isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
+      isValidation.isBudgetRequired = curData.BudgetAllocated ? false : true;
     }
-    if (!curData.BudgetAllocated || _isDuplicate) {
+    if (!curData.BudgetProposed || _isDuplicate) {
       _isValid = false;
-      isValidation.isBudgetAllocated = curData.BudgetAllocated ? false : true;
+      isValidation.isBudgetRequired = curData.BudgetProposed ? false : true;
       isValidation.isDescription = _isDuplicate
         ? _isDuplicate
         : curData.Description.trim()
@@ -960,15 +1384,15 @@ const BudgetPlan = (props: any): JSX.Element => {
         : true;
     }
 
-    if (!curData.Description.trim() && !curData.BudgetAllocated) {
-      alertify.error("Please enter description and budget allocated");
+    if (!curData.Description.trim() && !curData.BudgetProposed) {
+      alertify.error("Please enter description and budget propsed");
     } else if (
       (!curData.Description.trim() || _isDuplicate) &&
-      !curData.BudgetAllocated
+      !curData.BudgetProposed
     ) {
-      _isDuplicate && !curData.BudgetAllocated
+      _isDuplicate && !curData.BudgetProposed
         ? alertify.error(
-            "Already description exists and Please enter budget allocated"
+            "Already description exists and Please enter budget propsed"
           )
         : !curData.Description.trim()
         ? alertify.error("Please enter description")
@@ -980,8 +1404,8 @@ const BudgetPlan = (props: any): JSX.Element => {
       !curData.Description.trim()
         ? alertify.error("Please enter description")
         : alertify.error("Already description exists");
-    } else if (!curData.BudgetAllocated) {
-      alertify.error("Please enter budget allocated");
+    } else if (!curData.BudgetProposed) {
+      alertify.error("Please enter budget propsed");
     } else if (!curData.Description.trim()) {
       alertify.error("Please enter description");
     }
@@ -992,7 +1416,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       type != "Updated"
         ? _getAddData({ ...data })
         : _getEditData({ ...data }, type);
-      isValidation.isBudgetAllocated = false;
+      isValidation.isBudgetRequired = false;
       isValidation.isDescription = false;
       setIsValidation({ ...isValidation });
     } else {
@@ -1021,12 +1445,13 @@ const BudgetPlan = (props: any): JSX.Element => {
           ) {
             _TotalAmount +=
               _Items[i].ID == curData.ID
-                ? Number(curData.BudgetAllocated)
-                : _Items[i].BudgetAllocated
-                ? Number(_Items[i].BudgetAllocated)
+                ? Number(curData.BudgetProposed)
+                : _Items[i].BudgetProposed
+                ? Number(_Items[i].BudgetProposed)
                 : 0;
           }
           if (_Items[i].ID) {
+            _Items[i].CategoryType = "Sub Category";
             _arrNewBudget.push(_Items[i]);
           }
           i + 1 == _Items.length &&
@@ -1064,9 +1489,9 @@ const BudgetPlan = (props: any): JSX.Element => {
               isDeleted = true;
               _TotalAmount +=
                 _Items[i].ID == curData.ID
-                  ? Number(curData.BudgetAllocated)
-                  : _Items[i].BudgetAllocated
-                  ? Number(_Items[i].BudgetAllocated)
+                  ? Number(curData.BudgetProposed)
+                  : _Items[i].BudgetProposed
+                  ? Number(_Items[i].BudgetProposed)
                   : 0;
             } else {
               isDeleted = false;
@@ -1140,7 +1565,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         if (
           confirm("You have unsaved changes, are you sure you want to leave?")
         ) {
-          isValidation.isBudgetAllocated = false;
+          isValidation.isBudgetRequired = false;
           isValidation.isDescription = false;
           setIsValidation({ ...isValidation });
           _isBack = false;
@@ -1149,7 +1574,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       } else if (
         confirm("You have unsaved changes, are you sure you want to leave?")
       ) {
-        isValidation.isBudgetAllocated = false;
+        isValidation.isBudgetRequired = false;
         isValidation.isDescription = false;
         setIsValidation({ ...isValidation });
         _getEditItem(_item, "Add");
@@ -1159,10 +1584,66 @@ const BudgetPlan = (props: any): JSX.Element => {
     }
   };
 
+  const _getPrepareJSON = (): void => {
+    let _preArray: IOverAllItem[] = [..._arrOfMaster];
+    let _curArray: any[] = [];
+    let _curCateArray: any[] = [];
+    let _curSubArray: any[] = [];
+
+    for (let i: number = 0; _preArray.length > i; i++) {
+      let _curNewArray: ICurBudgetItem[] = [];
+      _curNewArray = _preArray[i].subCategory.filter(
+        (e: ICurBudgetItem) => e.ID !== null
+      );
+
+      if (_curNewArray.length) {
+        _curCateArray.push({
+          ID: _preArray[i].ID,
+          Status: "Approved",
+        });
+
+        for (let j: number = 0; _curNewArray.length > j; j++) {
+          _curSubArray.push({
+            ID: _curNewArray[j].ID,
+            ApproveStatus: "Approved",
+          });
+        }
+      }
+    }
+
+    if (_curCateArray.length && _curSubArray.length) {
+      _curArray = [
+        { ListName: Config.ListNames.CategoryList, _Array: [..._curCateArray] },
+        { ListName: Config.ListNames.BudgetList, _Array: [..._curSubArray] },
+      ];
+
+      _getUpdateBulkDatas([..._curArray]);
+    }
+  };
+
+  const _getUpdateBulkDatas = async (data: any[]) => {
+    setIsModal(false);
+    setIsSubModal(false);
+    setIsLoader(true);
+
+    for (let i: number = 0; data.length > i; i++) {
+      await SPServices.batchUpdate({
+        ListName: data[i].ListName,
+        responseData: data[i]._Array,
+      })
+        .then((res: any) => {
+          data.length === i + 1 && setIsTrigger(!isTrigger);
+        })
+        .catch((err: any) => {
+          _getErrorFunction(err);
+        });
+    }
+  };
+
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
-  }, [filCountryDrop, filPeriodDrop, filTypeDrop, filAreaDrop]);
+  }, [isTrigger]);
 
   return isLoader ? (
     <Loader />
@@ -1176,7 +1657,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         {/* Left side section */}
         <div className={styles.filters}>
           {/* Country section */}
-          <div style={{ width: "16%" }}>
+          <div style={{ width: "24%" }}>
             <Label>Country</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -1191,12 +1672,13 @@ const BudgetPlan = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilCountryDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
 
           {/* Area section */}
-          <div style={{ width: "16%" }}>
+          <div style={{ width: "24%" }}>
             <Label>Area</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -1209,12 +1691,13 @@ const BudgetPlan = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilAreaDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
 
           {/* Period section */}
-          <div style={{ width: "8%" }}>
+          <div style={{ width: "12%" }}>
             <Label>Period</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -1227,12 +1710,13 @@ const BudgetPlan = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = (text.text as string) == _curYear ? true : false;
                 setFilPeriodDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
 
           {/* Type section */}
-          <div style={{ width: "8%" }}>
+          <div style={{ width: "12%" }}>
             <Label>Type</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -1245,6 +1729,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilTypeDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -1261,10 +1746,47 @@ const BudgetPlan = (props: any): JSX.Element => {
               setFilCountryDrop("All");
               setFilTypeDrop("All");
               setFilAreaDrop("All");
+              setIsTrigger(!isTrigger);
             }}
           >
             <Icon iconName="Refresh" style={{ color: "#ffff" }} />
           </div>
+        </div>
+
+        {/* btn sections */}
+        <div className={styles.rightBtns}>
+          {/* import btn section */}
+          <input
+            id="fileUpload"
+            type="file"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              _getFileImport(e.target.files[0]);
+            }}
+          />
+          <label htmlFor="fileUpload" className={styles.uploadBtn}>
+            Import
+          </label>
+
+          {/* export btn section */}
+          <button
+            className={styles.exportBtns}
+            style={{
+              cursor: items.length ? "pointer" : "not-allowed",
+            }}
+            onClick={() => items.length && _getGenerateExcel()}
+          >
+            Export
+          </button>
+
+          {/* New btn section */}
+          <DefaultButton
+            text="Submit"
+            styles={btnStyle}
+            onClick={() => {
+              items.length && setIsSubModal(true);
+            }}
+          />
         </div>
       </div>
 
@@ -1346,6 +1868,140 @@ const BudgetPlan = (props: any): JSX.Element => {
                   Config.BudgetListColumns;
                 data[_deletedColumn.isDeleted] = true;
                 _getEditData({ ...data }, "Deleted");
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* modal section*/}
+      <Modal isOpen={isModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "Import" }}
+            />
+          </div>
+          <Label
+            style={{
+              color: "red",
+              fontSize: 16,
+            }}
+          >
+            Do you want to import the exel file?
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                _getUpdateBulkDatas([..._masArray]);
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* modal section of over all submit */}
+      <Modal isOpen={isSubModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "CheckMark" }}
+            />
+          </div>
+          <Label
+            style={{
+              color: "#202945",
+              fontSize: 16,
+              lineHeight: 1.3,
+              marginTop: 20,
+            }}
+          >
+            Are your sure want to submit.
+            <br />
+            You can't change the data after submit.
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsSubModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                color: "#FFF",
+                background: "#2580e0",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                _getPrepareJSON();
               }}
             >
               Yes

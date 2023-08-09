@@ -135,6 +135,8 @@ export interface ICurCategoryItem {
   ID: number;
   OverAllBudgetCost: number;
   TotalProposed: number;
+  Status?: string;
+  CategoryType?: string;
   OverAllPOIssuedCost?: number;
   OverAllRemainingCost?: number;
   isAdmin?: boolean;
@@ -162,8 +164,10 @@ export interface ICurBudgetItem {
   isDeleted: Boolean;
   isEdit: Boolean;
   isDummy: Boolean;
+  CategoryType?: string;
   isAdmin?: boolean;
   isManager?: boolean;
+  isApproved?: boolean;
 }
 
 /* Interface of over all items */
@@ -178,6 +182,8 @@ export interface IOverAllItem {
   countryID: number;
   OverAllBudgetCost: number;
   TotalProposed: number;
+  Status?: string;
+  CategoryType?: string;
   isAdmin?: boolean;
   isManager?: boolean;
   subCategory: ICurBudgetItem[];
@@ -186,7 +192,7 @@ export interface IOverAllItem {
 /* Interface of Budget planning validation items */
 export interface IBudgetValidation {
   isDescription: boolean;
-  isBudgetAllocated: boolean;
+  isBudgetRequired: boolean;
 }
 
 /* Interface of Pagination items */
@@ -252,7 +258,7 @@ export interface IVendorItems {
   Attachment: any[];
   Procurement: any[];
   BudgetId: number;
-  Pricing: Number;
+  Pricing: number | string;
   isDummy: boolean;
   isEdit: boolean;
   isClick: boolean;
@@ -276,6 +282,7 @@ export interface IGroupUsers {
   isEnterpricesManager: boolean;
   isSpecialAdmin: boolean;
   isSpecialManager: boolean;
+  isSuperAdminView: boolean;
 }
 
 export interface IGroupNames {
@@ -286,6 +293,8 @@ export interface IGroupNames {
   EnterpricesManager: string;
   SpecialAdmin: string;
   SpecialManager: string;
+  SuperAdminView: string;
+  Director: string;
 }
 
 // Interface for area names
@@ -371,9 +380,18 @@ export interface IOverAllTrackItem {
 
 // Interface of selected Items
 export interface ITrackSelectedItem {
+  ID: Number;
   StartDate: Date;
   ToDate: Date;
   Po: string;
+  PoCurrency: string;
+  InvoiceNo: string;
+}
+
+export interface ITrackUpdateItem {
+  StartingDate: Date | string;
+  ToDate: Date | string;
+  PO: string;
   PoCurrency: string;
   InvoiceNo: string;
 }
