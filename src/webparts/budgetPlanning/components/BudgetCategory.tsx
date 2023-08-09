@@ -60,6 +60,7 @@ let _areasDrop: IDrop[] = [];
 let isUserPermissions: IGroupUsers;
 let _strSearch: string = "";
 let _strArea: string = "";
+let categoryName: string = "";
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
@@ -222,6 +223,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       },
     },
   };
+
   const filterdropDownStyle: Partial<IDropdownStyles> = {
     root: {
       // width: "100%",
@@ -306,7 +308,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
-    alertify.error("Error Message");
+    alertify.error(errMsg);
     setIsLoader(false);
   };
 
@@ -381,7 +383,6 @@ const BudgetCategory = (props: any): JSX.Element => {
         )
       )
       .catch((err: any) => {
-        console.log("Error writing excel export", err);
         _getErrorFunction("Error writing excel export");
       });
   };
@@ -507,7 +508,7 @@ const BudgetCategory = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction("Get category data");
       });
   };
 
@@ -615,7 +616,7 @@ const BudgetCategory = (props: any): JSX.Element => {
             setIsLoader(false);
             addBackupData();
           })
-          .catch((err) => _getErrorFunction(err));
+          .catch((err) => _getErrorFunction("Add category data"));
       } else {
         setImportExcelDataView({
           addExcelData: [
@@ -704,7 +705,8 @@ const BudgetCategory = (props: any): JSX.Element => {
             AreaValidate: true,
           };
           DuplicateData.push(DuplicateFlagChange);
-          alertify.error("Already category exists");
+          categoryName = dData.Title.trim();
+          alertify.error(`The category "${categoryName}" already exists`);
         } else {
           let EmptyData = {
             ...dData,
@@ -734,8 +736,9 @@ const BudgetCategory = (props: any): JSX.Element => {
           CatgryValidate: true,
           AreaValidate: true,
         };
+        categoryName = item.Title.trim();
         newAddData.push(DuplicateDataFlagChange);
-        alertify.error("Already category exists");
+        alertify.error(`The category "${categoryName}" already exists`);
       }
     });
 
@@ -778,8 +781,8 @@ const BudgetCategory = (props: any): JSX.Element => {
       ListName: Config.ListNames.MasterCategoryBackupList,
       responseData: backupData,
     })
-      .then((data) => console.log("backup data added succefully"))
-      .catch((error) => _getErrorFunction("backup data set"));
+      .then((data) => console.log("Backup data added succefully"))
+      .catch((error) => _getErrorFunction("Backup data set"));
   };
 
   /* Life cycle of onload */

@@ -57,6 +57,14 @@ const App = (props: any): JSX.Element => {
       user: "isSpecialManager",
       groupName: Config.GroupNames.SpecialManager,
     },
+    {
+      user: "isSuperAdminView",
+      groupName: Config.GroupNames.SuperAdminView,
+    },
+    {
+      user: "Director",
+      groupName: Config.GroupNames.Director,
+    },
   ];
 
   /* State creation */
@@ -67,6 +75,7 @@ const App = (props: any): JSX.Element => {
   });
   const [isOtherUser, setIsOtherUser] = useState<boolean>(false);
   const [adminUsers, setAdminUsers] = useState<IUserDetail[]>([]);
+  const [directors,setDirectors] = useState<IUserDetail[]>([])
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -76,6 +85,7 @@ const App = (props: any): JSX.Element => {
   const getUsers = async () => {
     let allUsers: any = { ...groupUsers };
     let _userDetail: IUserDetail[] = [];
+    let _DirArray: IUserDetail[] = [];
 
     for (let i = 0; i < _allUsers.length; i++) {
       await sp.web.siteGroups
@@ -106,10 +116,22 @@ const App = (props: any): JSX.Element => {
                 });
               }
             }
+
+            if (_allUsers[i].user === "Director") {
+              for (let i: number = 0; result.length > i; i++) {
+                _DirArray.push({
+                  ID: result[i]["Id"],
+                  imageUrl: `/_layouts/15/userphoto.aspx?size=S&accountname=${result[i]["Email"]}`,
+                  text: result[i]["Title"],
+                  secondaryText: result[i]["Email"],
+                });
+              }
+            }
           }
 
           if (_allUsers.length == i + 1) {
-            setAdminUsers([..._userDetail]);
+            setDirectors(_DirArray)
+            setAdminUsers(_userDetail);
             getOtherUser(allUsers);
           }
         })
@@ -367,6 +389,7 @@ const App = (props: any): JSX.Element => {
               <BudgetTrackingList
                 dropValue={dropValue}
                 groupUsers={groupUsers}
+                directors={directors}
               />
             )}
           </div>

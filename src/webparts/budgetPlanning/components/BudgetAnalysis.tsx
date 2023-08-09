@@ -112,65 +112,65 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             />
           );
         } else {
-          return item.Total;
+          return SPServices.format(item.Total);
         }
       },
     },
-    {
-      key: "column6",
-      name: "Action",
-      fieldName: "action",
-      minWidth: 100,
-      maxWidth: 300,
-      onRender: (item: ICurBudgetAnalysis, index: number) => {
-        if (!item.isEdit) {
-          return (
-            <Icon
-              iconName="Edit"
-              style={{
-                color: "blue",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                handelEdit(index, "Edit", item);
-              }}
-            />
-          );
-        } else {
-          return (
-            <div>
-              <Icon
-                iconName="CheckMark"
-                style={{
-                  color: "green",
-                  fontSize: "20px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  handleEditUpdate(item, index);
-                }}
-              />
-              <Icon
-                iconName="Cancel"
-                style={{
-                  color: "red",
-                  fontSize: "20px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  handelEdit(index, "Close", item);
-                }}
-              />
-            </div>
-          );
-        }
-      },
-    },
+    // {
+    //   key: "column6",
+    //   name: "Action",
+    //   fieldName: "action",
+    //   minWidth: 100,
+    //   maxWidth: 300,
+    //   onRender: (item: ICurBudgetAnalysis, index: number) => {
+    //     if (!item.isEdit) {
+    //       return (
+    //         <Icon
+    //           iconName="Edit"
+    //           style={{
+    //             color: "blue",
+    //             fontSize: "16px",
+    //             cursor: "pointer",
+    //           }}
+    //           onClick={() => {
+    //             handelEdit(index, "Edit", item);
+    //           }}
+    //         />
+    //       );
+    //     } else {
+    //       return (
+    //         <div>
+    //           <Icon
+    //             iconName="CheckMark"
+    //             style={{
+    //               color: "green",
+    //               fontSize: "20px",
+    //               cursor: "pointer",
+    //             }}
+    //             onClick={() => {
+    //               handleEditUpdate(item, index);
+    //             }}
+    //           />
+    //           <Icon
+    //             iconName="Cancel"
+    //             style={{
+    //               color: "red",
+    //               fontSize: "20px",
+    //               cursor: "pointer",
+    //             }}
+    //             onClick={() => {
+    //               handelEdit(index, "Close", item);
+    //             }}
+    //           />
+    //         </div>
+    //       );
+    //     }
+    //   },
+    // },
   ];
 
-  const cols = [...budjetColums];
-  cols.pop();
+  // const cols = [...budjetColums];
+  // cols.pop();
 
   // state creaction
   const [isLoader, setIsLoader] = useState<boolean>(true);
@@ -340,12 +340,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
     })
       .then((data: any) => {
         let items: ICurBudgetAnalysis[] = [];
-        console.log("data", data);
-
         data.length &&
           data.forEach((value: any) => {
-            console.log("check", value.OverAllBudgetCost ? true : false);
-
             items.push({
               Category: value.Title ? value.Title : "",
               Country: value.Country.Title ? value.Country.Title : "",
@@ -363,20 +359,17 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             });
           });
 
-        console.log("items", items);
-
         let newItems = _filterArray(
           props.groupUsers,
           items,
           Config.Navigation.BudgetAnalysis
         );
-        console.log("newItems", newItems);
 
         setMasterData(newItems);
         setBudgetItems(newItems);
         getDropdownValues(newItems);
       })
-      .catch((error: any) => _getErrorFunction("get budgjet data"));
+      .catch((error: any) => _getErrorFunction("Get budgjet data"));
   };
 
   const getDropdownValues = (items: ICurBudgetAnalysis[]): void => {
@@ -491,8 +484,8 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         ID: edit.id,
         RequestJSON: json,
       })
-        .then((data) => console.log("data added succesfully"))
-        .catch((error) => console.log("err"));
+        .then((data) => console.log("data updated succesfully"))
+        .catch((error) => _getErrorFunction("Budget update"));
     }
   };
 
@@ -593,7 +586,6 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         )
       )
       .catch((err: any) => {
-        console.log("Error writing excel export", err);
         _getErrorFunction("Error writing excel export");
       });
   };
@@ -642,7 +634,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
         getAllData(filPeriodDrop);
       })
       .catch((err: any) => {
-        _getErrorFunction("Error message");
+        _getErrorFunction("Get update import datas");
       });
   };
 
@@ -798,7 +790,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             </div>
 
             {/* import btn section */}
-            <div className={styles.importExport}>
+            <div className={styles.importExport} style={{display:'none'}}>
               {_isCurYear && (
                 <div className={styles.import}>
                   <input
@@ -896,7 +888,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
 
           {/* Details List section */}
           <DetailsList
-            columns={_isCurYear ? budjetColums : cols}
+            columns={budjetColums}
             items={viewBudgetItems}
             styles={_DetailsListStyle}
             setKey="set"

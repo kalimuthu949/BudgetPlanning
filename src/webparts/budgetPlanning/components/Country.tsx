@@ -26,6 +26,7 @@ import SPServices from "../../../CommonServices/SPServices";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import commonServices from "../../../CommonServices/CommonServices";
 import Pagination from "office-ui-fabric-react-pagination";
+import { dark } from "@material-ui/core/styles/createPalette";
 
 interface ICountryList {
   Country: string;
@@ -38,6 +39,8 @@ interface IPagination {
 }
 
 const addIcon: IIconProps = { iconName: "Add" };
+let isCheckDuplicate: boolean = false;
+let countryName = "";
 
 const Country = (props: any): JSX.Element => {
   /* Variable creation */
@@ -56,6 +59,7 @@ const Country = (props: any): JSX.Element => {
               styles={isValid ? errtxtFieldStyle : textFieldStyle}
               placeholder="Enter Here"
               onChange={(e: any) => {
+                isCheckDuplicate = true;
                 editCountry.Country = e.target.value.trimStart();
                 setEditCountry({ ...editCountry });
               }}
@@ -71,7 +75,7 @@ const Country = (props: any): JSX.Element => {
       name: "Action",
       minWidth: 200,
       maxWidth: 500,
-      onRender: (item: any) => {
+      onRender: (item: any, index: number) => {
         return item.isEdit ? (
           <div
             style={{
@@ -87,7 +91,7 @@ const Country = (props: any): JSX.Element => {
                 cursor: "pointer",
               }}
               onClick={() => {
-                _getValidation();
+                _getValidation(index);
               }}
             />
             <Icon
@@ -296,8 +300,8 @@ const Country = (props: any): JSX.Element => {
   };
 
   /* function creation */
-  const _getErrorFunction = (errMsg: any): void => {
-    alertify.error("Error Message");
+  const _getErrorFunction = (errMsg: string): void => {
+    alertify.error(errMsg);
     setIsLoader(false);
   };
 
@@ -324,7 +328,7 @@ const Country = (props: any): JSX.Element => {
           setMaster([...countryListData]);
         }
       })
-      .catch((err) => _getErrorFunction(err));
+      .catch((err) => _getErrorFunction("get country data"));
   };
 
   const countryValidation = (arr: ICountryList[]): ICountryList[] => {
@@ -334,7 +338,7 @@ const Country = (props: any): JSX.Element => {
     arr.forEach((dData) => {
       if (
         dData.Country.trim() != "" &&
-        MData.filter((mdata) => {
+        [...MData].filter((mdata) => {
           return (
             mdata.Country.trim().toLowerCase() ==
             dData.Country.trim().toLowerCase()
@@ -348,12 +352,13 @@ const Country = (props: any): JSX.Element => {
         DuplicateData.push(OriginalFlagChange);
       } else {
         if (dData.Country.trim() != "") {
+          countryName = dData.Country;
           let DuplicateFlagChange = {
             ...dData,
             Validate: true,
           };
           DuplicateData.push(DuplicateFlagChange);
-          alertify.error("Already Country exists");
+          alertify.error(`The  Country "${countryName}" was already exists`);
         } else {
           let EmptyData = {
             ...dData,
@@ -380,8 +385,9 @@ const Country = (props: any): JSX.Element => {
           ...item,
           Validate: true,
         };
+        countryName = item.Country;
         newAddData.push(DuplicateDataFlagChange);
-        alertify.error("Already Country exists");
+        alertify.error(`The  Country "${countryName}" was already exists`);
       }
     });
 
@@ -418,7 +424,7 @@ const Country = (props: any): JSX.Element => {
             setCountryPopup(false);
             setIsLoader(false);
           })
-          .catch((err) => _getErrorFunction(err));
+          .catch((err) => _getErrorFunction("Add country data"));
       } else {
         setNewCountry([{ Country: "", Validate: false }]);
         setIsLoader(false);
@@ -484,6 +490,7 @@ const Country = (props: any): JSX.Element => {
         }
       }
     } else {
+      isCheckDuplicate = false;
       for (let i: number = 0; MData.length > i; i++) {
         MData[i].isEdit = false;
         _preArray.push({ ...MData[i] });
@@ -497,18 +504,27 @@ const Country = (props: any): JSX.Element => {
     }
   };
 
-  const _getValidation = (): void => {
+  const _getValidation = (index: number): void => {
     let _masCountry: any[] = [...MData];
     let _isValid: boolean = false;
 
     if (!editCountry.Country) {
       _isValid = true;
       setIsValid(_isValid);
+      alertify.error("Please Enter The Country");
     } else {
-      _isValid = _masCountry.some(
-        (e: any) =>
-          e.Country.toLowerCase() === editCountry.Country.toLowerCase()
-      );
+      if (isCheckDuplicate) {
+        // _masCountry = [..._masCountry].filter((value:any)=>value.Country.toLowerCase() !== editCountry.Country.toLowerCase())
+        _isValid = _masCountry.some(
+          (e: any, indx) =>
+            e.Country.toLowerCase() === editCountry.Country.toLowerCase() &&
+            index !== indx
+        );
+        countryName = editCountry.Country;
+        _isValid &&
+          alertify.error(`The Country "${countryName}" already exists`);
+      }
+      isCheckDuplicate = true;
       setIsValid(_isValid);
     }
 
@@ -536,11 +552,15 @@ const Country = (props: any): JSX.Element => {
           setMaster([..._masArray]);
           setIsValid(false);
           setIsLoader(false);
-          alertify.success("The country name was updated successfully");
+          countryName = editCountry.Country;
+          alertify.success(
+            `The country ${countryName} was updated successfully`
+          );
+          isCheckDuplicate = false;
         }
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction("Update country data");
       });
   };
 

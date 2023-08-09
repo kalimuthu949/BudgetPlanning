@@ -158,12 +158,13 @@ export namespace Config {
     isDummy: false,
     isAdmin: false,
     isManager: false,
+    isApproved: false,
   };
 
   /* Global of Budget valiation items names */
   export const budgetValidation: IBudgetValidation = {
     isDescription: false,
-    isBudgetAllocated: false,
+    isBudgetRequired: false,
   };
 
   export const GroupUsers: IGroupUsers = {
@@ -174,6 +175,7 @@ export namespace Config {
     isEnterpricesManager: false,
     isSpecialAdmin: false,
     isSpecialManager: false,
+    isSuperAdminView:false,
   };
 
   export const GroupNames: IGroupNames = {
@@ -184,6 +186,8 @@ export namespace Config {
     EnterpricesManager: "Enterprices Manager",
     SpecialAdmin: "Special Admin",
     SpecialManager: "Special Manager",
+    SuperAdminView: "Super Admin View",
+    Director: "Director"
   };
 
   export const AreaName: IAreaName = {
@@ -209,8 +213,6 @@ export namespace Config {
 
   export const Vendor: IVendorItems = {
     ID: null,
-    // VendorId: null,
-    // Vendor: "All",
     Vendor: "",
     Description: "",
     Pricing: 0,
@@ -243,6 +245,7 @@ export namespace Config {
   };
 
   export const TrackSelectedItem: ITrackSelectedItem = {
+    ID: null,
     StartDate: null,
     ToDate: null,
     Po: "",
