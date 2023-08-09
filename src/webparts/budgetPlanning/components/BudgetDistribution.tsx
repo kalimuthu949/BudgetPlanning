@@ -22,6 +22,7 @@ import {
   IOverAllItem,
   IGroupUsers,
   IVendorProp,
+  IUserDetail,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { Config } from "../../../globals/Config";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
@@ -108,7 +109,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>;
+        return <div style={{ color: "#E39C5A" }}>{SPServices.format(item.BudgetAllocated)}</div>;
       },
     },
     {
@@ -263,6 +264,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       },
     },
   };
+  
   const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
     root: {
       width: "66%",
@@ -281,7 +283,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
     setIsLoader(false);
-    alertify.error("Error Message");
+    alertify.error(errMsg);
   };
 
   const _getDefaultFunction = (): void => {
@@ -354,7 +356,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction('Get category datas');
       });
   };
 
@@ -466,7 +468,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction('Get budget datas');
       });
   };
 
@@ -623,7 +625,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               " ( " +
               ur.Type +
               " ) ~ " +
-              _totalAmount
+              SPServices.format(Number(_totalAmount))
             }`
           : ur.Category,
         startIndex: ur.indexValue,
@@ -649,7 +651,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         setUserDatas([]);
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction('Add admin datas');
       });
   };
 
@@ -674,7 +676,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   return isLoader ? (
     <Loader />
-  ) : false ? (
+  ) : vendorDetails.isVendor ? (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
       <Label className={styles.HeaderLable}>Budget Distribution</Label>
@@ -793,7 +795,17 @@ const BudgetDistribution = (props: any): JSX.Element => {
               selectedItems={userDatas}
               onChange={(selectedUser: any): void => {
                 if (selectedUser.length) {
-                  setUserDatas([...selectedUser]);
+                  let slctedUsers = [];
+                  selectedUser.forEach((value: IUserDetail) => {
+                    let authendication: boolean = [...slctedUsers].some(
+                      (val: IUserDetail) =>
+                        val.secondaryText === value.secondaryText
+                    );
+                    if (!authendication) {
+                      slctedUsers.push(value);
+                    }
+                  });
+                  setUserDatas([...slctedUsers]);
                 } else {
                   setUserDatas([]);
                 }

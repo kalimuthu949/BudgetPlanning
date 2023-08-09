@@ -17,6 +17,8 @@ import {
   DetailsList,
   IDetailsListStyles,
   IColumn,
+  IPeoplePickerItemSelectedStyles,
+  NormalPeoplePicker,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -28,6 +30,8 @@ import {
   IBudTrackDistribution,
   IOverAllTrackItem,
   ITrackSelectedItem,
+  ITrackUpdateItem,
+  IUserDetail,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import SPServices from "../../../CommonServices/SPServices";
@@ -44,11 +48,18 @@ let _arrCategory: ICurCategoryItem[] = [];
 let _arrBudget: ICurBudgetItem[] = [];
 let _arrDistribution: IBudTrackDistribution[] = [];
 let _isSelectAll: boolean = false;
+let _isCurrentYear: boolean = true;
 
 const BudgetTrackingList = (props: any): JSX.Element => {
   /* Variable creation */
   propDropValue = { ...props.dropValue };
   isUserPermissions = { ...props.groupUsers };
+
+  let currentYear: string =
+    propDropValue.Period[propDropValue.Period.length - 1].text;
+  console.log("currentYear", currentYear);
+  console.log('_isCurrentYear',_isCurrentYear);
+  
 
   const _selectedItemColumn: IColumn[] = [
     {
@@ -91,16 +102,19 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     },
   ];
 
+
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [filPeriodDrop, setFilPeriodDrop] = useState<string>(
     propDropValue.Period[propDropValue.Period.length - 1].text
   );
+  // const [filPeriodDrop, setFilPeriodDrop] = useState<string>('2022');
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
   const [trackItems, setTrackItems] = useState<IOverAllTrackItem[]>([]);
   const [selItems, setSelItems] = useState<IBudTrackDistribution[]>([]);
+  const [userDatas, setUserDatas] = useState([]);
   const [curEditItem, setCurEditItem] = useState<ITrackSelectedItem>({
     ...Config.TrackSelectedItem,
   });
@@ -174,6 +188,21 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     root: {
       ".ms-Button-label": {
         fontWeight: "500",
+      },
+    },
+  };
+
+  const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
+    root: {
+      width: "66%",
+      ".ms-BasePicker-text": {
+        "::after": {
+          border: "1px solid rgb(96, 94, 92) !important",
+        },
+      },
+      ".ms-BasePicker-itemsWrapper": {
+        maxHeight: 50,
+        overflow: "auto",
       },
     },
   };
@@ -377,7 +406,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               InvoiceNo: e.InvoiceNo ? e.InvoiceNo : "",
               Area: e.Area ? e.Area : "",
               EntryDate: new Date(e.Created),
-              StartDate: e.StartDate ? new Date(e.StartDate) : null,
+              StartDate: e.StartingDate ? new Date(e.StartingDate) : null,
               ToDate: e.ToDate ? new Date(e.ToDate) : null,
               isClick: false,
               isEdit: false,
@@ -599,6 +628,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     if (trackItems.length === _masterArray.length) {
       if (type === "edit") {
         _masterArray[masIndex].VendorDetails[subIndex].isEdit = true;
+        curEditItem.ID = _masterArray[masIndex].VendorDetails[subIndex].ID;
         curEditItem.ToDate =
           _masterArray[masIndex].VendorDetails[subIndex].ToDate;
         curEditItem.StartDate =
@@ -741,10 +771,77 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     }
   };
 
+  const handleUpdate = (): void => {
+    let json: ITrackUpdateItem = {
+      StartingDate: curEditItem.StartDate
+        ? curEditItem.StartDate.toISOString()
+        : null,
+      ToDate: curEditItem.ToDate ? curEditItem.ToDate.toISOString() : null,
+      PO: curEditItem.Po,
+      PoCurrency: curEditItem.PoCurrency,
+      InvoiceNo: curEditItem.InvoiceNo,
+    };
+
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.DistributionList,
+      ID: Number(curEditItem.ID),
+      RequestJSON: json,
+    })
+      .then((data: any) => {
+        _getDefaultFunction();
+      })
+      .catch((error: any) => {
+        _getErrorFunction("distribution update");
+      });
+  };
+
+  const handleSend = (): void => {
+    let _masterArray: IOverAllTrackItem[] = [...trackItems];
+
+    for (let i: number = 0; _masterArray.length > i; i++) {
+      _masterArray[i].isMasterClick = false;
+      [..._masterArray[i].VendorDetails].map(
+        (e: IBudTrackDistribution) => ((e.isClick = false), (e.isEdit = false))
+      );
+    }
+
+    let json: any = {
+      AdminData: JSON.stringify(userDatas),
+      TypeOfNotification: "Tracking List",
+    };
+
+    SPServices.SPAddItem({
+      Listname: Config.ListNames.AdminList,
+      RequestJSON: json,
+    })
+      .then((res: any) => {
+        setSelItems([]);
+        setUserDatas([]);
+        setTrackItems([..._masterArray]);
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
   }, [filCountryDrop, filPeriodDrop, filTypeDrop, filAreaDrop]);
+
+  /* NormalPeoplePicker Function */
+  const GetUserDetails = (filterText: any): any[] => {
+    let result: any = props.directors.filter(
+      (value, index, self) => index === self.findIndex((t) => t.ID === value.ID)
+    );
+    return result.filter((item) =>
+      doesTextStartWith(item.text as string, filterText)
+    );
+  };
+
+  const doesTextStartWith = (text: string, filterText: string): boolean => {
+    return text.toLowerCase().indexOf(filterText.toLowerCase()) === 0;
+  };
 
   return isLoader ? (
     <Loader />
@@ -838,6 +935,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 filPeriodDrop
               )}
               onChange={(e: any, text: IDrop) => {
+                _isCurrentYear = text.text === currentYear;
                 setFilPeriodDrop(text.text as string);
               }}
             />
@@ -862,19 +960,21 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         </div>
 
         {/* btn section */}
-        <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
-          <DefaultButton
-            text="Submit"
-            styles={buttonStyles}
-            className={styles.export}
-            style={{
-              cursor: selItems.length ? "pointer" : "not-allowed",
-            }}
-            onClick={() => {
-              selItems.length && setIsModal(true);
-            }}
-          />
-        </div>
+        {_isCurrentYear && 
+           <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+           <DefaultButton
+             text="Submit"
+             styles={buttonStyles}
+             className={styles.export}
+             style={{
+               cursor: selItems.length ? "pointer" : "not-allowed",
+             }}
+             onClick={() => {
+               selItems.length && setIsModal(true);
+             }}
+           />
+         </div>
+        }
       </div>
 
       {/* Accordion section */}
@@ -902,7 +1002,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 >
                   {/* table header section */}
                   <tr>
-                    <th>
+                    {_isCurrentYear &&
+                      <th>
                       <Checkbox
                         checked={item.isMasterClick ? _isSelectAll : false}
                         onChange={(e: any, isChecked: boolean) => {
@@ -910,6 +1011,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                         }}
                       />
                     </th>
+                    }
                     <th>Entry Date</th>
                     <th>Item</th>
                     <th>Cost</th>
@@ -920,7 +1022,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     <th>PO#</th>
                     <th>PO Currency</th>
                     <th>Invoice No</th>
-                    <th>Action</th>
+                    {_isCurrentYear && <th>Action</th>}
                   </tr>
 
                   {/* table body section */}
@@ -928,14 +1030,16 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     (data: IBudTrackDistribution, i: number) => {
                       return (
                         <tr>
-                          <td>
-                            <Checkbox
-                              checked={data.isClick}
-                              onChange={(e: any, isChecked: boolean) => {
-                                handleChecked(isChecked, index, i, "");
-                              }}
-                            />
-                          </td>
+                          {_isCurrentYear && (
+                            <td>
+                              <Checkbox
+                                checked={data.isClick}
+                                onChange={(e: any, isChecked: boolean) => {
+                                  handleChecked(isChecked, index, i, "");
+                                }}
+                              />
+                            </td>
+                          )}
                           <td>{moment(data.EntryDate).format("MM/DD/YYYY")}</td>
                           <td>{data.Item}</td>
                           <td>{data.Cost}</td>
@@ -1025,49 +1129,53 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               data.InvoiceNo
                             )}
                           </td>
-                          <td>
-                            {!data.isEdit ? (
-                              <Icon
-                                iconName="Edit"
-                                style={{
-                                  color: "blue",
-                                  fontSize: "16px",
-                                  cursor: "pointer",
-                                }}
-                                onClick={() => {
-                                  _getEditItem(index, i, "edit");
-                                }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "6%",
-                                }}
-                              >
+                          {_isCurrentYear && (
+                            <td>
+                              {!data.isEdit ? (
                                 <Icon
-                                  iconName="CheckMark"
+                                  iconName="Edit"
                                   style={{
-                                    color: "green",
-                                    fontSize: "20px",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => {}}
-                                />
-                                <Icon
-                                  iconName="Cancel"
-                                  style={{
-                                    color: "red",
-                                    fontSize: "20px",
+                                    color: "blue",
+                                    fontSize: "16px",
                                     cursor: "pointer",
                                   }}
                                   onClick={() => {
-                                    _getEditItem(index, i, "cancel");
+                                    _getEditItem(index, i, "edit");
                                   }}
                                 />
-                              </div>
-                            )}
-                          </td>
+                              ) : (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "6%",
+                                  }}
+                                >
+                                  <Icon
+                                    iconName="CheckMark"
+                                    style={{
+                                      color: "green",
+                                      fontSize: "20px",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => {
+                                      handleUpdate();
+                                    }}
+                                  />
+                                  <Icon
+                                    iconName="Cancel"
+                                    style={{
+                                      color: "red",
+                                      fontSize: "20px",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => {
+                                      _getEditItem(index, i, "cancel");
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       );
                     }
@@ -1163,6 +1271,47 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           </div>
 
           {/* modal box Footer section */}
+
+          {/* People picker section */}
+          <NormalPeoplePicker
+            inputProps={{ placeholder: "Insert person" }}
+            onResolveSuggestions={GetUserDetails}
+            itemLimit={10}
+            styles={peoplePickerStyle}
+            selectedItems={userDatas}
+            onChange={(selectedUser: any): void => {
+              if (selectedUser.length) {
+                let slctedUsers = [];
+                selectedUser.forEach((value: IUserDetail) => {
+                  let authendication: boolean = [...slctedUsers].some(
+                    (val: IUserDetail) =>
+                      val.secondaryText === value.secondaryText
+                  );
+                  if (!authendication) {
+                    slctedUsers.push(value);
+                  }
+                });
+                setUserDatas([...slctedUsers]);
+              } else {
+                setUserDatas([]);
+              }
+            }}
+          />
+          
+            <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+            <DefaultButton
+              text="Send"
+              styles={buttonStyles}
+              className={styles.export}
+              style={{
+                cursor: userDatas.length ? "pointer" : "not-allowed",
+              }}
+              onClick={() => {
+                userDatas.length && (setIsModal(false), handleSend());
+              }}
+            />
+          </div>
+          
         </Modal>
       ) : (
         ""

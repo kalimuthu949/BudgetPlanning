@@ -53,6 +53,7 @@ let _curItem: ICategory;
 let _isCateMulti: boolean = false;
 let isUserPermissions: IGroupUsers;
 let _lastYear: string = "";
+let modalText: string = "";
 
 const CategoryConfig = (props: any): JSX.Element => {
   /* Variable creation */
@@ -109,6 +110,7 @@ const CategoryConfig = (props: any): JSX.Element => {
               }}
               onClick={() => {
                 _curItem = item;
+                modalText = item.Title;
                 setIsModal(true);
               }}
             />
@@ -213,7 +215,7 @@ const CategoryConfig = (props: any): JSX.Element => {
 
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
-    alertify.error("Error Message");
+    alertify.error(errMsg);
     setIsLoader(false);
   };
 
@@ -295,7 +297,7 @@ const CategoryConfig = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction("Get category records");
       });
   };
 
@@ -446,7 +448,7 @@ const CategoryConfig = (props: any): JSX.Element => {
         alertify.success("Category config's done");
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction("Bulk insert");
       });
   };
 
@@ -461,10 +463,10 @@ const CategoryConfig = (props: any): JSX.Element => {
       .then((res: any) => {
         getCategoryRecords();
         setIsModal(false);
-        alertify.success("Category config unlink success");
+        alertify.success(`${modalText} config unlink success`);
       })
       .catch((err: any) => {
-        _getErrorFunction(err);
+        _getErrorFunction("Get unlink category");
       });
   };
 
@@ -713,7 +715,7 @@ const CategoryConfig = (props: any): JSX.Element => {
               fontSize: 16,
             }}
           >
-            Do you want to unlink the category config?
+            Do you want to unlink the "{modalText}"?
           </Label>
 
           {/* btn section */}

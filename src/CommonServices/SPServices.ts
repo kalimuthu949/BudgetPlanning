@@ -274,6 +274,24 @@ const formatFilterValue = (
   return strFilter;
 };
 
+const decimalCount = (number:number):number =>{
+  let num:any = number ? number:0
+  num = num.toFixed(2)
+  
+  return Number(num)
+}
+
+const format = (number:number):string =>{
+  let num:any = number ? number:0;
+  num = num.toLocaleString('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  
+  return num
+}
+
 export default {
   getAllUsers,
   SPAddItem,
@@ -289,4 +307,6 @@ export default {
   batchInsert,
   batchUpdate,
   batchDelete,
+  decimalCount,
+  format
 };
