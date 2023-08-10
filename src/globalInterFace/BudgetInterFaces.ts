@@ -157,8 +157,8 @@ export interface ICurBudgetItem {
   CateId: number;
   CounId: number;
   YearId: number;
-  BudgetAllocated: number;
-  BudgetProposed: number;
+  BudgetAllocated: number | string;
+  BudgetProposed: number | string;
   Used: number;
   RemainingCost: number;
   isDeleted: Boolean;

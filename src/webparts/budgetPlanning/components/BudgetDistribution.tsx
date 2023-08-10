@@ -109,7 +109,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return <div style={{ color: "#E39C5A" }}>{SPServices.format(item.BudgetAllocated)}</div>;
+        return <div style={{ color: "#E39C5A" }}>{SPServices.format(Number(item.BudgetAllocated))}</div>;
       },
     },
     {
