@@ -55,133 +55,8 @@ let confirmBoxText: string = "";
 let Status: string = "";
 
 const Vendor = (props: any): JSX.Element => {
+  /* Variable creation */
   let admin: boolean = props.vendorDetails.isAdmin;
-
-  const _DetailsListStyle: Partial<IDetailsListStyles> = {
-    root: {
-      marginTop: "20px",
-      ".ms-DetailsHeader": {
-        backgroundColor: "#ededed",
-        padding: "0px",
-      },
-      ".ms-DetailsHeader-cell": {
-        ":first-child": {
-          color: "#202945",
-          cursor: "pointer",
-        },
-        ":hover": {
-          backgroundColor: "#ededed",
-        },
-      },
-      ".ms-DetailsHeader-cellName": {
-        color: "#202945",
-        fontWeight: "700 !important",
-        fontSize: "16px !important",
-      },
-      ".ms-GroupHeader-title": {
-        "span:nth-child(2)": {
-          display: "none",
-        },
-      },
-      "[data-automationid=DetailsRowFields]": {
-        alignItems: "center !important",
-      },
-      ".ms-DetailsRow-cell": {
-        fontSize: 14,
-      },
-      ".ms-DetailsList-contentWrapper": {
-        // height: items.length ? "58vh" : 20,
-        overflowY: "auto",
-        overflowX: "hidden",
-      },
-      ".ms-DetailsRow": {
-        ":hover": {
-          backgroundColor: "white",
-          color: "balck",
-        },
-      },
-    },
-  };
-
-  const errtxtFieldStyle: Partial<ITextFieldStyles> = {
-    fieldGroup: {
-      border: "1px solid red",
-      "::after": {
-        border: "1px solid red",
-      },
-      ":hover": {
-        border: "1px solid red",
-      },
-    },
-  };
-
-  const textFieldStyle: Partial<ITextFieldStyles> = {
-    fieldGroup: {
-      "::after": {
-        border: "1px solid rgb(96, 94, 92)",
-      },
-    },
-  };
-
-  const DropdownStyle: Partial<IDropdownStyles> = {
-    root: {
-      dropdown: {
-        ":focus::after": {
-          border: "5px solid red",
-        },
-      },
-      ".ms-Dropdown-container": {
-        width: "100%",
-      },
-    },
-  };
-
-  const IconStyle: Partial<IButtonStyles> = {
-    root: {
-      marginRight: 10,
-      color: "#000 !important",
-      background: "transparent !important",
-    },
-    icon: {
-      fontSize: 20,
-      background: "transparent !important",
-    },
-  };
-
-  const modalStyles: Partial<IModalStyles> = {
-    main: {
-      width: "20%",
-      minHeight: 128,
-      background: "#f7f9fa",
-      padding: 10,
-      height: "auto",
-      borderRadius: 4,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-    },
-  };
-
-  const saveBtnStyle: Partial<IButtonStyles> = {
-    root: {
-      border: "none",
-      height: 32,
-      color: "#fff",
-      fontSize: 16,
-      background: "#2580e0 !important",
-      borderRadius: 3,
-      // marginRight: 10,
-      width: "26%",
-      span: {
-        fontWeight: 100,
-      },
-    },
-    rootHovered: {
-      background: "#2580e0",
-      color: "#fff",
-    },
-  };
 
   const column: IColumn[] = [
     {
@@ -260,7 +135,7 @@ const Vendor = (props: any): JSX.Element => {
                   onClick={() => {
                     isChangeRenual = true;
                     if (TypeFlag == "Add") {
-                      addVendor(item,index);
+                      addVendor(item, index);
                     } else {
                       vendorUpdate(item, index);
                     }
@@ -274,7 +149,7 @@ const Vendor = (props: any): JSX.Element => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    setValidate({...Config.vendorValidation})
+                    setValidate({ ...Config.vendorValidation });
                     isChangeRenual = true;
                     if (TypeFlag == "Add") {
                       ConfimMsg = !ConfimMsg;
@@ -337,7 +212,6 @@ const Vendor = (props: any): JSX.Element => {
       minWidth: 100,
       maxWidth: 500,
       onRender: (item) => {
-        
         return item.isEdit ? (
           <TextField
             value={vendorData.Pricing.toString()}
@@ -582,7 +456,6 @@ const Vendor = (props: any): JSX.Element => {
         );
       },
     },
-    
   ];
 
   const newColumn: any[] = [...column];
@@ -622,6 +495,7 @@ const Vendor = (props: any): JSX.Element => {
     },
   });
 
+  /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [MData, setMData] = useState<IVendorItems[]>([]);
   const [vendorDetails, setVendorDetails] = useState<any[]>([]);
@@ -636,6 +510,134 @@ const Vendor = (props: any): JSX.Element => {
     ...Config.vendorValidation,
   });
 
+  /* Style Section */
+  const _DetailsListStyle: Partial<IDetailsListStyles> = {
+    root: {
+      marginTop: "20px",
+      ".ms-DetailsHeader": {
+        backgroundColor: "#ededed",
+        padding: "0px",
+      },
+      ".ms-DetailsHeader-cell": {
+        ":first-child": {
+          color: "#202945",
+          cursor: "pointer",
+        },
+        ":hover": {
+          backgroundColor: "#ededed",
+        },
+      },
+      ".ms-DetailsHeader-cellName": {
+        color: "#202945",
+        fontWeight: "700 !important",
+        fontSize: "16px !important",
+      },
+      ".ms-GroupHeader-title": {
+        "span:nth-child(2)": {
+          display: "none",
+        },
+      },
+      "[data-automationid=DetailsRowFields]": {
+        alignItems: "center !important",
+      },
+      ".ms-DetailsRow-cell": {
+        fontSize: 14,
+      },
+      ".ms-DetailsList-contentWrapper": {
+        // height: items.length ? "58vh" : 20,
+        overflowY: "auto",
+        overflowX: "hidden",
+      },
+      ".ms-DetailsRow": {
+        ":hover": {
+          backgroundColor: "white",
+          color: "balck",
+        },
+      },
+    },
+  };
+
+  const errtxtFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      border: "1px solid red",
+      "::after": {
+        border: "1px solid red",
+      },
+      ":hover": {
+        border: "1px solid red",
+      },
+    },
+  };
+
+  const textFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      "::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+
+  const DropdownStyle: Partial<IDropdownStyles> = {
+    root: {
+      dropdown: {
+        ":focus::after": {
+          border: "5px solid red",
+        },
+      },
+      ".ms-Dropdown-container": {
+        width: "100%",
+      },
+    },
+  };
+
+  const IconStyle: Partial<IButtonStyles> = {
+    root: {
+      marginRight: 10,
+      color: "#000 !important",
+      background: "transparent !important",
+    },
+    icon: {
+      fontSize: 20,
+      background: "transparent !important",
+    },
+  };
+
+  const modalStyles: Partial<IModalStyles> = {
+    main: {
+      width: "20%",
+      minHeight: 128,
+      background: "#f7f9fa",
+      padding: 10,
+      height: "auto",
+      borderRadius: 4,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+  };
+
+  const saveBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      height: 32,
+      color: "#fff",
+      fontSize: 16,
+      background: "#2580e0 !important",
+      borderRadius: 3,
+      // marginRight: 10,
+      width: "26%",
+      span: {
+        fontWeight: 100,
+      },
+    },
+    rootHovered: {
+      background: "#2580e0",
+      color: "#fff",
+    },
+  };
+
+  /* function creation */
   const getErrorFunction = (error: any) => {
     alertify.error(error);
     setIsLoader(false);
@@ -660,8 +662,7 @@ const Vendor = (props: any): JSX.Element => {
         {
           FilterKey: "Year/Title",
           Operator: "eq",
-          FilterValue: "2023",
-          // FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
+          FilterValue: (Number(props.vendorDetails.Item.Year) - 1).toString(),
         },
         {
           FilterKey: "Status",
@@ -822,7 +823,7 @@ const Vendor = (props: any): JSX.Element => {
     setVendorData(item);
   };
 
-  const addVendor = (item: IVendorItems,index:number): void => {
+  const addVendor = (item: IVendorItems, index: number): void => {
     let NewJson = {
       Vendor: vendorData.Vendor,
       Description: vendorData.Description,
@@ -966,7 +967,7 @@ const Vendor = (props: any): JSX.Element => {
           AttachmentURL: JSON.parse(json.AttachmentURL),
           ProcurementURL: JSON.parse(json.ProcurementTeamQuotationURL),
           isEdit: false,
-          Pricing:SPServices.decimalCount(Number(vendorData.Pricing))
+          Pricing: SPServices.decimalCount(Number(vendorData.Pricing)),
         };
 
         let masterData: IVendorItems[] = [...MData];
@@ -1154,14 +1155,16 @@ const Vendor = (props: any): JSX.Element => {
   const Validation = (index): boolean => {
     let isValidation: boolean = true;
     let validationData: IVendorValidation = { ...Config.vendorValidation };
-    let isDuplicate = [...MData].some((value,indx)=>value.Vendor === vendorData.Vendor && indx !== index);
+    let isDuplicate = [...MData].some(
+      (value, indx) => value.Vendor === vendorData.Vendor && indx !== index
+    );
 
     if (!vendorData.Vendor) {
       validationData.Vendor = true;
       isValidation = false;
     }
 
-    if(isDuplicate){
+    if (isDuplicate) {
       isValidation = false;
       validationData.Vendor = true;
     }
@@ -1176,17 +1179,14 @@ const Vendor = (props: any): JSX.Element => {
       isValidation = false;
     }
 
-    if(!vendorData.Vendor){
-      alertify.error('Please enter Vendor')
-    }
-    else if(isDuplicate){
-      alertify.error(`The "${vendorData.Vendor}" has already exists`)
-    }
-    else if(!vendorData.Description){
-      alertify.error('Please enter Description')
-    }
-    else if(!vendorData.Pricing){
-      alertify.error('Please enter Pricing')
+    if (!vendorData.Vendor) {
+      alertify.error("Please enter Vendor");
+    } else if (isDuplicate) {
+      alertify.error(`The "${vendorData.Vendor}" has already exists`);
+    } else if (!vendorData.Description) {
+      alertify.error("Please enter Description");
+    } else if (!vendorData.Pricing) {
+      alertify.error("Please enter Pricing");
     }
 
     setValidate(validationData);
@@ -1279,7 +1279,6 @@ const Vendor = (props: any): JSX.Element => {
         })
         .catch((error) => getErrorFunction("Update status"));
     }
-    
   };
 
   const handleDelete = () => {
@@ -1455,12 +1454,11 @@ const Vendor = (props: any): JSX.Element => {
                 onClick={() => {
                   confirmBoxText = "Review";
                   Status = Config.ApprovalStatus.Rejected;
-                   if(selectedItems.length){
+                  if (selectedItems.length) {
                     setIsConfirmModal(true);
-                   }
-                   else{
-                    alertify.error('please select users to Review');
-                   }
+                  } else {
+                    alertify.error("please select users to Review");
+                  }
                 }}
               />
               <DefaultButton
@@ -1470,12 +1468,11 @@ const Vendor = (props: any): JSX.Element => {
                   confirmBoxText = "Approve";
                   Status = Config.ApprovalStatus.Approved;
                   // textforlable="aslkjgalskjghkja"
-                  if(selectedItems.length){
+                  if (selectedItems.length) {
                     setIsConfirmModal(true);
+                  } else {
+                    alertify.error("please select users to Approve");
                   }
-                  else{
-                    alertify.error('please select users to Approve');
-                  }                
                 }}
               />
             </>
