@@ -224,7 +224,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
-          <div style={{ color: "#E39C5A" }}>{item.BudgetProposed}</div>
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetProposed))}
+          </div>
         ) : item.ApproveStatus === "Not Started" ||
           isUserPermissions.isSuperAdmin ||
           item.isApproved ? (
@@ -238,7 +240,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   : textFieldStyle
               }
               onChange={(e: any, value: any) => {
-                if (/^[0-9]+$|^$/.test(value)) {
+                if (/^[0-9]*\.?[0-9]*$/.test(value)) {
                   curData.BudgetProposed = value;
                   setCurData({ ...curData });
                 }
@@ -246,7 +248,9 @@ const BudgetPlan = (props: any): JSX.Element => {
             />
           </div>
         ) : (
-          <div style={{ color: "#E39C5A" }}>{item.BudgetProposed}</div>
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetProposed))}
+          </div>
         );
       },
     },
@@ -258,7 +262,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       maxWidth: 150,
       onRender: (item: ICurBudgetItem): any => {
         return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
-          <div style={{ color: "#E39C5A" }}>{item.BudgetAllocated}</div>
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetAllocated))}
+          </div>
         ) : item.ApproveStatus === "Pending" ||
           isUserPermissions.isSuperAdmin ||
           item.isApproved ? (
@@ -268,7 +274,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               placeholder="Enter Here"
               styles={textFieldStyle}
               onChange={(e: any, value: any) => {
-                if (/^[0-9]+$|^$/.test(value)) {
+                if (/^[0-9]*\.?[0-9]*$/.test(value)) {
                   curData.BudgetAllocated = value;
                   setCurData({ ...curData });
                 }
@@ -277,7 +283,9 @@ const BudgetPlan = (props: any): JSX.Element => {
           </div>
         ) : (
           <div style={{ color: "#E39C5A" }}>
-            {item.BudgetAllocated ? item.BudgetAllocated : null}
+            {item.BudgetAllocated
+              ? SPServices.format(Number(item.BudgetAllocated))
+              : null}
           </div>
         );
       },
@@ -289,7 +297,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       maxWidth: 130,
       onRender: (item: any) => {
         return item.isDummy && !item.isEdit ? null : (
-          <div style={{ color: "#AC455E" }}>{item.Used}</div>
+          <div style={{ color: "#AC455E" }}>{SPServices.format(item.Used)}</div>
         );
       },
     },
@@ -301,22 +309,15 @@ const BudgetPlan = (props: any): JSX.Element => {
       onRender: (item: any) => {
         return item.isDummy && !item.isEdit ? null : (
           <div
-            style={
-              item.Year != _curYear
-                ? {
-                    padding: "4px 12px",
-                    backgroundImage:
-                      "linear-gradient(to right, #59e27f, #f1f1f1)",
-                    display: "inline",
-                    borderRadius: 4,
-                    color: "#000",
-                  }
-                : {
-                    padding: 0,
-                  }
-            }
+            style={{
+              padding: "4px 12px",
+              backgroundImage: "linear-gradient(to right, #59e27f, #f1f1f1)",
+              display: "inline",
+              borderRadius: 4,
+              color: "#000",
+            }}
           >
-            {item.RemainingCost}
+            {SPServices.format(item.RemainingCost)}
           </div>
         );
       },
@@ -1255,7 +1256,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               " ( " +
               ur.Type +
               " ) ~ " +
-              _totalAmount
+              SPServices.format(Number(_totalAmount))
             }`
           : ur.Category,
         startIndex: ur.indexValue,
@@ -1286,8 +1287,12 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.CateId = _curItem.CateId;
     curData.CounId = _curItem.CounId;
     curData.YearId = _curItem.YearId;
-    curData.BudgetAllocated = _curItem.BudgetAllocated;
-    curData.BudgetProposed = _curItem.BudgetProposed;
+    curData.BudgetAllocated = SPServices.decimalCount(
+      Number(_curItem.BudgetAllocated)
+    );
+    curData.BudgetProposed = SPServices.decimalCount(
+      Number(_curItem.BudgetProposed)
+    );
     curData.Used = _curItem.Used;
     curData.RemainingCost = _curItem.RemainingCost;
     curData.isDeleted = false;
