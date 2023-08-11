@@ -335,6 +335,11 @@ const BudgetAnalysis = (props: any): JSX.Element => {
           FilterValue: year,
           Operator: "eq",
         },
+        {
+          FilterKey: "Status",
+          Operator: "eq",
+          FilterValue: "Approved",
+        },
       ],
       Orderbydecorasc: false,
     })
@@ -790,7 +795,7 @@ const BudgetAnalysis = (props: any): JSX.Element => {
             </div>
 
             {/* import btn section */}
-            <div className={styles.importExport} style={{display:'none'}}>
+            <div className={styles.importExport} style={{ display: "none" }}>
               {_isCurYear && (
                 <div className={styles.import}>
                   <input

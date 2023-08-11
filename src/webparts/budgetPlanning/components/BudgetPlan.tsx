@@ -40,6 +40,8 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import styles from "./BudgetPlanning.module.scss";
 
+const _ApproveIcon: string = require("../../../ExternalRef/images/approved.png");
+
 let propDropValue: IDropdowns;
 let _Items: ICurBudgetItem[] = [];
 let _groupItem: IOverAllItem[] = [];
@@ -52,6 +54,11 @@ let listItems: any[] = [];
 let _masArray: any[] = [];
 let _isMasterSubmit: boolean = false;
 let _isMasApprove: boolean = false;
+let _totalRemaningAmount: number = 0;
+let _curBudgetAllocated: number = 0;
+let _curRemainingCost: number = 0;
+let _curUsedCost: number = 0;
+let _isAction: boolean = false;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
@@ -113,8 +120,8 @@ const BudgetPlan = (props: any): JSX.Element => {
             {item.Description}
           </div>
         ) : item.ApproveStatus === "Not Started" ||
-          isUserPermissions.isSuperAdmin ||
-          item.isApproved ? (
+          (isUserPermissions.isSuperAdmin &&
+            item.ApproveStatus !== "Approved") ? (
           <div>
             <TextField
               value={curData.Description ? curData.Description : ""}
@@ -164,6 +171,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               onClick={() => {
                 if (!_isBack) {
                   _isBack = !item.isEdit;
+                  _isAction = false;
                   _getEditItem(item, "Add");
                 } else {
                   _getPageErrorMSG(item, "Add");
@@ -186,8 +194,8 @@ const BudgetPlan = (props: any): JSX.Element => {
             {item.Comments.trim() ? item.Comments : "N/A"}
           </div>
         ) : item.ApproveStatus === "Not Started" ||
-          isUserPermissions.isSuperAdmin ||
-          item.isApproved ? (
+          (isUserPermissions.isSuperAdmin &&
+            item.ApproveStatus !== "Approved") ? (
           <div>
             <TextField
               multiline
@@ -228,8 +236,8 @@ const BudgetPlan = (props: any): JSX.Element => {
             {SPServices.format(Number(item.BudgetProposed))}
           </div>
         ) : item.ApproveStatus === "Not Started" ||
-          isUserPermissions.isSuperAdmin ||
-          item.isApproved ? (
+          (isUserPermissions.isSuperAdmin &&
+            item.ApproveStatus !== "Approved") ? (
           <div>
             <TextField
               value={curData.BudgetProposed.toString()}
@@ -272,7 +280,11 @@ const BudgetPlan = (props: any): JSX.Element => {
             <TextField
               value={curData.BudgetAllocated.toString()}
               placeholder="Enter Here"
-              styles={textFieldStyle}
+              styles={
+                isValidation.isBudgetAllocated
+                  ? errtxtFieldStyle
+                  : textFieldStyle
+              }
               onChange={(e: any, value: any) => {
                 if (/^[0-9]*\.?[0-9]*$/.test(value)) {
                   curData.BudgetAllocated = value;
@@ -345,7 +357,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    _getPrepareDatas();
+                    _getValidation();
                   }}
                 />
                 <Icon
@@ -361,49 +373,58 @@ const BudgetPlan = (props: any): JSX.Element => {
                   }}
                 />
               </div>
-            ) : (
-              item.ID &&
+            ) : item.ID &&
               item.Year == _curYear &&
               (item.ApproveStatus !== "Approved" ||
-                isUserPermissions.isSuperAdmin) && (
-                <div
+                isUserPermissions.isSuperAdmin) ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6%",
+                }}
+              >
+                <Icon
+                  iconName="Edit"
                   style={{
-                    display: "flex",
-                    gap: "6%",
+                    color: "blue",
+                    fontSize: "16px",
+                    cursor: "pointer",
                   }}
-                >
-                  <Icon
-                    iconName="Edit"
-                    style={{
-                      color: "blue",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      if (!_isBack) {
-                        _isBack = !item.isEdit;
-                        _getEditItem(item, "Edit");
-                      } else {
-                        _getPageErrorMSG(item, "Edit");
-                      }
-                    }}
-                  />
-                  <Icon
-                    iconName="Delete"
-                    style={{
-                      color: "red",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      if (!_isBack) {
-                        _getEditItem(item, "Deleted");
-                      } else {
-                        _getPageErrorMSG(item, "Deleted");
-                      }
-                    }}
-                  />
-                </div>
+                  onClick={() => {
+                    if (!_isBack) {
+                      _isBack = !item.isEdit;
+                      _isAction = true;
+                      _getEditItem(item, "Edit");
+                    } else {
+                      _getPageErrorMSG(item, "Edit");
+                    }
+                  }}
+                />
+                <Icon
+                  iconName="Delete"
+                  style={{
+                    color: "red",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    if (!_isBack) {
+                      _getEditItem(item, "Deleted");
+                    } else {
+                      _getPageErrorMSG(item, "Deleted");
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              !item.isDummy && (
+                <img
+                  style={{
+                    height: 26,
+                    width: 30,
+                  }}
+                  src={_ApproveIcon}
+                />
               )
             )}
           </div>
@@ -433,6 +454,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [isTrigger, setIsTrigger] = useState<boolean>(true);
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isSubModal, setIsSubModal] = useState<boolean>(false);
+  const [isSubmitModal, setIsSubmitModal] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -542,11 +564,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       background: _isMasterSubmit ? "#fc0362 !important" : "#05da73 !important",
       height: 33,
       borderRadius: 5,
+      cursor: items.length && _isMasterSubmit ? "pointer" : "not-allowed",
     },
     label: {
       fontWeight: 500,
       color: "#fff",
-      cursor: items.length ? "pointer" : "not-allowed",
       fontSize: 16,
     },
     icon: {
@@ -568,6 +590,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       e.returnValue = dialogText;
       isValidation.isBudgetRequired = false;
       isValidation.isDescription = false;
+      isValidation.isBudgetAllocated = false;
       setIsValidation({ ...isValidation });
       return dialogText;
     }
@@ -766,32 +789,35 @@ const BudgetPlan = (props: any): JSX.Element => {
 
         listItems.shift();
         [...listItems].forEach((e: any) => {
-          if (e.CategoryType.toLowerCase() === "master category") {
+          if (
+            e.CategoryType.toLowerCase() === "master category" &&
+            e.Status !== "Approved"
+          ) {
             _catArray.push({
               ID: e.ID,
               Status: e.Status,
               OverAllBudgetCost: e.BudgetAllocated,
+              OverAllRemainingCost: e.BudgetAllocated,
             });
           }
-          if (e.CategoryType.toLowerCase() === "sub category") {
+          if (
+            e.CategoryType.toLowerCase() === "sub category" &&
+            e.Status !== "Approved"
+          ) {
             _subArray.push({
               ID: e.ID,
               ApproveStatus: e.Status,
               BudgetAllocated: e.BudgetAllocated,
+              RemainingCost: e.BudgetAllocated,
             });
           }
         });
 
-        if (
-          [...listItems].length ===
-          [..._catArray].length + [..._subArray].length
-        ) {
-          _masArray = [
-            { ListName: Config.ListNames.CategoryList, _Array: [..._catArray] },
-            { ListName: Config.ListNames.BudgetList, _Array: [..._subArray] },
-          ];
-          setIsModal(true);
-        }
+        _masArray = [
+          { ListName: Config.ListNames.CategoryList, _Array: [..._catArray] },
+          { ListName: Config.ListNames.BudgetList, _Array: [..._subArray] },
+        ];
+        setIsModal(true);
       } else {
         alertify.error("Please import correct excel format");
       }
@@ -803,8 +829,10 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _getDefaultFunction = (): void => {
     alertifyMSG = "";
     _isBack = false;
+    _isAction = false;
     isValidation.isBudgetRequired = false;
     isValidation.isDescription = false;
+    isValidation.isBudgetAllocated = false;
     setIsValidation({ ...isValidation });
     setIsLoader(true);
     filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
@@ -880,6 +908,12 @@ const BudgetPlan = (props: any): JSX.Element => {
                 : undefined,
               OverAllBudgetCost: resCate[i].OverAllBudgetCost
                 ? resCate[i].OverAllBudgetCost
+                : null,
+              OverAllRemainingCost: resCate[i].OverAllRemainingCost
+                ? resCate[i].OverAllRemainingCost
+                : null,
+              OverAllPOIssuedCost: resCate[i].OverAllPOIssuedCost
+                ? resCate[i].OverAllPOIssuedCost
                 : null,
               TotalProposed: resCate[i].TotalProposed
                 ? resCate[i].TotalProposed
@@ -1050,6 +1084,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           yearID: _arrCate[i].YearAcc.ID,
           countryID: _arrCate[i].CountryAcc.ID,
           OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
+          OverAllPOIssuedCost: _arrCate[i].OverAllPOIssuedCost,
+          OverAllRemainingCost: _arrCate[i].OverAllRemainingCost,
           TotalProposed: _arrCate[i].TotalProposed,
           CategoryType: _arrCate[i].CategoryType,
           Status: _arrCate[i].Status,
@@ -1293,12 +1329,20 @@ const BudgetPlan = (props: any): JSX.Element => {
     curData.BudgetProposed = SPServices.decimalCount(
       Number(_curItem.BudgetProposed)
     );
-    curData.Used = _curItem.Used;
-    curData.RemainingCost = _curItem.RemainingCost;
+    curData.Used = SPServices.decimalCount(Number(_curItem.Used));
+    curData.RemainingCost = SPServices.decimalCount(
+      Number(_curItem.RemainingCost)
+    );
     curData.isDeleted = false;
     curData.isEdit = false;
     curData.isApproved = _curItem.isApproved;
     setCurData({ ...curData });
+
+    _curBudgetAllocated = SPServices.decimalCount(
+      Number(_curItem.BudgetAllocated)
+    );
+    _curRemainingCost = SPServices.decimalCount(Number(_curItem.RemainingCost));
+    _curUsedCost = SPServices.decimalCount(Number(_curItem.Used));
 
     if (type == "Deleted") {
       setIsDeleteModal(true);
@@ -1324,6 +1368,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _getCancelItems = (): void => {
     isValidation.isBudgetRequired = false;
     isValidation.isDescription = false;
+    isValidation.isBudgetAllocated = false;
     setIsValidation({ ...isValidation });
     setCurData({ ...Config.curBudgetItem });
     for (let i: number = 0; _Items.length > i; i++) {
@@ -1332,37 +1377,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     }
   };
 
-  const _getPrepareDatas = (): void => {
-    let data: any = {};
-    const columns: IBudgetListColumn = Config.BudgetListColumns;
-    if (curData.ID) {
-      _isBack = !curData.isEdit;
-      data[columns.Description] = curData.Description;
-      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      data[columns.Comments] = curData.Comments;
-      data[columns.Area] = curData.Area;
-      _getValidation({ ...data }, "Updated");
-    } else {
-      data[columns.CategoryId] = curData.CateId;
-      data[columns.CountryId] = curData.CounId;
-      data[columns.YearId] = curData.YearId;
-      data[columns.Description] = curData.Description;
-      data[columns.ApproveStatus] = curData.isApproved
-        ? curData.ApproveStatus === "Approved"
-          ? curData.ApproveStatus
-          : "Pending"
-        : "Not Started";
-      data[columns.CategoryType] = curData.Type;
-      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      data[columns.Comments] = curData.Comments;
-      data[columns.Area] = curData.Area;
-      _getValidation({ ...data }, "");
-    }
-  };
-
-  const _getValidation = (data: any, type: string): void => {
+  const _getValidation = (): void => {
     let _isValid: boolean = true;
     let _isDuplicate: boolean = false;
     let _arrDuplicate: ICurBudgetItem[] = _Items.filter(
@@ -1415,17 +1430,115 @@ const BudgetPlan = (props: any): JSX.Element => {
       alertify.error("Please enter description");
     }
 
+    for (let n: number = 0; _arrOfMaster.length > n; n++) {
+      let _count: number = 0;
+      let _TotalAllocated: number = 0;
+      let _indexNo: number = null;
+
+      if (
+        _arrOfMaster[n].CategoryAcc === curData.Category &&
+        _arrOfMaster[n].CountryAcc === curData.Country &&
+        _arrOfMaster[n].YearAcc === curData.Year &&
+        _arrOfMaster[n].Type === curData.Type &&
+        _arrOfMaster[n].ID === curData.CateId &&
+        _arrOfMaster[n].Area === curData.Area
+      ) {
+        let _initial: number = 0;
+        let _curNewSubCategory: ICurBudgetItem[] = [];
+        let _curAmountArray: number[] = [];
+
+        _curNewSubCategory = _arrOfMaster[n].subCategory.filter(
+          (e: ICurBudgetItem) => e.BudgetAllocated !== null
+        );
+
+        _indexNo = [..._curNewSubCategory].findIndex(
+          (e: ICurBudgetItem) => e.ID === curData.ID
+        );
+
+        [..._curNewSubCategory].forEach((e: ICurBudgetItem) =>
+          _curAmountArray.push(
+            e.BudgetAllocated ? Number(e.BudgetAllocated) : 0
+          )
+        );
+
+        if (curData.ID) {
+          _curAmountArray.splice(_indexNo, 1, Number(curData.BudgetAllocated));
+        }
+
+        if (_curAmountArray.length === _curNewSubCategory.length) {
+          _TotalAllocated = _arrOfMaster[n].OverAllBudgetCost;
+          _count = [..._curAmountArray].reduce((a, b) => a + b, _initial);
+          _totalRemaningAmount = _TotalAllocated - _count;
+          _curRemainingCost =
+            _curUsedCost === 0
+              ? Number(curData.BudgetAllocated)
+              : Number(curData.BudgetAllocated) - _curUsedCost;
+        }
+      }
+    }
+
     if (_isValid) {
-      _isBack = !curData.isEdit;
-      setIsLoader(true);
-      type != "Updated"
-        ? _getAddData({ ...data })
-        : _getEditData({ ...data }, type);
       isValidation.isBudgetRequired = false;
       isValidation.isDescription = false;
-      setIsValidation({ ...isValidation });
+
+      if (_curUsedCost >= Number(curData.BudgetAllocated)) {
+        isValidation.isBudgetAllocated = true;
+        setIsValidation({ ...isValidation });
+        alertify.error("You have less than of used amount");
+      } else if (_totalRemaningAmount >= 0 && _isAction) {
+        _isBack = !curData.isEdit;
+        setIsLoader(true);
+        isValidation.isBudgetAllocated = false;
+        setIsValidation({ ...isValidation });
+        _getPrepareDatas();
+      } else if (
+        _totalRemaningAmount >= Number(curData.BudgetAllocated) &&
+        _totalRemaningAmount >= 0
+      ) {
+        _isBack = !curData.isEdit;
+        setIsLoader(true);
+        isValidation.isBudgetAllocated = false;
+        setIsValidation({ ...isValidation });
+        _getPrepareDatas();
+      } else {
+        isValidation.isBudgetAllocated = true;
+        setIsValidation({ ...isValidation });
+        alertify.error("The budget allocated amount limit crossed");
+      }
     } else {
       setIsValidation({ ...isValidation });
+    }
+  };
+
+  const _getPrepareDatas = (): void => {
+    let data: any = {};
+    const columns: IBudgetListColumn = Config.BudgetListColumns;
+    if (curData.ID) {
+      _isBack = !curData.isEdit;
+      data[columns.Description] = curData.Description;
+      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.RemainingCost] = Number(_curRemainingCost);
+      data[columns.Comments] = curData.Comments;
+      data[columns.Area] = curData.Area;
+      _getEditData({ ...data }, "Updated");
+    } else {
+      data[columns.CategoryId] = curData.CateId;
+      data[columns.CountryId] = curData.CounId;
+      data[columns.YearId] = curData.YearId;
+      data[columns.Description] = curData.Description;
+      data[columns.ApproveStatus] = curData.isApproved
+        ? curData.ApproveStatus === "Approved"
+          ? curData.ApproveStatus
+          : "Pending"
+        : "Not Started";
+      data[columns.CategoryType] = curData.Type;
+      data[columns.BudgetProposed] = Number(curData.BudgetProposed);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.RemainingCost] = Number(_curRemainingCost);
+      data[columns.Comments] = curData.Comments;
+      data[columns.Area] = curData.Area;
+      _getAddData({ ...data });
     }
   };
 
@@ -1455,8 +1568,11 @@ const BudgetPlan = (props: any): JSX.Element => {
                 ? Number(_Items[i].BudgetProposed)
                 : 0;
           }
-          if (_Items[i].ID) {
+          if (_Items[i].ID === curData.ID) {
             _Items[i].CategoryType = "Sub Category";
+            _Items[i].RemainingCost = Number(_curRemainingCost);
+            _arrNewBudget.push(_Items[i]);
+          } else if (_Items[i].ID) {
             _arrNewBudget.push(_Items[i]);
           }
           i + 1 == _Items.length &&
@@ -1512,6 +1628,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           if (_Items[i].ID) {
             if (type == "Updated" && _Items[i].ID == curData.ID) {
               _message = type;
+              curData.RemainingCost = Number(_curRemainingCost);
               _arrNewBudget.push({ ...curData });
             } else if (type == "Deleted" && _Items[i].ID == curData.ID) {
               _message = type;
@@ -1541,6 +1658,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     })
       .then((res: any) => {
+        _isAction = false;
         let _emptyGroup: IOverAllItem[] = [];
         for (let i: number = 0; _groupItem.length > i; i++) {
           if (
@@ -1572,6 +1690,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         ) {
           isValidation.isBudgetRequired = false;
           isValidation.isDescription = false;
+          isValidation.isBudgetAllocated = false;
           setIsValidation({ ...isValidation });
           _isBack = false;
           _getEditItem(_item, "Deleted");
@@ -1581,6 +1700,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       ) {
         isValidation.isBudgetRequired = false;
         isValidation.isDescription = false;
+        isValidation.isBudgetAllocated = false;
         setIsValidation({ ...isValidation });
         _getEditItem(_item, "Add");
       } else null;
@@ -1594,29 +1714,65 @@ const BudgetPlan = (props: any): JSX.Element => {
     let _curArray: any[] = [];
     let _curCateArray: any[] = [];
     let _curSubArray: any[] = [];
+    let _curSubArrayNumber: number[] = [];
+    let _curNewArray: ICurBudgetItem[] = [];
+    let _isFunTriger: boolean = true;
 
-    for (let i: number = 0; _preArray.length > i; i++) {
-      let _curNewArray: ICurBudgetItem[] = [];
+    _loop: for (let i: number = 0; _preArray.length > i; i++) {
+      let _curOverAllBudgetCost: number = 0;
+      let _curOverAllocatedAmount: number = 0;
+      _curNewArray = [];
+      _curSubArrayNumber = [];
+
+      _curOverAllBudgetCost = _preArray[i].OverAllBudgetCost
+        ? _preArray[i].OverAllBudgetCost
+        : 0;
+
       _curNewArray = _preArray[i].subCategory.filter(
         (e: ICurBudgetItem) => e.ID !== null
       );
 
-      if (_curNewArray.length) {
-        _curCateArray.push({
-          ID: _preArray[i].ID,
-          Status: "Approved",
-        });
+      _curNewArray.forEach((e: ICurBudgetItem) => {
+        _curSubArrayNumber.push(
+          e.BudgetAllocated ? Number(e.BudgetAllocated) : 0
+        );
+      });
 
-        for (let j: number = 0; _curNewArray.length > j; j++) {
-          _curSubArray.push({
-            ID: _curNewArray[j].ID,
-            ApproveStatus: "Approved",
+      _curOverAllocatedAmount = [..._curSubArrayNumber].reduce(
+        (a, b) => a + b,
+        0
+      );
+
+      if (_curOverAllBudgetCost >= _curOverAllocatedAmount) {
+        if (_curNewArray.length) {
+          _curCateArray.push({
+            ID: _preArray[i].ID,
+            Status: "Approved",
+            OverAllRemainingCost: _preArray[i].OverAllRemainingCost
+              ? _preArray[i].OverAllRemainingCost
+              : _preArray[i].OverAllBudgetCost,
           });
+
+          for (let j: number = 0; _curNewArray.length > j; j++) {
+            _curSubArray.push({
+              ID: _curNewArray[j].ID,
+              ApproveStatus: "Approved",
+              RemainingCost: _curNewArray[j].RemainingCost
+                ? _curNewArray[j].RemainingCost
+                : _curNewArray[j].BudgetAllocated,
+            });
+          }
         }
+        setIsSubmitModal(false);
+      } else {
+        _isFunTriger = false;
+        setIsSubModal(false);
+        setIsSubmitModal(true);
+        break _loop;
       }
     }
 
-    if (_curCateArray.length && _curSubArray.length) {
+    if (_curCateArray.length && _curSubArray.length && _isFunTriger) {
       _curArray = [
         { ListName: Config.ListNames.CategoryList, _Array: [..._curCateArray] },
         { ListName: Config.ListNames.BudgetList, _Array: [..._curSubArray] },
@@ -1632,16 +1788,18 @@ const BudgetPlan = (props: any): JSX.Element => {
     setIsLoader(true);
 
     for (let i: number = 0; data.length > i; i++) {
-      await SPServices.batchUpdate({
-        ListName: data[i].ListName,
-        responseData: data[i]._Array,
-      })
-        .then((res: any) => {
-          data.length === i + 1 && setIsTrigger(!isTrigger);
+      if (data[i]._Array.length) {
+        await SPServices.batchUpdate({
+          ListName: data[i].ListName,
+          responseData: data[i]._Array,
         })
-        .catch((err: any) => {
-          _getErrorFunction(err);
-        });
+          .then((res: any) => {
+            data.length === i + 1 && setIsTrigger(!isTrigger);
+          })
+          .catch((err: any) => {
+            _getErrorFunction(err);
+          });
+      }
     }
   };
 
@@ -1789,7 +1947,9 @@ const BudgetPlan = (props: any): JSX.Element => {
             text="Submit"
             styles={btnStyle}
             onClick={() => {
-              items.length && setIsSubModal(true);
+              if (_isMasterSubmit && items.length) {
+                setIsSubModal(true);
+              }
             }}
           />
         </div>
@@ -2010,6 +2170,57 @@ const BudgetPlan = (props: any): JSX.Element => {
               }}
             >
               Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* modal of over all submit */}
+      <Modal isOpen={isSubmitModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "Warning12" }}
+            />
+          </div>
+          <Label
+            style={{
+              color: "#202945",
+              fontSize: 16,
+              lineHeight: 1.3,
+              marginTop: 20,
+            }}
+          >
+            Entered amount has crossed the budget allocated amount. <br />
+            Please correct amount properly.
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsSubmitModal(false);
+              }}
+            >
+              Close
             </button>
           </div>
         </div>

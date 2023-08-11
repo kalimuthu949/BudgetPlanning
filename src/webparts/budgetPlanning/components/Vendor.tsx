@@ -53,6 +53,15 @@ let isAllSelect: boolean = false;
 let isSubmit: boolean = true;
 let confirmBoxText: string = "";
 let Status: string = "";
+let _curMasRemainingCost: number = 0;
+let _curMasUsedCost: number = 0;
+let _curSubAllocatedCost: number = 0;
+let _curSubRemainingCost: number = 0;
+let _curSubUsedCost: number = 0;
+let _curPOIssuedCost: number = 0;
+let _curRemainingCost: number = 0;
+let _subUsedCost: number = 0;
+let _subRemCost: number = 0;
 
 const Vendor = (props: any): JSX.Element => {
   /* Variable creation */
@@ -135,9 +144,9 @@ const Vendor = (props: any): JSX.Element => {
                   onClick={() => {
                     isChangeRenual = true;
                     if (TypeFlag == "Add") {
-                      addVendor(item, index);
+                      _prepareJSON(index);
                     } else {
-                      vendorUpdate(item, index);
+                      _prepareJSON(index);
                     }
                   }}
                 />
@@ -645,7 +654,58 @@ const Vendor = (props: any): JSX.Element => {
 
   const getDefaultFunction = () => {
     setIsLoader(true);
-    _getVendorsArr();
+    _getCategoryDatas();
+  };
+
+  const _getCategoryDatas = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.CategoryList,
+      Filter: [
+        {
+          FilterKey: "ID",
+          Operator: "eq",
+          FilterValue: props.vendorDetails.Item.CateId.toString(),
+        },
+      ],
+    })
+      .then((res: any) => {
+        _curMasRemainingCost = res[0].OverAllRemainingCost
+          ? res[0].OverAllRemainingCost
+          : 0;
+        _curMasUsedCost = res[0].OverAllPOIssuedCost
+          ? res[0].OverAllPOIssuedCost
+          : 0;
+
+        _getBudgetDatas();
+      })
+      .catch((err: any) => {
+        getErrorFunction("Master category datas get issue");
+      });
+  };
+
+  const _getBudgetDatas = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.BudgetList,
+      Filter: [
+        {
+          FilterKey: "ID",
+          Operator: "eq",
+          FilterValue: props.vendorDetails.Item.ID.toString(),
+        },
+      ],
+    })
+      .then((res: any) => {
+        _curSubAllocatedCost = res[0].BudgetAllocated
+          ? res[0].BudgetAllocated
+          : 0;
+        _curSubRemainingCost = res[0].RemainingCost ? res[0].RemainingCost : 0;
+        _curSubUsedCost = res[0].Used ? res[0].Used : 0;
+
+        _getVendorsArr();
+      })
+      .catch((err: any) => {
+        getErrorFunction("Sub category datas get issue");
+      });
   };
 
   const _getVendorsArr = (): void => {
@@ -823,37 +883,118 @@ const Vendor = (props: any): JSX.Element => {
     setVendorData(item);
   };
 
-  const addVendor = (item: IVendorItems, index: number): void => {
-    let NewJson = {
-      Vendor: vendorData.Vendor,
-      Description: vendorData.Description,
-      Pricing: SPServices.decimalCount(Number(vendorData.Pricing)),
-      PaymentTerms: vendorData.PaymentTerms,
-      LastYearCost: vendorData.LastYearCost,
-      PO: vendorData.PO,
-      Supplier: vendorData.Supplier,
-      RequestedAmount: vendorData.RequestedAmount,
-      BudgetId: props.vendorDetails.Item.ID,
-      YearId: props.vendorDetails.Item.YearId,
-      Area: props.vendorDetails.Item.Area,
-    };
+  const _prepareJSON = (index: number): void => {
+    let _curJSON: any = {};
+    let _count: number = 0;
+    let _indexNo: number = -1;
+    let _initial: number = 0;
+    let _curAmountArray: number[] = [];
+    let authendication: boolean = false;
+    let _isValid: boolean = false;
+    let _curMasArray: IOverAllItem;
+    let _curSubArray: ICurBudgetItem[] = [];
+    let _curSubNumber: number[] = [];
+    let _overAllCount: number = 0;
 
-    let authendication: boolean = Validation(index);
+    _curMasArray = [...props._masDistribution].filter(
+      (e: IOverAllItem) => e.ID === props.vendorDetails.Item.CateId
+    )[0];
+    _curSubArray = [..._curMasArray.subCategory].filter(
+      (e: ICurBudgetItem) => e.ID !== props.vendorDetails.Item.ID
+    );
+    [..._curSubArray].forEach((e: ICurBudgetItem) =>
+      _curSubNumber.push(e.Used ? Number(e.Used) : 0)
+    );
+    _overAllCount = [..._curSubNumber].reduce((a, b) => a + b, _initial);
+
+    let _arrOfMaster: IVendorItems[] = [...MData].filter(
+      (e: IVendorItems) => e.ID !== null
+    );
+
+    _indexNo =
+      vendorData.ID &&
+      [..._arrOfMaster].findIndex((e: IVendorItems) => e.ID === vendorData.ID);
+
+    [..._arrOfMaster].forEach((e: IVendorItems) =>
+      _curAmountArray.push(e.Pricing ? Number(e.Pricing) : 0)
+    );
+
+    if (vendorData.ID) {
+      debugger;
+      let _curSum: number = 0;
+
+      _curAmountArray.splice(_indexNo, 1, Number(vendorData.Pricing));
+
+      if (_curAmountArray.length === _arrOfMaster.length) {
+        let _overSum: number = 0;
+
+        _curSum = [..._curAmountArray].reduce((a, b) => a + b, _initial);
+        _count = _curSubAllocatedCost - _curSum;
+        _overSum = _overAllCount + _curSum;
+        _subRemCost = _count;
+        _subUsedCost = _curSum;
+        _curRemainingCost =
+          Number(props.vendorDetails.Item.OverAllBudgetCost) - _overSum;
+        _curPOIssuedCost = _overSum;
+
+        if (_subRemCost >= 0) {
+          _isValid = true;
+        }
+      }
+    } else {
+      if (_curAmountArray.length === _arrOfMaster.length) {
+        _count = Number(vendorData.Pricing);
+        _curPOIssuedCost = _curMasUsedCost + Number(vendorData.Pricing);
+        _curRemainingCost = _curMasRemainingCost - Number(vendorData.Pricing);
+        _subRemCost = _curSubRemainingCost - _count;
+        _subUsedCost = _curSubUsedCost + _count;
+      }
+
+      if (_subRemCost >= 0) {
+        _isValid = true;
+      }
+    }
+
+    if (_isValid) {
+      _curJSON = {
+        Vendor: vendorData.Vendor,
+        Description: vendorData.Description,
+        Pricing: SPServices.decimalCount(Number(vendorData.Pricing)),
+        PaymentTerms: vendorData.PaymentTerms,
+        LastYearCost: vendorData.LastYearCost,
+        PO: vendorData.PO,
+        Supplier: vendorData.Supplier,
+        RequestedAmount: vendorData.RequestedAmount,
+        BudgetId: props.vendorDetails.Item.ID,
+        YearId: props.vendorDetails.Item.YearId,
+        Area: props.vendorDetails.Item.Area,
+      };
+
+      authendication = Validation(index);
+    } else {
+      Validation(index);
+    }
 
     if (authendication) {
-      setIsLoader(true);
-
-      SPServices.SPAddItem({
-        Listname: Config.ListNames.DistributionList,
-        RequestJSON: NewJson,
-      })
-        .then((resAddItem: any) => {
-          createMasterFolder(resAddItem.data.Id);
-        })
-        .catch((error: any) => {
-          getErrorFunction("Add categorty list");
-        });
+      vendorData.ID
+        ? vendorUpdate({ ..._curJSON })
+        : addVendor({ ..._curJSON });
     }
+  };
+
+  const addVendor = (item: any): void => {
+    setIsLoader(true);
+
+    SPServices.SPAddItem({
+      Listname: Config.ListNames.DistributionList,
+      RequestJSON: { ...item },
+    })
+      .then((resAddItem: any) => {
+        createMasterFolder(resAddItem.data.Id);
+      })
+      .catch((error: any) => {
+        getErrorFunction("Add categorty list");
+      });
   };
 
   const createMasterFolder = async (itemId: number) => {
@@ -961,35 +1102,47 @@ const Vendor = (props: any): JSX.Element => {
       RequestJSON: json,
     })
       .then((data) => {
-        let newData = {
-          ...vendorData,
-          ID: Id,
-          AttachmentURL: JSON.parse(json.AttachmentURL),
-          ProcurementURL: JSON.parse(json.ProcurementTeamQuotationURL),
-          isEdit: false,
-          Pricing: SPServices.decimalCount(Number(vendorData.Pricing)),
-        };
-
-        let masterData: IVendorItems[] = [...MData];
-
-        if (type === "Add") {
-          masterData.pop();
-          masterData.push(
-            { ...newData, Status: Config.ApprovalStatus.NotStarted },
-            { ...Config.Vendor, isDummy: true }
-          );
-        } else {
-          let index = [...MData].findIndex((value) => value.ID === Id);
-          masterData.splice(index, 1, { ...newData });
-        }
-
-        TypeFlag = "";
-        ConfimMsg = false;
-        setIsSubmit([...masterData]);
-        setIsLoader(false);
-        setMData([...masterData]);
+        _UpdateMasterCatercory();
       })
       .catch((error) => getErrorFunction("Update attachment"));
+  };
+
+  const _UpdateMasterCatercory = (): void => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.CategoryList,
+      ID: props.vendorDetails.Item.CateId,
+      RequestJSON: {
+        OverAllPOIssuedCost: SPServices.decimalCount(Number(_curPOIssuedCost)),
+        OverAllRemainingCost: SPServices.decimalCount(
+          Number(_curRemainingCost)
+        ),
+      },
+    })
+      .then((res: any) => {
+        _UpdateSubCatercory();
+      })
+      .catch((err: any) => {
+        getErrorFunction("Master Category Amount Update Issue");
+      });
+  };
+
+  const _UpdateSubCatercory = (): void => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.BudgetList,
+      ID: props.vendorDetails.Item.ID,
+      RequestJSON: {
+        Used: SPServices.decimalCount(Number(_subUsedCost)),
+        RemainingCost: SPServices.decimalCount(Number(_subRemCost)),
+      },
+    })
+      .then((res: any) => {
+        TypeFlag = "";
+        ConfimMsg = false;
+        getDefaultFunction();
+      })
+      .catch((err: any) => {
+        getErrorFunction("Sub Category Amount Update Issue");
+      });
   };
 
   const handleInputValue = (files: any, type: string) => {
@@ -1036,34 +1189,20 @@ const Vendor = (props: any): JSX.Element => {
     setMData([...EVendorCancel]);
   };
 
-  const vendorUpdate = (item: IVendorItems, index: number) => {
-    let UpdateJson = {
-      Vendor: vendorData.Vendor,
-      Description: vendorData.Description,
-      Pricing: SPServices.decimalCount(Number(vendorData.Pricing)),
-      PaymentTerms: vendorData.PaymentTerms,
-      LastYearCost: vendorData.LastYearCost,
-      PO: vendorData.PO,
-      Supplier: vendorData.Supplier,
-      RequestedAmount: vendorData.RequestedAmount,
-    };
+  const vendorUpdate = (item: any) => {
+    setIsLoader(true);
 
-    let authendication = Validation(index);
-
-    if (authendication) {
-      setIsLoader(true);
-      SPServices.SPUpdateItem({
-        Listname: Config.ListNames.DistributionList,
-        RequestJSON: UpdateJson,
-        ID: item.ID,
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.DistributionList,
+      RequestJSON: { ...item },
+      ID: vendorData.ID,
+    })
+      .then((resUpdateItem) => {
+        getMasterFolder(vendorData.ID);
       })
-        .then((resUpdateItem) => {
-          getMasterFolder(item.ID);
-        })
-        .catch((error) => {
-          getErrorFunction("Update distribution error");
-        });
-    }
+      .catch((error) => {
+        getErrorFunction("Update distribution error");
+      });
   };
 
   const getMasterFolder = (itemId: number) => {
@@ -1152,7 +1291,7 @@ const Vendor = (props: any): JSX.Element => {
     }
   };
 
-  const Validation = (index): boolean => {
+  const Validation = (index: number): boolean => {
     let isValidation: boolean = true;
     let validationData: IVendorValidation = { ...Config.vendorValidation };
     let isDuplicate = [...MData].some(
@@ -1174,7 +1313,7 @@ const Vendor = (props: any): JSX.Element => {
       isValidation = false;
     }
 
-    if (!vendorData.Pricing) {
+    if (!vendorData.Pricing || _subRemCost <= 0) {
       validationData.Pricing = true;
       isValidation = false;
     }
@@ -1187,6 +1326,8 @@ const Vendor = (props: any): JSX.Element => {
       alertify.error("Please enter Description");
     } else if (!vendorData.Pricing) {
       alertify.error("Please enter Pricing");
+    } else if (_subRemCost <= 0) {
+      alertify.error("Pricing amount crossed the limit");
     }
 
     setValidate(validationData);

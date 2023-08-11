@@ -153,6 +153,8 @@ export namespace Config {
     BudgetProposed: null,
     Used: null,
     RemainingCost: null,
+    OverAllBudgetCost: null,
+    OverAllRemainingCost: null,
     isDeleted: false,
     isEdit: false,
     isDummy: false,
@@ -165,6 +167,7 @@ export namespace Config {
   export const budgetValidation: IBudgetValidation = {
     isDescription: false,
     isBudgetRequired: false,
+    isBudgetAllocated: false,
   };
 
   export const GroupUsers: IGroupUsers = {
