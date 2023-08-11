@@ -15,6 +15,7 @@ import BudgetDistribution from "./BudgetDistribution";
 import BudgetTrackingList from "./BudgetTrackingList";
 import CategoryConfig from "./CategoryConfig";
 import Country from "./Country";
+import CommonScreen from "./CommonScreen";
 import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
 import alertify from "alertifyjs";
@@ -434,7 +435,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 0.8
+          V - 1.0
         </div>
       </div>
     )

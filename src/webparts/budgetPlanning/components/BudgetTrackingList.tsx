@@ -57,9 +57,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
 
   let currentYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
-  console.log("currentYear", currentYear);
-  console.log('_isCurrentYear',_isCurrentYear);
-  
 
   const _selectedItemColumn: IColumn[] = [
     {
@@ -102,7 +99,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     },
   ];
 
-
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [filPeriodDrop, setFilPeriodDrop] = useState<string>(
@@ -119,6 +115,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     ...Config.TrackSelectedItem,
   });
   const [isModal, setIsModal] = useState<boolean>(false);
+  const [isTrigger, setIsTrigger] = useState<boolean>(true);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -827,7 +824,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
-  }, [filCountryDrop, filPeriodDrop, filTypeDrop, filAreaDrop]);
+  }, [isTrigger]);
 
   /* NormalPeoplePicker Function */
   const GetUserDetails = (filterText: any): any[] => {
@@ -881,6 +878,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               )}
               onChange={(e: any, text: IDrop) => {
                 setFilCountryDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -900,6 +898,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               )}
               onChange={(e: any, text: IDrop) => {
                 setFilAreaDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -919,6 +918,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               )}
               onChange={(e: any, text: IDrop) => {
                 setFilTypeDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -937,6 +937,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurrentYear = text.text === currentYear;
                 setFilPeriodDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -952,6 +953,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 setFilCountryDrop("All");
                 setFilTypeDrop("All");
                 setFilAreaDrop("All");
+                setIsTrigger(!isTrigger);
               }}
             >
               <Icon iconName="Refresh" style={{ color: "#ffff" }} />
@@ -960,21 +962,21 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         </div>
 
         {/* btn section */}
-        {_isCurrentYear && 
-           <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
-           <DefaultButton
-             text="Submit"
-             styles={buttonStyles}
-             className={styles.export}
-             style={{
-               cursor: selItems.length ? "pointer" : "not-allowed",
-             }}
-             onClick={() => {
-               selItems.length && setIsModal(true);
-             }}
-           />
-         </div>
-        }
+        {_isCurrentYear && (
+          <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+            <DefaultButton
+              text="Submit"
+              styles={buttonStyles}
+              className={styles.export}
+              style={{
+                cursor: selItems.length ? "pointer" : "not-allowed",
+              }}
+              onClick={() => {
+                selItems.length && setIsModal(true);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Accordion section */}
@@ -982,7 +984,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         trackItems.map((item: IOverAllTrackItem, index: number) => {
           return (
             <Accordion
-              title={`${item.CategoryAcc} - ${item.CountryAcc} ( ${item.Type} ) ~ ${item.OverAllBudgetCost}`}
+              title={`${item.CategoryAcc} - ${item.CountryAcc} ( ${
+                item.Type
+              } ) ~ ${SPServices.format(item.OverAllBudgetCost)}`}
               defaultCollapsed={true}
               collapsedIcon={"ChevronRight"}
               expandedIcon={"ChevronDown"}
@@ -1002,16 +1006,16 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 >
                   {/* table header section */}
                   <tr>
-                    {_isCurrentYear &&
+                    {_isCurrentYear && (
                       <th>
-                      <Checkbox
-                        checked={item.isMasterClick ? _isSelectAll : false}
-                        onChange={(e: any, isChecked: boolean) => {
-                          handleChecked(isChecked, index, null, "all");
-                        }}
-                      />
-                    </th>
-                    }
+                        <Checkbox
+                          checked={item.isMasterClick ? _isSelectAll : false}
+                          onChange={(e: any, isChecked: boolean) => {
+                            handleChecked(isChecked, index, null, "all");
+                          }}
+                        />
+                      </th>
+                    )}
                     <th>Entry Date</th>
                     <th>Item</th>
                     <th>Cost</th>
@@ -1042,7 +1046,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           )}
                           <td>{moment(data.EntryDate).format("MM/DD/YYYY")}</td>
                           <td>{data.Item}</td>
-                          <td>{data.Cost}</td>
+                          <td>{SPServices.format(Number(data.Cost))}</td>
                           <td>{data.Type}</td>
                           <td>{data.Vendor}</td>
                           <td>
@@ -1199,9 +1203,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     <div>Remaining Budget</div>
                   </div>
                   <div>
-                    <div>{item.OverAllBudgetCost}</div>
-                    <div>{item.OverAllPOIssuedCost}</div>
-                    <div>{item.OverAllRemainingCost}</div>
+                    <div>{SPServices.format(item.OverAllBudgetCost)}</div>
+                    <div>{SPServices.format(item.OverAllPOIssuedCost)}</div>
+                    <div>{SPServices.format(item.OverAllRemainingCost)}</div>
                   </div>
                 </div>
               </div>
@@ -1264,14 +1268,13 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               <div>Remaining Budget</div>
             </div>
             <div>
-              <div>{selItems[0].OverAllBudgetCost}</div>
-              <div>{selItems[0].OverAllPOIssuedCost}</div>
-              <div>{selItems[0].OverAllRemainingCost}</div>
+              <div>{SPServices.format(selItems[0].OverAllBudgetCost)}</div>
+              <div>{SPServices.format(selItems[0].OverAllPOIssuedCost)}</div>
+              <div>{SPServices.format(selItems[0].OverAllRemainingCost)}</div>
             </div>
           </div>
 
           {/* modal box Footer section */}
-
           {/* People picker section */}
           <NormalPeoplePicker
             inputProps={{ placeholder: "Insert person" }}
@@ -1297,8 +1300,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               }
             }}
           />
-          
-            <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+
+          <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
             <DefaultButton
               text="Send"
               styles={buttonStyles}
@@ -1311,7 +1314,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               }}
             />
           </div>
-          
         </Modal>
       ) : (
         ""

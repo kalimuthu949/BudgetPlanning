@@ -37,6 +37,7 @@ import { _filterArray } from "../../../CommonServices/filterCommonArray";
 let propDropValue: IDropdowns;
 let _isCurYear: boolean = true;
 let isUserPermissions: IGroupUsers;
+let _arrOfMaster: IOverAllItem[] = [];
 
 const BudgetDistribution = (props: any): JSX.Element => {
   /* Variable creation */
@@ -50,8 +51,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
       key: "column1",
       name: "Category",
       fieldName: Config.BudgetListColumns.CategoryId.toString(),
-      minWidth: 200,
-      maxWidth: _isCurYear ? 200 : 280,
+      minWidth: 130,
+      maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
         return item.Category;
       },
@@ -60,8 +61,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
       key: "column2",
       name: "Area",
       fieldName: Config.BudgetListColumns.Area,
-      minWidth: 150,
-      maxWidth: _isCurYear ? 150 : 230,
+      minWidth: 130,
+      maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
         return item.Area;
       },
@@ -70,8 +71,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
       key: "column3",
       name: "Description",
       fieldName: Config.BudgetListColumns.Description,
-      minWidth: 300,
-      maxWidth: _isCurYear ? 330 : 400,
+      minWidth: 200,
+      maxWidth: _isCurYear ? 250 : 300,
       onRender: (item: ICurBudgetItem): any => {
         return (
           <div title={item.Description} style={{ cursor: "pointer" }}>
@@ -84,8 +85,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
       key: "column4",
       name: "Comment",
       fieldName: Config.BudgetListColumns.Comments,
-      minWidth: 280,
-      maxWidth: 300,
+      minWidth: 300,
+      maxWidth: 330,
       onRender: (item: ICurBudgetItem): any => {
         return (
           <div
@@ -105,52 +106,67 @@ const BudgetDistribution = (props: any): JSX.Element => {
     {
       key: "column5",
       name: "Budget Required",
-      fieldName: Config.BudgetListColumns.BudgetAllocated,
+      fieldName: Config.BudgetListColumns.BudgetProposed,
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: ICurBudgetItem): any => {
-        return <div style={{ color: "#E39C5A" }}>{SPServices.format(Number(item.BudgetAllocated))}</div>;
+        return (
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetProposed))}
+          </div>
+        );
       },
     },
     {
       key: "column6",
-      name: "Used",
-      minWidth: 100,
-      maxWidth: 130,
-      onRender: (item: any) => {
-        return <div style={{ color: "#AC455E" }}>{item.Used}</div>;
+      name: "Budget Allocated",
+      fieldName: Config.BudgetListColumns.BudgetAllocated,
+      minWidth: 150,
+      maxWidth: 150,
+      onRender: (item: ICurBudgetItem): any => {
+        return (
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetAllocated))}
+          </div>
+        );
       },
     },
     {
       key: "column7",
-      name: "Remaining",
+      name: "Used",
       minWidth: 100,
       maxWidth: 130,
       onRender: (item: any) => {
         return (
-          <div
-            style={
-              item.Year != _curYear
-                ? {
-                    padding: "4px 12px",
-                    backgroundImage:
-                      "linear-gradient(to right, #59e27f, #f1f1f1)",
-                    display: "inline",
-                    borderRadius: 4,
-                    color: "#000",
-                  }
-                : {
-                    padding: 0,
-                  }
-            }
-          >
-            {item.RemainingCost}
+          <div style={{ color: "#AC455E" }}>
+            {SPServices.format(Number(item.Used))}
           </div>
         );
       },
     },
     {
       key: "column8",
+      name: "Remaining",
+      minWidth: 100,
+      maxWidth: 130,
+      onRender: (item: any) => {
+        return (
+          <div
+            style={{
+              padding: "4px 12px",
+              backgroundImage: "linear-gradient(to right, #59e27f, #f1f1f1)",
+              display: "inline",
+              borderRadius: 4,
+              color: "#000",
+            }}
+          >
+            {SPServices.format(Number(item.RemainingCost))}
+          </div>
+        );
+      },
+    },
+    {
+      key: "column9",
       name: "Action",
       minWidth: 50,
       maxWidth: 80,
@@ -215,6 +231,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
   const [vendorDetails, setVendorDetails] = useState<IVendorProp>({
     ...Config.VendorProp,
   });
+  const [isTrigger, setIsTrigger] = useState<boolean>(true);
 
   /* Style Section */
   const DropdownStyle: Partial<IDropdownStyles> = {
@@ -264,7 +281,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       },
     },
   };
-  
+
   const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
     root: {
       width: "66%",
@@ -310,6 +327,11 @@ const BudgetDistribution = (props: any): JSX.Element => {
           Operator: "eq",
           FilterValue: filPeriodDrop,
         },
+        {
+          FilterKey: "Status",
+          Operator: "eq",
+          FilterValue: "Approved",
+        },
       ],
       Topcount: 5000,
     })
@@ -343,6 +365,12 @@ const BudgetDistribution = (props: any): JSX.Element => {
               OverAllBudgetCost: resCate[i].OverAllBudgetCost
                 ? resCate[i].OverAllBudgetCost
                 : null,
+              OverAllRemainingCost: resCate[i].OverAllRemainingCost
+                ? resCate[i].OverAllRemainingCost
+                : null,
+              OverAllPOIssuedCost: resCate[i].OverAllPOIssuedCost
+                ? resCate[i].OverAllPOIssuedCost
+                : null,
               TotalProposed: resCate[i].TotalProposed
                 ? resCate[i].TotalProposed
                 : null,
@@ -356,7 +384,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction('Get category datas');
+        _getErrorFunction("Get category datas");
       });
   };
 
@@ -417,6 +445,11 @@ const BudgetDistribution = (props: any): JSX.Element => {
           Operator: "eq",
           FilterValue: _arrCate[0].YearAcc.Text,
         },
+        {
+          FilterKey: "ApproveStatus",
+          Operator: "eq",
+          FilterValue: "Approved",
+        },
       ],
       Topcount: 5000,
       Orderbydecorasc: false,
@@ -468,7 +501,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         }
       })
       .catch((err: any) => {
-        _getErrorFunction('Get budget datas');
+        _getErrorFunction("Get budget datas");
       });
   };
 
@@ -489,6 +522,8 @@ const BudgetDistribution = (props: any): JSX.Element => {
           yearID: _arrCate[i].YearAcc.ID,
           countryID: _arrCate[i].CountryAcc.ID,
           OverAllBudgetCost: _arrCate[i].OverAllBudgetCost,
+          OverAllPOIssuedCost: _arrCate[i].OverAllPOIssuedCost,
+          OverAllRemainingCost: _arrCate[i].OverAllRemainingCost,
           TotalProposed: _arrCate[i].TotalProposed,
           isAdmin: _arrCate[i].isAdmin,
           isManager: _arrCate[i].isManager,
@@ -508,7 +543,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
     _arrCateDatas: IOverAllItem[],
     _arrBudget: ICurBudgetItem[]
   ): void => {
-    let _arrOfMaster: IOverAllItem[] = [];
+    _arrOfMaster = [];
 
     for (let i: number = 0; _arrCateDatas.length > i; i++) {
       let isDatas: boolean = true;
@@ -525,6 +560,11 @@ const BudgetDistribution = (props: any): JSX.Element => {
           isDatas = false;
           _arrBudget[j].isAdmin = _arrCateDatas[i].isAdmin;
           _arrBudget[j].isManager = _arrCateDatas[i].isManager;
+          _arrBudget[j].OverAllBudgetCost = _arrCateDatas[i].OverAllBudgetCost;
+          _arrBudget[j].OverAllRemainingCost =
+            _arrCateDatas[i].OverAllRemainingCost;
+          _arrBudget[j].OverAllPOIssuedCost =
+            _arrCateDatas[i].OverAllPOIssuedCost;
           _arrCateDatas[i].subCategory.push({ ..._arrBudget[j] });
         }
         if (!isDatas && j + 1 == _arrBudget.length) {
@@ -651,14 +691,14 @@ const BudgetDistribution = (props: any): JSX.Element => {
         setUserDatas([]);
       })
       .catch((err: any) => {
-        _getErrorFunction('Add admin datas');
+        _getErrorFunction("Add admin datas");
       });
   };
 
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
-  }, [filAreaDrop, filCountryDrop, filPeriodDrop, filTypeDrop]);
+  }, [isTrigger, vendorDetails.isVendor]);
 
   /* NormalPeoplePicker Function */
   const GetUserDetails = (filterText: any): any[] => {
@@ -701,6 +741,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilCountryDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -719,6 +760,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilAreaDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -737,6 +779,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = (text.text as string) == _curYear ? true : false;
                 setFilPeriodDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -755,6 +798,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               onChange={(e: any, text: IDrop) => {
                 _isCurYear = filPeriodDrop == _curYear ? true : false;
                 setFilTypeDrop(text.text as string);
+                setIsTrigger(!isTrigger);
               }}
             />
           </div>
@@ -770,6 +814,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               setFilCountryDrop("All");
               setFilTypeDrop("All");
               setFilAreaDrop("All");
+              setIsTrigger(!isTrigger);
             }}
           >
             <Icon iconName="Refresh" style={{ color: "#ffff" }} />
@@ -843,6 +888,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
   ) : (
     <Vendor
       props={props}
+      _masDistribution={[..._arrOfMaster]}
       vendorDetails={vendorDetails}
       setVendorDetails={setVendorDetails}
     />

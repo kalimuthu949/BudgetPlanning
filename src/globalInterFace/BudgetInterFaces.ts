@@ -168,6 +168,9 @@ export interface ICurBudgetItem {
   isAdmin?: boolean;
   isManager?: boolean;
   isApproved?: boolean;
+  OverAllBudgetCost?: number;
+  OverAllPOIssuedCost?: number;
+  OverAllRemainingCost?: number;
 }
 
 /* Interface of over all items */
@@ -181,6 +184,8 @@ export interface IOverAllItem {
   yearID: number;
   countryID: number;
   OverAllBudgetCost: number;
+  OverAllPOIssuedCost: number;
+  OverAllRemainingCost: number;
   TotalProposed: number;
   Status?: string;
   CategoryType?: string;
@@ -193,6 +198,7 @@ export interface IOverAllItem {
 export interface IBudgetValidation {
   isDescription: boolean;
   isBudgetRequired: boolean;
+  isBudgetAllocated: boolean;
 }
 
 /* Interface of Pagination items */
@@ -339,7 +345,7 @@ export interface IVendorProp {
 // Interface of butget track dis
 export interface IBudTrackDistribution {
   ID: Number;
-  Cost: Number;
+  Cost: number | string;
   BudgetId: Number;
   isClick: boolean;
   isEdit: boolean;

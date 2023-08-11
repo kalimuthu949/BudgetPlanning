@@ -59,8 +59,9 @@ let areaExport = [];
 let _areasDrop: IDrop[] = [];
 let isUserPermissions: IGroupUsers;
 let _strSearch: string = "";
-let _strArea: string = "";
+let _strArea: string = "All";
 let categoryName: string = "";
+let _arrOfMaster: IMasCategoryItems[] = [];
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
@@ -114,7 +115,8 @@ const BudgetCategory = (props: any): JSX.Element => {
     totalPageItems: 10,
     pagenumber: 1,
   });
-  const [filArea, setFilArea] = useState<string>("");
+  const [filArea, setFilArea] = useState<string>("All");
+  const [searchText, setSearchText] = useState<string>("");
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -492,6 +494,7 @@ const BudgetCategory = (props: any): JSX.Element => {
     })
       .then((_resMasCate: any) => {
         let _masCategory: IMasCategoryItems[] = [];
+        _arrOfMaster = [];
         if (_resMasCate.length) {
           _resMasCate.forEach((data: any, i: number) => {
             _masCategory.push({
@@ -502,9 +505,8 @@ const BudgetCategory = (props: any): JSX.Element => {
               _getFilteredMas([..._masCategory]);
           });
         } else {
-          setMData([..._masCategory]);
-          setMaster([..._masCategory]);
-          setIsLoader(false);
+          _arrOfMaster = [..._masCategory];
+          searchData();
         }
       })
       .catch((err: any) => {
@@ -514,6 +516,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const _getFilteredMas = (arr: IMasCategoryItems[]): void => {
     let _filArray: IMasCategoryItems[] = [];
+    _arrOfMaster = [];
 
     _filArray = _filterArray(
       isUserPermissions,
@@ -522,13 +525,17 @@ const BudgetCategory = (props: any): JSX.Element => {
     );
 
     if (_filArray.length) {
-      setMData([..._filArray]);
-      setMaster([..._filArray]);
-      setIsLoader(false);
+      _arrOfMaster = [..._filArray];
+      searchData();
+      // setMData([..._filArray]);
+      // setMaster([..._filArray]);
+      // setIsLoader(false);
     } else {
-      setMData([..._filArray]);
-      setMaster([..._filArray]);
-      setIsLoader(false);
+      _arrOfMaster = [..._filArray];
+      searchData();
+      // setMData([..._filArray]);
+      // setMaster([..._filArray]);
+      // setIsLoader(false);
     }
   };
 
@@ -752,7 +759,7 @@ const BudgetCategory = (props: any): JSX.Element => {
 
   const searchData = (): void => {
     setPagination({ ...pagination, pagenumber: 1 });
-    let searchdata: any[] = [...MData];
+    let searchdata: any[] = [..._arrOfMaster];
 
     searchdata = searchdata.filter((value) => {
       return value.Title.toLowerCase().includes(
@@ -766,6 +773,9 @@ const BudgetCategory = (props: any): JSX.Element => {
     }
 
     setMaster([...searchdata]);
+    setMData([..._arrOfMaster]);
+    // setMaster([..._masCategory]);
+    setIsLoader(false);
   };
 
   const dropKeyFilter = (textVal: string): number => {
@@ -816,9 +826,11 @@ const BudgetCategory = (props: any): JSX.Element => {
             <Label>Category</Label>
             <SearchBox
               styles={searchStyle}
+              value={searchText}
               placeholder="Search"
               onChange={(val, text) => {
                 _strSearch = text;
+                setSearchText(text);
                 searchData();
               }}
             />
@@ -850,10 +862,13 @@ const BudgetCategory = (props: any): JSX.Element => {
           <Icon
             iconName="Refresh"
             className={styles.refresh}
-            // onClick={() => {
-            //   _isCurYear = true;
-            //   reset(currentYear);
-            // }}
+            onClick={() => {
+              _strSearch = "";
+              _strArea = "All";
+              setSearchText("");
+              setFilArea("All");
+              searchData();
+            }}
           />
         </div>
 
