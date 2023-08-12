@@ -19,6 +19,7 @@ import {
   IVendorItems,
   IApprovalStatus,
   ITrackSelectedItem,
+  IComScreen,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -178,7 +179,7 @@ export namespace Config {
     isEnterpricesManager: false,
     isSpecialAdmin: false,
     isSpecialManager: false,
-    isSuperAdminView:false,
+    isSuperAdminView: false,
   };
 
   export const GroupNames: IGroupNames = {
@@ -190,7 +191,7 @@ export namespace Config {
     SpecialAdmin: "Special Admin",
     SpecialManager: "Special Manager",
     SuperAdminView: "Super Admin View",
-    Director: "Director"
+    Director: "Director",
   };
 
   export const AreaName: IAreaName = {
@@ -254,5 +255,11 @@ export namespace Config {
     Po: "",
     PoCurrency: "",
     InvoiceNo: "",
+  };
+
+  export const ComScreen: IComScreen = {
+    isCountry: false,
+    isBudgetCategory: false,
+    isCategoryConfig: false,
   };
 }

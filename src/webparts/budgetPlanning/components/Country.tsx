@@ -582,7 +582,28 @@ const Country = (props: any): JSX.Element => {
   ) : (
     <div>
       {/* Header section */}
-      <Label className={styles.HeaderLable}>Budget Country</Label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <Icon
+          iconName="ChromeBack"
+          style={{
+            marginRight: 20,
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#202945",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            props.setIsNave({ ...Config.ComScreen });
+          }}
+        />
+        <Label className={styles.HeaderLable}>Budget Country</Label>
+      </div>
 
       {/* Filter & btn section */}
       <div className={styles.countryModalBtnSec}>

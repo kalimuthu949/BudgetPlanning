@@ -401,3 +401,10 @@ export interface ITrackUpdateItem {
   PoCurrency: string;
   InvoiceNo: string;
 }
+
+// common screen interfaces
+export interface IComScreen {
+  isCountry: boolean;
+  isBudgetCategory: boolean;
+  isCategoryConfig: boolean;
+}
