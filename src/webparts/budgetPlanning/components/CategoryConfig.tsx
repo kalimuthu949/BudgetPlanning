@@ -490,7 +490,28 @@ const CategoryConfig = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <Label className={styles.HeaderLable}>Category Configuration</Label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <Icon
+          iconName="ChromeBack"
+          style={{
+            marginRight: 20,
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#202945",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            props.setIsNave({ ...Config.ComScreen });
+          }}
+        />
+        <Label className={styles.HeaderLable}>Category Configuration</Label>
+      </div>
 
       {/* Dropdown and btn section */}
       <div

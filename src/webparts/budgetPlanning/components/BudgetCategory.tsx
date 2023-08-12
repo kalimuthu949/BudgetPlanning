@@ -814,7 +814,28 @@ const BudgetCategory = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <Label className={styles.HeaderLable}>Budget Category</Label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <Icon
+          iconName="ChromeBack"
+          style={{
+            marginRight: 20,
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#202945",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            props.setIsNave({ ...Config.ComScreen });
+          }}
+        />
+        <Label className={styles.HeaderLable}>Budget Category</Label>
+      </div>
 
       {/* filter and btn section */}
       <div className={styles.btnContainer}>

@@ -1380,6 +1380,8 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _getValidation = (): void => {
     let _isValid: boolean = true;
     let _isDuplicate: boolean = false;
+    let _curOverAllAllocatedAmount: number = 0;
+
     let _arrDuplicate: ICurBudgetItem[] = _Items.filter(
       (e: ICurBudgetItem) => e.CateId === curData.CateId && e.ID != curData.ID
     );
@@ -1466,7 +1468,10 @@ const BudgetPlan = (props: any): JSX.Element => {
         }
 
         if (_curAmountArray.length === _curNewSubCategory.length) {
-          _TotalAllocated = _arrOfMaster[n].OverAllBudgetCost;
+          _curOverAllAllocatedAmount = _arrOfMaster[n].OverAllBudgetCost
+            ? _arrOfMaster[n].OverAllBudgetCost
+            : 0;
+          _TotalAllocated = _curOverAllAllocatedAmount;
           _count = [..._curAmountArray].reduce((a, b) => a + b, _initial);
           _totalRemaningAmount = _TotalAllocated - _count;
           _curRemainingCost =
@@ -1481,26 +1486,33 @@ const BudgetPlan = (props: any): JSX.Element => {
       isValidation.isBudgetRequired = false;
       isValidation.isDescription = false;
 
-      if (_curUsedCost >= Number(curData.BudgetAllocated)) {
+      if (
+        _curOverAllAllocatedAmount !== 0 &&
+        _curUsedCost > Number(curData.BudgetAllocated)
+      ) {
         isValidation.isBudgetAllocated = true;
         setIsValidation({ ...isValidation });
         alertify.error("You have less than of used amount");
-      } else if (_totalRemaningAmount >= 0 && _isAction) {
-        _isBack = !curData.isEdit;
-        setIsLoader(true);
-        isValidation.isBudgetAllocated = false;
-        setIsValidation({ ...isValidation });
-        _getPrepareDatas();
       } else if (
-        _totalRemaningAmount >= Number(curData.BudgetAllocated) &&
-        _totalRemaningAmount >= 0
+        _curOverAllAllocatedAmount === 0 ||
+        (_totalRemaningAmount >= 0 && _isAction)
       ) {
         _isBack = !curData.isEdit;
         setIsLoader(true);
         isValidation.isBudgetAllocated = false;
         setIsValidation({ ...isValidation });
         _getPrepareDatas();
-      } else {
+      } else if (
+        _curOverAllAllocatedAmount === 0 ||
+        (_totalRemaningAmount >= Number(curData.BudgetAllocated) &&
+          _totalRemaningAmount >= 0)
+      ) {
+        _isBack = !curData.isEdit;
+        setIsLoader(true);
+        isValidation.isBudgetAllocated = false;
+        setIsValidation({ ...isValidation });
+        _getPrepareDatas();
+      } else if (_curOverAllAllocatedAmount !== 0) {
         isValidation.isBudgetAllocated = true;
         setIsValidation({ ...isValidation });
         alertify.error("The budget allocated amount limit crossed");
