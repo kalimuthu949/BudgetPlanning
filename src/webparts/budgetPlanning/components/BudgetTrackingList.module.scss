@@ -1,7 +1,6 @@
 .HeaderLable {
   font-size: 28px;
   color: #202945;
-  margin-bottom: 20px;
 }
 
 .noRecords {
@@ -39,8 +38,7 @@
 
 .export {
   background-color: #2580e0;
-  // width: 10%;
-  width: 85%;
+  width: 10%;
   height: 33px;
   border: none;
   color: #fff;
@@ -48,4 +46,20 @@
   border: none;
   // font-weight: 500;
   cursor: pointer;
+}
+
+.accordion {
+  button:focus {
+    border: none !important;
+  }
+}
+.tableStyle {
+  td {
+    text-align: center;
+  }
+}
+
+.modalSubmitSection {
+  display: flex;
+  justify-content: flex-end;
 }

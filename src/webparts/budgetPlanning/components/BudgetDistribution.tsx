@@ -241,6 +241,20 @@ const BudgetDistribution = (props: any): JSX.Element => {
       },
     },
   };
+  const disabledDropdownStyles: Partial<IDropdownStyles> = {
+    title: {
+      background: "#fff",
+      border: "1px solid #000",
+    },
+    root: {
+      width: "100%",
+    },
+    dropdown: {
+      ":focus::after": {
+        border: "1px solid #000",
+      },
+    },
+  };
 
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
     root: {
