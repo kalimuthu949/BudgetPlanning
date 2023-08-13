@@ -121,99 +121,99 @@ const Vendor = (props: any): JSX.Element => {
         );
       },
     },
-    {
-      key: "12",
-      name: "Action",
-      fieldName: "Action",
-      minWidth: 100,
-      maxWidth: 500,
-      onRender: (item, index) => {
-        let isActionView = item.Status !== Config.ApprovalStatus.Approved;
+    // {
+    //   key: "12",
+    //   name: "Action",
+    //   fieldName: "Action",
+    //   minWidth: 100,
+    //   maxWidth: 500,
+    //   onRender: (item, index) => {
+    //     let isActionView = item.Status !== Config.ApprovalStatus.Approved;
 
-        if (isActionView) {
-          return admin ? (
-            item.isEdit ? (
-              <div>
-                <Icon
-                  iconName="CheckMark"
-                  style={{
-                    color: "green",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    isChangeRenual = true;
-                    if (TypeFlag == "Add") {
-                      _prepareJSON(index);
-                    } else {
-                      _prepareJSON(index);
-                    }
-                  }}
-                />
-                <Icon
-                  iconName="Cancel"
-                  style={{
-                    color: "red",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    setValidate({ ...Config.vendorValidation });
-                    isChangeRenual = true;
-                    if (TypeFlag == "Add") {
-                      ConfimMsg = !ConfimMsg;
-                      addVendorCancel(item, index);
-                    } else {
-                      ConfimMsg = !ConfimMsg;
-                      editVendorCancel(item, index);
-                    }
-                  }}
-                />
-              </div>
-            ) : (
-              !item.isDummy && (
-                <div>
-                  <Icon
-                    iconName="Edit"
-                    style={{
-                      color: "blue",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      isChangeRenual = false;
-                      if (!ConfimMsg) {
-                        ConfimMsg = !ConfimMsg;
-                        TypeFlag = "Edit";
-                        editVendorItem(item, index);
-                      } else {
-                        ConfirmPageChange(item, index, "Edit");
-                      }
-                    }}
-                  />
-                  <Icon
-                    iconName="Delete"
-                    style={{
-                      color: "red",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      if (isChangeRenual) {
-                        setIsDelModal(true);
-                        setVendorData(item);
-                      }
-                    }}
-                  />
-                </div>
-              )
-            )
-          ) : (
-            <div></div>
-          );
-        }
-      },
-    },
+    //     if (isActionView) {
+    //       return admin ? (
+    //         item.isEdit ? (
+    //           <div>
+    //             <Icon
+    //               iconName="CheckMark"
+    //               style={{
+    //                 color: "green",
+    //                 fontSize: "20px",
+    //                 cursor: "pointer",
+    //               }}
+    //               onClick={() => {
+    //                 isChangeRenual = true;
+    //                 if (TypeFlag == "Add") {
+    //                   _prepareJSON(index);
+    //                 } else {
+    //                   _prepareJSON(index);
+    //                 }
+    //               }}
+    //             />
+    //             <Icon
+    //               iconName="Cancel"
+    //               style={{
+    //                 color: "red",
+    //                 fontSize: "16px",
+    //                 cursor: "pointer",
+    //               }}
+    //               onClick={() => {
+    //                 setValidate({ ...Config.vendorValidation });
+    //                 isChangeRenual = true;
+    //                 if (TypeFlag == "Add") {
+    //                   ConfimMsg = !ConfimMsg;
+    //                   addVendorCancel(item, index);
+    //                 } else {
+    //                   ConfimMsg = !ConfimMsg;
+    //                   editVendorCancel(item, index);
+    //                 }
+    //               }}
+    //             />
+    //           </div>
+    //         ) : (
+    //           !item.isDummy && (
+    //             <div>
+    //               <Icon
+    //                 iconName="Edit"
+    //                 style={{
+    //                   color: "blue",
+    //                   fontSize: "16px",
+    //                   cursor: "pointer",
+    //                 }}
+    //                 onClick={() => {
+    //                   isChangeRenual = false;
+    //                   if (!ConfimMsg) {
+    //                     ConfimMsg = !ConfimMsg;
+    //                     TypeFlag = "Edit";
+    //                     editVendorItem(item, index);
+    //                   } else {
+    //                     ConfirmPageChange(item, index, "Edit");
+    //                   }
+    //                 }}
+    //               />
+    //               <Icon
+    //                 iconName="Delete"
+    //                 style={{
+    //                   color: "red",
+    //                   fontSize: "16px",
+    //                   cursor: "pointer",
+    //                 }}
+    //                 onClick={() => {
+    //                   if (isChangeRenual) {
+    //                     setIsDelModal(true);
+    //                     setVendorData(item);
+    //                   }
+    //                 }}
+    //               />
+    //             </div>
+    //           )
+    //         )
+    //       ) : (
+    //         <div></div>
+    //       );
+    //     }
+    //   },
+    // },
     {
       key: "3",
       name: "Pricing",
@@ -465,6 +465,101 @@ const Vendor = (props: any): JSX.Element => {
         );
       },
     },
+    {
+      key: "12",
+      name: "Action",
+      fieldName: "Action",
+      minWidth: 100,
+      maxWidth: 500,
+      onRender: (item, index) => {
+        let isActionView = item.Status !== Config.ApprovalStatus.Approved;
+
+        if (isActionView) {
+          return admin ? (
+            item.isEdit ? (
+              <div>
+                <Icon
+                  iconName="CheckMark"
+                  style={{
+                    color: "green",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                    marginRight: 10,
+                  }}
+                  onClick={() => {
+                    isChangeRenual = true;
+                    if (TypeFlag == "Add") {
+                      _prepareJSON(index);
+                    } else {
+                      _prepareJSON(index);
+                    }
+                  }}
+                />
+                <Icon
+                  iconName="Cancel"
+                  style={{
+                    color: "red",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    setValidate({ ...Config.vendorValidation });
+                    isChangeRenual = true;
+                    if (TypeFlag == "Add") {
+                      ConfimMsg = !ConfimMsg;
+                      addVendorCancel(item, index);
+                    } else {
+                      ConfimMsg = !ConfimMsg;
+                      editVendorCancel(item, index);
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              !item.isDummy && (
+                <div>
+                  <Icon
+                    iconName="Edit"
+                    style={{
+                      color: "blue",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                      marginRight: 10,
+                    }}
+                    onClick={() => {
+                      isChangeRenual = false;
+                      if (!ConfimMsg) {
+                        ConfimMsg = !ConfimMsg;
+                        TypeFlag = "Edit";
+                        editVendorItem(item, index);
+                      } else {
+                        ConfirmPageChange(item, index, "Edit");
+                      }
+                    }}
+                  />
+                  <Icon
+                    iconName="Delete"
+                    style={{
+                      color: "red",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      if (isChangeRenual) {
+                        setIsDelModal(true);
+                        setVendorData(item);
+                      }
+                    }}
+                  />
+                </div>
+              )
+            )
+          ) : (
+            <div></div>
+          );
+        }
+      },
+    },
   ];
 
   const newColumn: any[] = [...column];
@@ -586,6 +681,21 @@ const Vendor = (props: any): JSX.Element => {
     },
   };
 
+  const disbableTextFieldStyle: Partial<ITextFieldStyles> = {
+    root: {
+      input: {
+        backgroundColor: "#fff",
+        color: "#242424",
+      },
+      label: {
+        color: "#242424",
+      },
+    },
+    fieldGroup: {
+      border: "1px solid #000 !important",
+    },
+  };
+
   const DropdownStyle: Partial<IDropdownStyles> = {
     root: {
       dropdown: {
@@ -623,6 +733,7 @@ const Vendor = (props: any): JSX.Element => {
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
+      overflow: "unset",
     },
   };
 
@@ -1512,12 +1623,14 @@ const Vendor = (props: any): JSX.Element => {
           <div style={{ width: "15%" }}>
             <TextField
               label="Period"
+              styles={disbableTextFieldStyle}
               value={props.vendorDetails.Item.Year}
               disabled={true}
             />
           </div>
           <div style={{ width: "15%" }}>
             <TextField
+              styles={disbableTextFieldStyle}
               label="Country"
               value={props.vendorDetails.Item.Country}
               disabled={true}
@@ -1525,6 +1638,7 @@ const Vendor = (props: any): JSX.Element => {
           </div>
           <div style={{ width: "15%" }}>
             <TextField
+              styles={disbableTextFieldStyle}
               label="Type"
               value={props.vendorDetails.Item.Type}
               disabled={true}
@@ -1532,6 +1646,7 @@ const Vendor = (props: any): JSX.Element => {
           </div>
           <div style={{ width: "15%" }}>
             <TextField
+              styles={disbableTextFieldStyle}
               label="Area"
               value={props.vendorDetails.Item.Area}
               disabled={true}
@@ -1634,10 +1749,16 @@ const Vendor = (props: any): JSX.Element => {
         <div>
           {/* Content section */}
           {/* <img src={`${deleteGif}`} /> */}
-          <IconButton
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.unlinkImg}
+              iconProps={{ iconName: "Delete" }}
+            />
+          </div>
+          {/* <IconButton
             // className={styles.deleteImg}
             iconProps={{ iconName: "Delete" }}
-          />
+          /> */}
           <Label
             style={{
               color: "red",
@@ -1696,6 +1817,17 @@ const Vendor = (props: any): JSX.Element => {
       </Modal>
       <Modal isOpen={isConfirmModal} isBlocking={false} styles={modalStyles}>
         <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.unlinkImg}
+              iconProps={
+                confirmBoxText == "Review"
+                  ? { iconName: "DocumentApproval" }
+                  : { iconName: "CheckMark" }
+              }
+            />
+          </div>
+
           <Label
             style={{
               color: "red",

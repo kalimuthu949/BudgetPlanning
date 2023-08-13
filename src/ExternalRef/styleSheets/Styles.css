@@ -153,6 +153,10 @@ div {
   border-radius: 50%;
 }
 
+.ms-DetailsList-contentWrapper {
+  overflow: auto !important;
+  width: max-content;
+}
 .ms-DetailsList-contentWrapper::-webkit-scrollbar {
   width: 10px;
   background-color: #f7f7f7;
@@ -163,6 +167,14 @@ div {
   background-color: #e7e7e7;
 }
 
+.is-horizontalConstrained::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f7f7f7;
+}
+.is-horizontalConstrained::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #e7e7e7;
+}
 button:active {
   color: #fff !important;
 }
@@ -173,4 +185,9 @@ button:active {
 .is-checked .ms-Checkbox-checkbox {
   background: #202945 !important;
   border: 1px solid #202945 !important;
+}
+[data-item-key="0"] span:nth-child(1) {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }

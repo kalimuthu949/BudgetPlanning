@@ -19,6 +19,9 @@ import {
   IColumn,
   IPeoplePickerItemSelectedStyles,
   NormalPeoplePicker,
+  ITextFieldStyles,
+  IDatePickerStyles,
+  IModalStyles,
 } from "@fluentui/react";
 import { Config } from "../../../globals/Config";
 import {
@@ -183,6 +186,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
 
   const buttonStyles: Partial<IButtonStyles> = {
     root: {
+      background: "#2580e0 !important",
+      color: "#fff !important",
       ".ms-Button-label": {
         fontWeight: "500",
       },
@@ -191,7 +196,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
 
   const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
     root: {
-      width: "66%",
+      width: "30%",
+      marginRight: 20,
       ".ms-BasePicker-text": {
         "::after": {
           border: "1px solid rgb(96, 94, 92) !important",
@@ -201,6 +207,27 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         maxHeight: 50,
         overflow: "auto",
       },
+    },
+  };
+  const textFieldStyle: Partial<ITextFieldStyles> = {
+    fieldGroup: {
+      "::after": {
+        border: "1px solid rgb(96, 94, 92)",
+      },
+    },
+  };
+  const dateStyles: Partial<IDatePickerStyles> = {
+    root: {
+      ".ms-TextField-fieldGroup": {
+        "::after": {
+          border: "1px solid rgb(96, 94, 92)",
+        },
+      },
+    },
+  };
+  const modalStyle: Partial<IModalStyles> = {
+    main: {
+      padding: 20,
     },
   };
 
@@ -845,8 +872,19 @@ const BudgetTrackingList = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <Label className={styles.HeaderLable}>Budget Tracking List</Label>
-
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+        <Icon
+          iconName="ChromeBack"
+          style={{
+            marginRight: 20,
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#202945",
+            cursor: "pointer",
+          }}
+        />
+        <Label className={styles.HeaderLable}>Budget Tracking List</Label>
+      </div>
       {/* Dropdown and btn section */}
       <div
         style={{
@@ -984,6 +1022,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         trackItems.map((item: IOverAllTrackItem, index: number) => {
           return (
             <Accordion
+              className={styles.accordion}
               title={`${item.CategoryAcc} - ${item.CountryAcc} ( ${
                 item.Type
               } ) ~ ${SPServices.format(item.OverAllBudgetCost)}`}
@@ -1003,6 +1042,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     width: "100%",
                     marginBottom: "20px",
                   }}
+                  className={styles.tableStyle}
                 >
                   {/* table header section */}
                   <tr>
@@ -1052,6 +1092,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td>
                             {data.isEdit ? (
                               <DatePicker
+                                styles={dateStyles}
                                 placeholder="MM/DD/YYYY"
                                 value={
                                   curEditItem.StartDate
@@ -1073,6 +1114,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td>
                             {data.isEdit ? (
                               <DatePicker
+                                styles={dateStyles}
                                 placeholder="MM/DD/YYYY"
                                 value={
                                   curEditItem.ToDate ? curEditItem.ToDate : null
@@ -1092,6 +1134,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td>
                             {data.isEdit ? (
                               <TextField
+                                styles={textFieldStyle}
                                 value={curEditItem.Po}
                                 placeholder="Enter here"
                                 onChange={(e: any) => {
@@ -1106,6 +1149,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td>
                             {data.isEdit ? (
                               <TextField
+                                styles={textFieldStyle}
                                 value={curEditItem.PoCurrency}
                                 placeholder="Enter here"
                                 onChange={(e: any) => {
@@ -1121,6 +1165,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td>
                             {data.isEdit ? (
                               <TextField
+                                styles={textFieldStyle}
                                 value={curEditItem.InvoiceNo}
                                 placeholder="Enter here"
                                 onChange={(e: any) => {
@@ -1196,16 +1241,27 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                   <div
                     style={{
                       width: "26%",
+                      lineHeight: "22px",
                     }}
                   >
-                    <div>Budget</div>
-                    <div>PO Issued</div>
-                    <div>Remaining Budget</div>
+                    <div style={{ fontSize: 18 }}>Budget</div>
+                    <div style={{ fontSize: 18 }}>PO Issued</div>
+                    <div style={{ fontSize: 18 }}>Remaining Budget</div>
                   </div>
-                  <div>
-                    <div>{SPServices.format(item.OverAllBudgetCost)}</div>
-                    <div>{SPServices.format(item.OverAllPOIssuedCost)}</div>
-                    <div>{SPServices.format(item.OverAllRemainingCost)}</div>
+                  <div
+                    style={{
+                      lineHeight: "22px",
+                    }}
+                  >
+                    <div style={{ color: "red", fontSize: 16 }}>
+                      {SPServices.format(item.OverAllBudgetCost)}
+                    </div>
+                    <div style={{ color: "orange", fontSize: 16 }}>
+                      {SPServices.format(item.OverAllPOIssuedCost)}
+                    </div>
+                    <div style={{ color: "green", fontSize: 16 }}>
+                      {SPServices.format(item.OverAllRemainingCost)}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1218,7 +1274,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
 
       {/* Modal box section */}
       {selItems.length ? (
-        <Modal isOpen={isModal} isBlocking={false}>
+        <Modal isOpen={isModal} isBlocking={false} styles={modalStyle}>
           {/* modal box header section */}
           <div
             style={{
@@ -1256,52 +1312,64 @@ const BudgetTrackingList = (props: any): JSX.Element => {
             style={{
               display: "flex",
               width: "100%",
+              margin: "10px 0px",
             }}
           >
             <div
               style={{
                 width: "26%",
+                lineHeight: "22px",
               }}
             >
-              <div>Budget</div>
-              <div>PO Issued</div>
-              <div>Remaining Budget</div>
+              <div style={{ fontSize: 16 }}>Budget</div>
+              <div style={{ fontSize: 16 }}>PO Issued</div>
+              <div style={{ fontSize: 16 }}>Remaining Budget</div>
             </div>
-            <div>
-              <div>{SPServices.format(selItems[0].OverAllBudgetCost)}</div>
-              <div>{SPServices.format(selItems[0].OverAllPOIssuedCost)}</div>
-              <div>{SPServices.format(selItems[0].OverAllRemainingCost)}</div>
+            <div
+              style={{
+                lineHeight: "22px",
+              }}
+            >
+              <div style={{ color: "red", fontSize: 14 }}>
+                {SPServices.format(selItems[0].OverAllBudgetCost)}
+              </div>
+              <div style={{ color: "orange", fontSize: 14 }}>
+                {SPServices.format(selItems[0].OverAllPOIssuedCost)}
+              </div>
+              <div style={{ color: "green", fontSize: 14 }}>
+                {SPServices.format(selItems[0].OverAllRemainingCost)}
+              </div>
             </div>
           </div>
 
           {/* modal box Footer section */}
           {/* People picker section */}
-          <NormalPeoplePicker
-            inputProps={{ placeholder: "Insert person" }}
-            onResolveSuggestions={GetUserDetails}
-            itemLimit={10}
-            styles={peoplePickerStyle}
-            selectedItems={userDatas}
-            onChange={(selectedUser: any): void => {
-              if (selectedUser.length) {
-                let slctedUsers = [];
-                selectedUser.forEach((value: IUserDetail) => {
-                  let authendication: boolean = [...slctedUsers].some(
-                    (val: IUserDetail) =>
-                      val.secondaryText === value.secondaryText
-                  );
-                  if (!authendication) {
-                    slctedUsers.push(value);
-                  }
-                });
-                setUserDatas([...slctedUsers]);
-              } else {
-                setUserDatas([]);
-              }
-            }}
-          />
+          <div className={styles.modalSubmitSection}>
+            <NormalPeoplePicker
+              inputProps={{ placeholder: "Insert person" }}
+              onResolveSuggestions={GetUserDetails}
+              itemLimit={10}
+              styles={peoplePickerStyle}
+              selectedItems={userDatas}
+              onChange={(selectedUser: any): void => {
+                if (selectedUser.length) {
+                  let slctedUsers = [];
+                  selectedUser.forEach((value: IUserDetail) => {
+                    let authendication: boolean = [...slctedUsers].some(
+                      (val: IUserDetail) =>
+                        val.secondaryText === value.secondaryText
+                    );
+                    if (!authendication) {
+                      slctedUsers.push(value);
+                    }
+                  });
+                  setUserDatas([...slctedUsers]);
+                } else {
+                  setUserDatas([]);
+                }
+              }}
+            />
 
-          <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
             <DefaultButton
               text="Send"
               styles={buttonStyles}
