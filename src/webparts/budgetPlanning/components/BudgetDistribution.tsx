@@ -38,9 +38,11 @@ let propDropValue: IDropdowns;
 let _isCurYear: boolean = true;
 let isUserPermissions: IGroupUsers;
 let _arrOfMaster: IOverAllItem[] = [];
+let _isAdminView: boolean = false;
 
 const BudgetDistribution = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   let _curYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
@@ -835,53 +837,55 @@ const BudgetDistribution = (props: any): JSX.Element => {
         </div>
 
         {/* btn and people picker section */}
-        <div style={{ display: "flex", alignItems: "end", width: "22%" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-              alignItems: "center",
-            }}
-          >
-            {/* People picker section */}
-            <NormalPeoplePicker
-              inputProps={{ placeholder: "Insert person" }}
-              onResolveSuggestions={GetUserDetails}
-              itemLimit={10}
-              styles={peoplePickerStyle}
-              selectedItems={userDatas}
-              onChange={(selectedUser: any): void => {
-                if (selectedUser.length) {
-                  let slctedUsers = [];
-                  selectedUser.forEach((value: IUserDetail) => {
-                    let authendication: boolean = [...slctedUsers].some(
-                      (val: IUserDetail) =>
-                        val.secondaryText === value.secondaryText
-                    );
-                    if (!authendication) {
-                      slctedUsers.push(value);
-                    }
-                  });
-                  setUserDatas([...slctedUsers]);
-                } else {
-                  setUserDatas([]);
-                }
-              }}
-            />
-
-            {/* btn section */}
-            <button
-              className={styles.btns}
-              onClick={() => {
-                userDatas.length &&
-                  addAdminData(JSON.stringify([...userDatas]));
+        {!_isAdminView && (
+          <div style={{ display: "flex", alignItems: "end", width: "22%" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+                alignItems: "center",
               }}
             >
-              Send
-            </button>
+              {/* People picker section */}
+              <NormalPeoplePicker
+                inputProps={{ placeholder: "Insert person" }}
+                onResolveSuggestions={GetUserDetails}
+                itemLimit={10}
+                styles={peoplePickerStyle}
+                selectedItems={userDatas}
+                onChange={(selectedUser: any): void => {
+                  if (selectedUser.length) {
+                    let slctedUsers = [];
+                    selectedUser.forEach((value: IUserDetail) => {
+                      let authendication: boolean = [...slctedUsers].some(
+                        (val: IUserDetail) =>
+                          val.secondaryText === value.secondaryText
+                      );
+                      if (!authendication) {
+                        slctedUsers.push(value);
+                      }
+                    });
+                    setUserDatas([...slctedUsers]);
+                  } else {
+                    setUserDatas([]);
+                  }
+                }}
+              />
+
+              {/* btn section */}
+              <button
+                className={styles.btns}
+                onClick={() => {
+                  userDatas.length &&
+                    addAdminData(JSON.stringify([...userDatas]));
+                }}
+              >
+                Send
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Dashboard Detail list section */}

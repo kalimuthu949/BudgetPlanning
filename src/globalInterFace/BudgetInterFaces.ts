@@ -90,6 +90,7 @@ export interface IDistributionLibraryColumn {
 /* Interface of Navigation Names */
 export interface INave {
   Dashboard: string;
+  Configuration: string;
   Country: string;
   VendorCreate: string;
   BudgetCategory: string;

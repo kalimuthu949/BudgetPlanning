@@ -62,9 +62,11 @@ let _curPOIssuedCost: number = 0;
 let _curRemainingCost: number = 0;
 let _subUsedCost: number = 0;
 let _subRemCost: number = 0;
+let _isAdminView: boolean = false;
 
 const Vendor = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.props.groupUsers.isSuperAdminView;
   let admin: boolean = props.vendorDetails.isAdmin;
 
   const column: IColumn[] = [
@@ -569,40 +571,41 @@ const Vendor = (props: any): JSX.Element => {
 
   const newColumn: any[] = [...column];
   newColumn.pop();
-  newColumn.unshift({
-    key: "0",
-    name: (
-      <Checkbox
-        checked={isAllSelect}
-        onChange={(event, checked) => {
-          handleAllSelectedUsers(checked);
-        }}
-      />
-    ),
-    fieldName: "Vendor",
-    minWidth: 100,
-    maxWidth: 500,
-    onRender: (item, index) => {
-      if (!item.isDummy && !item.isEdit) {
-        return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <Checkbox
-              disabled={item.isDisable}
-              checked={item.isClick}
-              onChange={(event, checked) =>
-                handleSelectedUsers(item, index, checked)
-              }
-            />
-          </div>
-        );
-      }
-    },
-  });
+  !_isAdminView &&
+    newColumn.unshift({
+      key: "0",
+      name: (
+        <Checkbox
+          checked={isAllSelect}
+          onChange={(event, checked) => {
+            handleAllSelectedUsers(checked);
+          }}
+        />
+      ),
+      fieldName: "Vendor",
+      minWidth: 100,
+      maxWidth: 500,
+      onRender: (item, index) => {
+        if (!item.isDummy && !item.isEdit) {
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Checkbox
+                disabled={item.isDisable}
+                checked={item.isClick}
+                onChange={(event, checked) =>
+                  handleSelectedUsers(item, index, checked)
+                }
+              />
+            </div>
+          );
+        }
+      },
+    });
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
@@ -1599,6 +1602,12 @@ const Vendor = (props: any): JSX.Element => {
               color: "#202945",
               cursor: "pointer",
             }}
+            onClick={() => {
+              props.setVendorDetails({
+                ...props.vendorDetails,
+                isVendor: true,
+              });
+            }}
           />
           <h2 style={{ margin: 0, fontSize: 28, color: "#202945" }}>
             Budget Distribution
@@ -1693,49 +1702,49 @@ const Vendor = (props: any): JSX.Element => {
             gap: "2%",
           }}
         >
-          {admin ? (
-            isSubmit && (
-              <DefaultButton
-                text="Submit"
-                styles={saveBtnStyle}
-                onClick={() => {
-                  confirmBoxText = "Submit";
-                  Status = Config.ApprovalStatus.Pending;
-                  setIsConfirmModal(true);
-                }}
-              />
-            )
-          ) : (
-            <>
-              <DefaultButton
-                text="Review"
-                styles={saveBtnStyle}
-                onClick={() => {
-                  confirmBoxText = "Review";
-                  Status = Config.ApprovalStatus.Rejected;
-                  if (selectedItems.length) {
+          {admin
+            ? isSubmit && (
+                <DefaultButton
+                  text="Submit"
+                  styles={saveBtnStyle}
+                  onClick={() => {
+                    confirmBoxText = "Submit";
+                    Status = Config.ApprovalStatus.Pending;
                     setIsConfirmModal(true);
-                  } else {
-                    alertify.error("please select users to Review");
-                  }
-                }}
-              />
-              <DefaultButton
-                text="Approve"
-                styles={saveBtnStyle}
-                onClick={() => {
-                  confirmBoxText = "Approve";
-                  Status = Config.ApprovalStatus.Approved;
-                  // textforlable="aslkjgalskjghkja"
-                  if (selectedItems.length) {
-                    setIsConfirmModal(true);
-                  } else {
-                    alertify.error("please select users to Approve");
-                  }
-                }}
-              />
-            </>
-          )}
+                  }}
+                />
+              )
+            : !_isAdminView && (
+                <>
+                  <DefaultButton
+                    text="Review"
+                    styles={saveBtnStyle}
+                    onClick={() => {
+                      confirmBoxText = "Review";
+                      Status = Config.ApprovalStatus.Rejected;
+                      if (selectedItems.length) {
+                        setIsConfirmModal(true);
+                      } else {
+                        alertify.error("please select users to Review");
+                      }
+                    }}
+                  />
+                  <DefaultButton
+                    text="Approve"
+                    styles={saveBtnStyle}
+                    onClick={() => {
+                      confirmBoxText = "Approve";
+                      Status = Config.ApprovalStatus.Approved;
+                      // textforlable="aslkjgalskjghkja"
+                      if (selectedItems.length) {
+                        setIsConfirmModal(true);
+                      } else {
+                        alertify.error("please select users to Approve");
+                      }
+                    }}
+                  />
+                </>
+              )}
         </div>
       </div>
       <DetailsList

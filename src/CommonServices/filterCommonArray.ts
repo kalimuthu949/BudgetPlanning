@@ -8,7 +8,7 @@ const _filterArray = (
 ): any[] => {
   let _arrValue: any[] = [];
   if (
-    isUser.isSuperAdmin &&
+    (isUser.isSuperAdmin || isUser.isSuperAdminView) &&
     CommentName != Config.Navigation.BudgetDistribution
   ) {
     _arrValue = [..._array];
@@ -40,9 +40,9 @@ const _filterArray = (
           _arrValue.push(_array[i]);
         }
       } else if (CommentName == Config.Navigation.BudgetDistribution) {
-        if (isUser.isSuperAdmin) {
+        if (isUser.isSuperAdmin || isUser.isSuperAdminView) {
           _array[i].isManager = true;
-          _array[i].isAdmin = true;
+          _array[i].isAdmin = isUser.isSuperAdmin ? true : false;
           _arrValue.push({ ..._array[i] });
         } else if (
           (isUser.isInfraManager && isUser.isInfraAdmin) ||
@@ -176,7 +176,7 @@ const _filterArray = (
 
 const _filAreaDrop = (user: IGroupUsers): IDrop[] => {
   let _arrArea: IDrop[] = [{ key: 0, text: "All" }];
-  if (user.isSuperAdmin) {
+  if (user.isSuperAdmin || user.isSuperAdminView) {
     _arrArea.push(
       { key: 1, text: Config.AreaName.InfraStructure },
       { key: 2, text: Config.AreaName.EnterpriseApplication },
