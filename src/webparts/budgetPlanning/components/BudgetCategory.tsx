@@ -62,9 +62,11 @@ let _strSearch: string = "";
 let _strArea: string = "All";
 let categoryName: string = "";
 let _arrOfMaster: IMasCategoryItems[] = [];
+let _isAdminView: boolean = false;
 
 const BudgetCategory = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   _areasDrop = [...props.dropValue.Area];
   _areasDrop.shift();
@@ -841,9 +843,7 @@ const BudgetCategory = (props: any): JSX.Element => {
       <div className={styles.btnContainer}>
         <div className={styles.leftSection}>
           {/* search section */}
-          <div
-          // style={{ width: "100%" }}
-          >
+          <div>
             <Label>Category</Label>
             <SearchBox
               styles={searchStyle}
@@ -858,9 +858,7 @@ const BudgetCategory = (props: any): JSX.Element => {
           </div>
 
           {/* Area dropdown section */}
-          <div
-          // style={{ width: "100%" }}
-          >
+          <div>
             <Label>Type</Label>
             <Dropdown
               options={[...propDropValue.Area]}
@@ -880,6 +878,7 @@ const BudgetCategory = (props: any): JSX.Element => {
               }}
             />
           </div>
+
           <Icon
             iconName="Refresh"
             className={styles.refresh}
@@ -896,38 +895,44 @@ const BudgetCategory = (props: any): JSX.Element => {
         {/* btn sections */}
         <div className={styles.rightBtns}>
           {/* New btn section */}
-          <DefaultButton
-            text="New item"
-            styles={btnStyle}
-            iconProps={addIcon}
-            onClick={() => {
-              setcategoryPopup(true);
-              setImportExcelDataView({
-                ...importExcelDataView,
-                addExcelData: [
-                  {
-                    Title: "",
-                    Area: _areasDrop[0].text,
-                    CatgryValidate: false,
-                    AreaValidate: false,
-                  },
-                ],
-              });
-            }}
-          />
+          {!_isAdminView && (
+            <DefaultButton
+              text="New item"
+              styles={btnStyle}
+              iconProps={addIcon}
+              onClick={() => {
+                setcategoryPopup(true);
+                setImportExcelDataView({
+                  ...importExcelDataView,
+                  addExcelData: [
+                    {
+                      Title: "",
+                      Area: _areasDrop[0].text,
+                      CatgryValidate: false,
+                      AreaValidate: false,
+                    },
+                  ],
+                });
+              }}
+            />
+          )}
 
           {/* import btn section */}
-          <input
-            id="fileUpload"
-            type="file"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              _getFileImport(e.target.files[0]);
-            }}
-          />
-          <label htmlFor="fileUpload" className={styles.uploadBtn}>
-            Import
-          </label>
+          {!_isAdminView && (
+            <input
+              id="fileUpload"
+              type="file"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                _getFileImport(e.target.files[0]);
+              }}
+            />
+          )}
+          {!_isAdminView && (
+            <label htmlFor="fileUpload" className={styles.uploadBtn}>
+              Import
+            </label>
+          )}
 
           {/* export btn section */}
           <button className={styles.btns} onClick={() => _getGenerateExcel()}>
