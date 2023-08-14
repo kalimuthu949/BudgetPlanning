@@ -40,10 +40,13 @@ interface IPagination {
 
 const addIcon: IIconProps = { iconName: "Add" };
 let isCheckDuplicate: boolean = false;
-let countryName = "";
+let countryName: string = "";
+let _isAdminView: boolean = false;
 
 const Country = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
+
   const Columns: IColumn[] = [
     {
       key: "column1",
@@ -122,6 +125,7 @@ const Country = (props: any): JSX.Element => {
       },
     },
   ];
+  _isAdminView && Columns.pop();
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
@@ -615,15 +619,17 @@ const Country = (props: any): JSX.Element => {
             onChange={(val, text) => searchData(text)}
           />
         </div>
-        <div>
-          {/*Counter Add Btn section*/}
-          <DefaultButton
-            text="New Country"
-            styles={btnStyle}
-            iconProps={addIcon}
-            onClick={() => setCountryPopup(true)}
-          />
-        </div>
+        {!_isAdminView && (
+          <div>
+            {/*Counter Add Btn section*/}
+            <DefaultButton
+              text="New Country"
+              styles={btnStyle}
+              iconProps={addIcon}
+              onClick={() => setCountryPopup(true)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Details list section */}

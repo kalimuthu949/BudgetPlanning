@@ -54,9 +54,11 @@ let _isCateMulti: boolean = false;
 let isUserPermissions: IGroupUsers;
 let _lastYear: string = "";
 let modalText: string = "";
+let _isAdminView: boolean = false;
 
 const CategoryConfig = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   _masterCateOption = [...propDropValue.masterCate];
   _AreaOption = [...propDropValue.Area];
@@ -119,6 +121,7 @@ const CategoryConfig = (props: any): JSX.Element => {
       },
     },
   ];
+  _isAdminView && _categoryListColumns.pop();
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
@@ -551,6 +554,7 @@ const CategoryConfig = (props: any): JSX.Element => {
               }}
             />
           </div>
+
           {/* Area dropdown section */}
           <div style={{ width: "15%" }}>
             <Label>Area</Label>
@@ -614,8 +618,7 @@ const CategoryConfig = (props: any): JSX.Element => {
           </div>
 
           {/* Category dropdown section */}
-          {_isCateMulti && (
-            // <div style={{ width: "15%" }}>
+          {_isCateMulti && !_isAdminView && (
             <div style={{ width: "36%" }}>
               <Label>Category</Label>
               <Autocomplete
@@ -676,22 +679,24 @@ const CategoryConfig = (props: any): JSX.Element => {
         </div>
 
         {/* btn section */}
-        <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
-          <button
-            className={styles.btns}
-            style={{
-              cursor: _isSubmit ? "pointer" : "not-allowed",
-            }}
-            onClick={() => {
-              if (_isSubmit) {
-                setIsLoader(true);
-                _getBulkInsert();
-              }
-            }}
-          >
-            Save
-          </button>
-        </div>
+        {!_isAdminView && (
+          <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
+            <button
+              className={styles.btns}
+              style={{
+                cursor: _isSubmit ? "pointer" : "not-allowed",
+              }}
+              onClick={() => {
+                if (_isSubmit) {
+                  setIsLoader(true);
+                  _getBulkInsert();
+                }
+              }}
+            >
+              Save
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Details list section */}
