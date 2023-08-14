@@ -734,7 +734,6 @@ const BudgetDistribution = (props: any): JSX.Element => {
     <div style={{ width: "100%" }}>
       {/* Heading section */}
       <Label className={styles.HeaderLable}>Budget Distribution</Label>
-
       {/* Dropdown and btn section */}
       <div className={styles.filterSection}>
         {/* Left side section */}

@@ -52,10 +52,24 @@
   button:focus {
     border: none !important;
   }
+  span {
+    font-size: 16px;
+  }
 }
 .tableStyle {
+  border-spacing: 0px !important;
   td {
-    text-align: center;
+    padding: 0px 10px;
+    height: 42px;
+    border-bottom: 1px solid #adadad;
+    text-align: left;
+  }
+  th {
+    background-color: #ededed;
+    color: #202945;
+    height: 42px;
+    padding: 0px 10px;
+    text-align: left;
   }
 }
 
