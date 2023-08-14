@@ -52,9 +52,11 @@ let _arrBudget: ICurBudgetItem[] = [];
 let _arrDistribution: IBudTrackDistribution[] = [];
 let _isSelectAll: boolean = false;
 let _isCurrentYear: boolean = true;
+let _isAdminView: boolean = false;
 
 const BudgetTrackingList = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   isUserPermissions = { ...props.groupUsers };
 
@@ -209,6 +211,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       },
     },
   };
+
   const textFieldStyle: Partial<ITextFieldStyles> = {
     fieldGroup: {
       "::after": {
@@ -216,6 +219,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       },
     },
   };
+
   const dateStyles: Partial<IDatePickerStyles> = {
     root: {
       ".ms-TextField-fieldGroup": {
@@ -228,6 +232,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       // },
     },
   };
+
   const modalStyle: Partial<IModalStyles> = {
     main: {
       padding: 20,
@@ -426,7 +431,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
             _arrDis.push({
               ID: e.ID,
               BudgetId: e.BudgetId ? e.Budget.ID : null,
-              Cost: e.Pricing ? e.Pricing : null,
+              Cost: e.Pricing ? SPServices.format(Number(e.Pricing)) : null,
               Vendor: e.Vendor ? e.Vendor : "",
               Po: e.PO ? e.PO : "",
               PoCurrency: e.PoCurrency ? e.PoCurrency : "",
@@ -789,9 +794,11 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           (e: IBudTrackDistribution) => (e.isEdit = false)
         );
         _masCateArray[masIndex].VendorDetails[subIndex].isClick = isChecked;
-        _selVendorsArray = [..._masCateArray[masIndex].VendorDetails].filter(
+        _selVendorsArray = _masCateArray[masIndex].VendorDetails.filter(
           (e: IBudTrackDistribution) => e.isClick === true
         );
+        _isSelectAll =
+          _masCateArray[masIndex].VendorDetails.length === 1 ? true : false;
         setSelItems([..._selVendorsArray]);
         setTrackItems([..._masCateArray]);
       }
@@ -991,7 +998,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         </div>
 
         {/* btn section */}
-        {_isCurrentYear && (
+        {_isCurrentYear && !_isAdminView && (
           <div style={{ display: "flex", alignItems: "end", width: "5%" }}>
             <DefaultButton
               text="Submit"
@@ -1038,7 +1045,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 >
                   {/* table header section */}
                   <tr>
-                    {_isCurrentYear && (
+                    {_isCurrentYear && !_isAdminView && (
                       <th style={{ width: 20 }}>
                         <Checkbox
                           styles={{
@@ -1063,7 +1070,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     <th style={{ width: 120 }}>PO#</th>
                     <th style={{ width: 100 }}>PO Currency</th>
                     <th style={{ width: 100 }}>Invoice No</th>
-                    {_isCurrentYear && <th style={{ width: 100 }}>Action</th>}
+                    {_isCurrentYear && !_isAdminView && (
+                      <th style={{ width: 100 }}>Action</th>
+                    )}
                   </tr>
 
                   {/* table body section */}
@@ -1071,7 +1080,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     (data: IBudTrackDistribution, i: number) => {
                       return (
                         <tr>
-                          {_isCurrentYear && (
+                          {_isCurrentYear && !_isAdminView && (
                             <td style={{ width: 20 }}>
                               <Checkbox
                                 styles={{
@@ -1196,7 +1205,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               data.InvoiceNo
                             )}
                           </td>
-                          {_isCurrentYear && (
+                          {_isCurrentYear && !_isAdminView && (
                             <td style={{ width: 100 }}>
                               {!data.isEdit ? (
                                 <Icon

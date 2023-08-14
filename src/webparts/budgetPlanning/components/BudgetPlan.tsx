@@ -59,9 +59,11 @@ let _curBudgetAllocated: number = 0;
 let _curRemainingCost: number = 0;
 let _curUsedCost: number = 0;
 let _isAction: boolean = false;
+let _isAdminView: boolean = false;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
+  _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   let _curYear: string =
     propDropValue.Period[propDropValue.Period.length - 1].text;
@@ -835,7 +837,9 @@ const BudgetPlan = (props: any): JSX.Element => {
     isValidation.isBudgetAllocated = false;
     setIsValidation({ ...isValidation });
     setIsLoader(true);
-    filPeriodDrop == _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
+    filPeriodDrop == _curYear && !_isAdminView
+      ? _budgetPlanColumns
+      : _budgetPlanColumns.pop();
     setDetailColumn([..._budgetPlanColumns]);
     _getCategoryDatas(filPeriodDrop);
   };
@@ -1128,14 +1132,14 @@ const BudgetPlan = (props: any): JSX.Element => {
           _curEmptyItem =
             _arrCateDatas[i].YearAcc == _curYear &&
             _getPrepareArrangedDatas(_arrCateDatas[i]);
-          _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+            !_isAdminView && _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
           [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
             return (e.isApproved = _isMasApprove);
           });
           _arrOfMaster.push(_arrCateDatas[i]);
         }
       }
-      if (isDatas && _arrCateDatas[i].YearAcc == _curYear) {
+      if (!_isAdminView && isDatas && _arrCateDatas[i].YearAcc == _curYear) {
         _curEmptyItem = _getPrepareArrangedDatas({ ..._arrCateDatas[i] });
         _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
         [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
@@ -1931,17 +1935,21 @@ const BudgetPlan = (props: any): JSX.Element => {
         {/* btn sections */}
         <div className={styles.rightBtns}>
           {/* import btn section */}
-          <input
-            id="fileUpload"
-            type="file"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              _getFileImport(e.target.files[0]);
-            }}
-          />
-          <label htmlFor="fileUpload" className={styles.uploadBtn}>
-            Import
-          </label>
+          {filPeriodDrop == _curYear && !_isAdminView && (
+            <>
+              <input
+                id="fileUpload"
+                type="file"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  _getFileImport(e.target.files[0]);
+                }}
+              />
+              <label htmlFor="fileUpload" className={styles.uploadBtn}>
+                Import
+              </label>
+            </>
+          )}
 
           {/* export btn section */}
           <button
@@ -1955,15 +1963,17 @@ const BudgetPlan = (props: any): JSX.Element => {
           </button>
 
           {/* New btn section */}
-          <DefaultButton
-            text="Submit"
-            styles={btnStyle}
-            onClick={() => {
-              if (_isMasterSubmit && items.length) {
-                setIsSubModal(true);
-              }
-            }}
-          />
+          {filPeriodDrop == _curYear && !_isAdminView && (
+            <DefaultButton
+              text="Submit"
+              styles={btnStyle}
+              onClick={() => {
+                if (_isMasterSubmit && items.length) {
+                  setIsSubModal(true);
+                }
+              }}
+            />
+          )}
         </div>
       </div>
 

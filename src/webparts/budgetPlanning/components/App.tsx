@@ -25,6 +25,8 @@ import { Icon, Label } from "@fluentui/react";
 import { _filAreaDrop } from "../../../CommonServices/filterCommonArray";
 import VendorCreate from "./VendorCreate";
 
+let _isAreaAdmin: boolean = false;
+
 const App = (props: any): JSX.Element => {
   // local variable
   const currentUser = props.context._pageContext._user.email;
@@ -76,7 +78,7 @@ const App = (props: any): JSX.Element => {
   });
   const [isOtherUser, setIsOtherUser] = useState<boolean>(false);
   const [adminUsers, setAdminUsers] = useState<IUserDetail[]>([]);
-  const [directors,setDirectors] = useState<IUserDetail[]>([])
+  const [directors, setDirectors] = useState<IUserDetail[]>([]);
 
   /* Function creation */
   const _getErrorFunction = (errMsg: any): void => {
@@ -94,9 +96,10 @@ const App = (props: any): JSX.Element => {
         .users.get()
         .then((result) => {
           if (result.length) {
-            let authendication: boolean = [...result].some(
-              (value) => value.Email === currentUser
-            );
+            let authendication: boolean =
+              _allUsers[i].user !== "Director"
+                ? [...result].some((value) => value.Email === currentUser)
+                : false;
 
             if (authendication) {
               allUsers[_allUsers[i].user] = authendication;
@@ -131,7 +134,7 @@ const App = (props: any): JSX.Element => {
           }
 
           if (_allUsers.length == i + 1) {
-            setDirectors(_DirArray)
+            setDirectors(_DirArray);
             setAdminUsers(_userDetail);
             getOtherUser(allUsers);
           }
@@ -148,6 +151,19 @@ const App = (props: any): JSX.Element => {
       users.push(allUsers[keys]);
     }
     let _isOther: boolean = users.some((e: boolean) => e == true);
+
+    if (
+      allUsers.isEnterpricesManager ||
+      allUsers.isInfraManager ||
+      allUsers.isSpecialManager ||
+      allUsers.isSuperAdmin ||
+      allUsers.isSuperAdminView
+    ) {
+      _isAreaAdmin = false;
+    } else {
+      _isAreaAdmin = true;
+    }
+
     if (_isOther) {
       setGroupUsers({ ...allUsers });
       setIsOtherUser(true);
@@ -319,16 +335,8 @@ const App = (props: any): JSX.Element => {
 
     if (_pageNaveName == Config.Navigation.Dashboard.toLowerCase()) {
       setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.Country.toLowerCase()) {
-      setPageNave(_pageNaveName);
-    } else if (_pageNaveName == Config.Navigation.VendorCreate.toLowerCase()) {
-      setPageNave(_pageNaveName);
     } else if (
       _pageNaveName == Config.Navigation.BudgetAnalysis.toLowerCase()
-    ) {
-      setPageNave(_pageNaveName);
-    } else if (
-      _pageNaveName == Config.Navigation.BudgetCategory.toLowerCase()
     ) {
       setPageNave(_pageNaveName);
     } else if (
@@ -343,12 +351,12 @@ const App = (props: any): JSX.Element => {
       _pageNaveName == Config.Navigation.BudgetTrackingList.toLowerCase()
     ) {
       setPageNave(_pageNaveName);
-    } else if (
-      _pageNaveName == Config.Navigation.CategoryConfig.toLowerCase()
-    ) {
+    } else if (_pageNaveName == Config.Navigation.Configuration.toLowerCase()) {
       setPageNave(_pageNaveName);
-    } else {
+    } else if (!_isAreaAdmin) {
       setPageNave(Config.Navigation.Dashboard);
+    } else {
+      setPageNave(Config.Navigation.BudgetDistribution);
     }
   };
 
@@ -368,14 +376,8 @@ const App = (props: any): JSX.Element => {
           <div>
             {pageNave == Config.Navigation.Dashboard ? (
               <Dashboard />
-            ) : pageNave == Config.Navigation.Country ? (
-              <Country dropValue={dropValue} groupUsers={groupUsers} />
-            ) : pageNave == Config.Navigation.VendorCreate ? (
-              <VendorCreate dropValue={dropValue} groupUsers={groupUsers} />
-            ) : pageNave == Config.Navigation.BudgetCategory ? (
-              <BudgetCategory dropValue={dropValue} groupUsers={groupUsers} />
-            ) : pageNave == Config.Navigation.CategoryConfig ? (
-              <CategoryConfig dropValue={dropValue} groupUsers={groupUsers} />
+            ) : pageNave == Config.Navigation.Configuration ? (
+              <CommonScreen dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetPlanning ? (
               <BudgetPlan dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetAnalysis ? (
@@ -435,7 +437,7 @@ const App = (props: any): JSX.Element => {
             color: "#202945",
           }}
         >
-          V - 1.1
+          V - 1.2
         </div>
       </div>
     )
