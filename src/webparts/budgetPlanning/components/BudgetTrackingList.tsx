@@ -223,6 +223,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           border: "1px solid rgb(96, 94, 92)",
         },
       },
+      // ".ms-TextField-field": {
+      //   padding: "0px 21px 0px 0px",
+      // },
     },
   };
   const modalStyle: Partial<IModalStyles> = {
@@ -872,19 +875,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
   ) : (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-        <Icon
-          iconName="ChromeBack"
-          style={{
-            marginRight: 20,
-            fontSize: 20,
-            fontWeight: 600,
-            color: "#202945",
-            cursor: "pointer",
-          }}
-        />
-        <Label className={styles.HeaderLable}>Budget Tracking List</Label>
-      </div>
+      <Label className={styles.HeaderLable}>Budget Tracking List</Label>
       {/* Dropdown and btn section */}
       <div
         style={{
@@ -1041,14 +1032,20 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                   style={{
                     width: "100%",
                     marginBottom: "20px",
+                    border: 0,
                   }}
                   className={styles.tableStyle}
                 >
                   {/* table header section */}
                   <tr>
                     {_isCurrentYear && (
-                      <th>
+                      <th style={{ width: 20 }}>
                         <Checkbox
+                          styles={{
+                            root: {
+                              justifyContent: "center",
+                            },
+                          }}
                           checked={item.isMasterClick ? _isSelectAll : false}
                           onChange={(e: any, isChecked: boolean) => {
                             handleChecked(isChecked, index, null, "all");
@@ -1056,17 +1053,17 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                         />
                       </th>
                     )}
-                    <th>Entry Date</th>
-                    <th>Item</th>
-                    <th>Cost</th>
-                    <th>Type</th>
-                    <th>Vendor</th>
-                    <th>Starting Date</th>
-                    <th>To Date</th>
-                    <th>PO#</th>
-                    <th>PO Currency</th>
-                    <th>Invoice No</th>
-                    {_isCurrentYear && <th>Action</th>}
+                    <th style={{ width: 100 }}>Entry Date</th>
+                    <th style={{ width: 100 }}>Item</th>
+                    <th style={{ width: 100 }}>Cost</th>
+                    <th style={{ width: 100 }}>Type</th>
+                    <th style={{ width: 120 }}>Vendor</th>
+                    <th style={{ width: 130 }}>Starting Date</th>
+                    <th style={{ width: 120 }}>To Date</th>
+                    <th style={{ width: 120 }}>PO#</th>
+                    <th style={{ width: 100 }}>PO Currency</th>
+                    <th style={{ width: 100 }}>Invoice No</th>
+                    {_isCurrentYear && <th style={{ width: 100 }}>Action</th>}
                   </tr>
 
                   {/* table body section */}
@@ -1075,8 +1072,13 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                       return (
                         <tr>
                           {_isCurrentYear && (
-                            <td>
+                            <td style={{ width: 20 }}>
                               <Checkbox
+                                styles={{
+                                  root: {
+                                    justifyContent: "center",
+                                  },
+                                }}
                                 checked={data.isClick}
                                 onChange={(e: any, isChecked: boolean) => {
                                   handleChecked(isChecked, index, i, "");
@@ -1084,15 +1086,30 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               />
                             </td>
                           )}
-                          <td>{moment(data.EntryDate).format("MM/DD/YYYY")}</td>
-                          <td>{data.Item}</td>
-                          <td>{SPServices.format(Number(data.Cost))}</td>
-                          <td>{data.Type}</td>
-                          <td>{data.Vendor}</td>
-                          <td>
+                          <td style={{ width: 100 }}>
+                            {moment(data.EntryDate).format("MM/DD/YYYY")}
+                          </td>
+                          <td
+                            style={{ width: 100, cursor: "pointer" }}
+                            title={data.Item}
+                          >
+                            {data.Item}
+                          </td>
+                          <td style={{ width: 100 }}>
+                            {SPServices.format(Number(data.Cost))}
+                          </td>
+                          <td style={{ width: 100 }}>{data.Type}</td>
+                          <td
+                            style={{ width: 120, cursor: "pointer" }}
+                            title={data.Vendor}
+                          >
+                            {data.Vendor}
+                          </td>
+                          <td style={{ width: 130 }}>
                             {data.isEdit ? (
                               <DatePicker
                                 styles={dateStyles}
+                                style={{ marginTop: 6 }}
                                 placeholder="MM/DD/YYYY"
                                 value={
                                   curEditItem.StartDate
@@ -1111,10 +1128,11 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               moment(data.StartDate).format("MM/DD/YYYY")
                             ) : null}
                           </td>
-                          <td>
+                          <td style={{ width: 120 }}>
                             {data.isEdit ? (
                               <DatePicker
                                 styles={dateStyles}
+                                style={{ marginTop: 6 }}
                                 placeholder="MM/DD/YYYY"
                                 value={
                                   curEditItem.ToDate ? curEditItem.ToDate : null
@@ -1131,7 +1149,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               moment(data.ToDate).format("MM/DD/YYYY")
                             ) : null}
                           </td>
-                          <td>
+                          <td style={{ width: 120 }}>
                             {data.isEdit ? (
                               <TextField
                                 styles={textFieldStyle}
@@ -1146,7 +1164,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               data.Po
                             )}
                           </td>
-                          <td>
+                          <td style={{ width: 100 }}>
                             {data.isEdit ? (
                               <TextField
                                 styles={textFieldStyle}
@@ -1162,7 +1180,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               data.PoCurrency
                             )}
                           </td>
-                          <td>
+                          <td style={{ width: 100 }}>
                             {data.isEdit ? (
                               <TextField
                                 styles={textFieldStyle}
@@ -1179,7 +1197,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                             )}
                           </td>
                           {_isCurrentYear && (
-                            <td>
+                            <td style={{ width: 100 }}>
                               {!data.isEdit ? (
                                 <Icon
                                   iconName="Edit"
@@ -1196,6 +1214,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                 <div
                                   style={{
                                     display: "flex",
+                                    justifyContent: "start",
                                     gap: "6%",
                                   }}
                                 >
@@ -1244,9 +1263,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                       lineHeight: "22px",
                     }}
                   >
-                    <div style={{ fontSize: 18 }}>Budget</div>
-                    <div style={{ fontSize: 18 }}>PO Issued</div>
-                    <div style={{ fontSize: 18 }}>Remaining Budget</div>
+                    <div style={{ fontSize: 16 }}>Budget</div>
+                    <div style={{ fontSize: 16 }}>PO Issued</div>
+                    <div style={{ fontSize: 16 }}>Remaining Budget</div>
                   </div>
                   <div
                     style={{
@@ -1282,7 +1301,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               justifyContent: "space-between",
             }}
           >
-            <Label>{selItems[0].Category}</Label>
+            <Label style={{ fontSize: 18, color: "#202945" }}>
+              {selItems[0].Category}
+            </Label>
             <Icon
               iconName="Cancel"
               style={{
@@ -1321,9 +1342,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 lineHeight: "22px",
               }}
             >
-              <div style={{ fontSize: 16 }}>Budget</div>
-              <div style={{ fontSize: 16 }}>PO Issued</div>
-              <div style={{ fontSize: 16 }}>Remaining Budget</div>
+              <div style={{ fontSize: 14 }}>Budget</div>
+              <div style={{ fontSize: 14 }}>PO Issued</div>
+              <div style={{ fontSize: 14 }}>Remaining Budget</div>
             </div>
             <div
               style={{

@@ -253,6 +253,7 @@ const Vendor = (props: any): JSX.Element => {
         return item.isEdit ? (
           <TextField
             value={vendorData.PaymentTerms}
+            styles={textFieldStyle}
             //placeholder="Enter The PaymentTerms"
             onChange={(e, text) => {
               setVendorData({ ...vendorData, PaymentTerms: text.trimStart() });
@@ -273,6 +274,7 @@ const Vendor = (props: any): JSX.Element => {
         return item.isEdit ? (
           <TextField
             value={vendorData.LastYearCost}
+            styles={textFieldStyle}
             //placeholder="Enter The LastYearCost"
             onChange={(e, text) => {
               setVendorData({ ...vendorData, LastYearCost: text.trimStart() });
@@ -287,8 +289,8 @@ const Vendor = (props: any): JSX.Element => {
       key: "6",
       name: "PO",
       fieldName: "PO",
-      minWidth: 100,
-      maxWidth: 500,
+      minWidth: 150,
+      maxWidth: 200,
       onRender: (item, index) => {
         return item.isDummy && admin ? (
           <div
@@ -308,9 +310,9 @@ const Vendor = (props: any): JSX.Element => {
               padding: "5px 10px",
               fontSize: "14px",
               background: "rgb(77, 84, 106)",
-              display: "inline",
               color: "rgb(255, 255, 255)",
               borderRadius: "4px",
+              textAlign: "center",
             }}
           >
             New Vendor Add
@@ -318,6 +320,7 @@ const Vendor = (props: any): JSX.Element => {
         ) : item.isEdit ? (
           <TextField
             value={vendorData.PO}
+            styles={textFieldStyle}
             //placeholder="Enter The PO"
             onChange={(e, text) => {
               setVendorData({ ...vendorData, PO: text.trimStart() });
@@ -338,6 +341,7 @@ const Vendor = (props: any): JSX.Element => {
         return item.isEdit ? (
           <TextField
             value={vendorData.Supplier}
+            styles={textFieldStyle}
             //placeholder="Enter The Supplier"
             onChange={(e, text) => {
               setVendorData({ ...vendorData, Supplier: text.trimStart() });
@@ -434,6 +438,7 @@ const Vendor = (props: any): JSX.Element => {
         return item.isEdit ? (
           <TextField
             value={vendorData.RequestedAmount}
+            styles={textFieldStyle}
             //placeholder="Enter The RequestedAmount"
             onChange={(e, text) => {
               setVendorData({
@@ -1583,23 +1588,19 @@ const Vendor = (props: any): JSX.Element => {
     <div>
       <div>
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            margin: "10px 0px 20px 0px",
-          }}
+          style={{ display: "flex", alignItems: "center", marginBottom: 20 }}
         >
-          <IconButton
-            styles={IconStyle}
-            iconProps={{ iconName: "Back" }}
-            onClick={() => {
-              props.setVendorDetails({
-                ...props.vendorDetails,
-                isVendor: true,
-              });
+          <Icon
+            iconName="ChromeBack"
+            style={{
+              marginRight: 20,
+              fontSize: 20,
+              fontWeight: 600,
+              color: "#202945",
+              cursor: "pointer",
             }}
           />
-          <h2 style={{ margin: 0, fontSize: 20, color: "#202945" }}>
+          <h2 style={{ margin: 0, fontSize: 28, color: "#202945" }}>
             Budget Distribution
           </h2>
         </div>
@@ -1616,19 +1617,11 @@ const Vendor = (props: any): JSX.Element => {
           style={{
             display: "flex",
             alignItems: "flex-end",
-            width: "60%",
+            width: "80%",
             gap: "2%",
           }}
         >
-          <div style={{ width: "15%" }}>
-            <TextField
-              label="Period"
-              styles={disbableTextFieldStyle}
-              value={props.vendorDetails.Item.Year}
-              disabled={true}
-            />
-          </div>
-          <div style={{ width: "15%" }}>
+          <div style={{ width: "19%" }}>
             <TextField
               styles={disbableTextFieldStyle}
               label="Country"
@@ -1636,15 +1629,7 @@ const Vendor = (props: any): JSX.Element => {
               disabled={true}
             />
           </div>
-          <div style={{ width: "15%" }}>
-            <TextField
-              styles={disbableTextFieldStyle}
-              label="Type"
-              value={props.vendorDetails.Item.Type}
-              disabled={true}
-            />
-          </div>
-          <div style={{ width: "15%" }}>
+          <div style={{ width: "19%" }}>
             <TextField
               styles={disbableTextFieldStyle}
               label="Area"
@@ -1652,8 +1637,26 @@ const Vendor = (props: any): JSX.Element => {
               disabled={true}
             />
           </div>
+          <div style={{ width: "10%" }}>
+            <TextField
+              label="Period"
+              styles={disbableTextFieldStyle}
+              value={props.vendorDetails.Item.Year}
+              disabled={true}
+            />
+          </div>
+
+          <div style={{ width: "10%" }}>
+            <TextField
+              styles={disbableTextFieldStyle}
+              label="Type"
+              value={props.vendorDetails.Item.Type}
+              disabled={true}
+            />
+          </div>
+
           {admin && (
-            <div style={{ width: "40%" }}>
+            <div style={{ width: "20%" }}>
               <label style={{ fontSize: 14, fontWeight: 600 }}>
                 Renewal Type
               </label>
@@ -1686,7 +1689,7 @@ const Vendor = (props: any): JSX.Element => {
           style={{
             display: "flex",
             justifyContent: "flex-end",
-            width: "30%",
+            width: "20%",
             gap: "2%",
           }}
         >
