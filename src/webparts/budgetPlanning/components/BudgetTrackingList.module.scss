@@ -77,3 +77,32 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.indicatorSection {
+  width: 100%;
+  display: flex;
+  .indicatorWidth {
+    width: 25%;
+    .budgetIndicators {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      width: 100%;
+      .leftDiv {
+        width: 46%;
+        font-size: 16px;
+      }
+      .righttDiv {
+        font-size: 16px;
+        padding: 4px 10px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+.dripleDot {
+  width: 80%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
