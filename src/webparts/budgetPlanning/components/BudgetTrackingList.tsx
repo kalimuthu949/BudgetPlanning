@@ -72,7 +72,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       minWidth: 100,
       maxWidth: 150,
       onRender: (item: IBudTrackDistribution): any => {
-        return moment(item.EntryDate).format("MM/DD/YYYY");
+        return moment(item.EntryDate).format("DD/MM/YYYY");
       },
     },
     {
@@ -841,7 +841,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
     }
 
     let json: any = {
-      AdminData: JSON.stringify(userDatas),
+      AdminData: JSON.stringify([...userDatas]),
+      MailJSON: JSON.stringify([...selItems]),
       TypeOfNotification: "Tracking List",
     };
 
@@ -984,6 +985,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
             <div
               className={styles.refIcon}
               onClick={() => {
+                _isCurrentYear = true;
                 setFilPeriodDrop(
                   propDropValue.Period[propDropValue.Period.length - 1].text
                 );
@@ -1097,7 +1099,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                             </td>
                           )}
                           <td style={{ width: 100 }}>
-                            {moment(data.EntryDate).format("MM/DD/YYYY")}
+                            {moment(data.EntryDate).format("DD/MM/YYYY")}
                           </td>
                           <td style={{ width: 100 }}>
                             <div title={data.Item} className={styles.dripleDot}>
@@ -1119,14 +1121,14 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               <DatePicker
                                 styles={dateStyles}
                                 style={{ marginTop: 6 }}
-                                placeholder="MM/DD/YYYY"
+                                placeholder="DD/MM/YYYY"
                                 value={
                                   curEditItem.StartDate
                                     ? curEditItem.StartDate
                                     : null
                                 }
                                 formatDate={(date) =>
-                                  moment(date).format("MM/DD/YYYY")
+                                  moment(date).format("DD/MM/YYYY")
                                 }
                                 onSelectDate={(e: Date) => {
                                   curEditItem.StartDate = e;
@@ -1134,7 +1136,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                 }}
                               />
                             ) : data.StartDate ? (
-                              moment(data.StartDate).format("MM/DD/YYYY")
+                              moment(data.StartDate).format("DD/MM/YYYY")
                             ) : null}
                           </td>
                           <td style={{ width: 120 }}>
@@ -1142,12 +1144,12 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               <DatePicker
                                 styles={dateStyles}
                                 style={{ marginTop: 6 }}
-                                placeholder="MM/DD/YYYY"
+                                placeholder="DD/MM/YYYY"
                                 value={
                                   curEditItem.ToDate ? curEditItem.ToDate : null
                                 }
                                 formatDate={(date) =>
-                                  moment(date).format("MM/DD/YYYY")
+                                  moment(date).format("DD/MM/YYYY")
                                 }
                                 onSelectDate={(e: Date) => {
                                   curEditItem.ToDate = e;
@@ -1155,7 +1157,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                 }}
                               />
                             ) : data.ToDate ? (
-                              moment(data.ToDate).format("MM/DD/YYYY")
+                              moment(data.ToDate).format("DD/MM/YYYY")
                             ) : null}
                           </td>
                           <td style={{ width: 120 }}>
@@ -1275,12 +1277,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                       </div>
                     </div>
                   </div>
-                  {/* <div style={{ fontSize: 16, marginBottom: 16 }}>
-                      PO Issued
-                    </div>
-                    <div style={{ fontSize: 16, marginBottom: 16 }}>
-                      Remaining Budget
-                    </div> */}
                 </div>
                 <div className={styles.indicatorSection}>
                   <div className={styles.indicatorWidth}>
@@ -1298,7 +1294,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     </div>
                   </div>
                 </div>
-
                 <div className={styles.indicatorSection}>
                   <div className={styles.indicatorWidth}>
                     <div className={styles.budgetIndicators}>
@@ -1315,43 +1310,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     </div>
                   </div>
                 </div>
-
-                {/* <div
-                    style={{
-                      background: "linear-gradient(to right, #de7420, #fff)",
-                      fontSize: 16,
-                      padding: "0px 10px",
-                      borderRadius: 4,
-                      height: 30,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {SPServices.format(item.OverAllBudgetCost)}
-                  </div>
-                  <div
-                    style={{
-                      background: "linear-gradient(to right, #ded420, #fff)",
-                      fontSize: 16,
-                      padding: "0px 10px",
-                      borderRadius: 4,
-                      height: 30,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {SPServices.format(item.OverAllPOIssuedCost)}
-                  </div>
-                  <div
-                    style={{
-                      background: "linear-gradient(to right, #31de20, #fff)",
-                      fontSize: 16,
-                      padding: "0px 10px",
-                      borderRadius: 4,
-                      height: 30,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {SPServices.format(item.OverAllRemainingCost)}
-                  </div> */}
               </div>
             </Accordion>
           );
@@ -1454,39 +1412,6 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               </div>
             </div>
           </div>
-          {/* <div
-            style={{
-              display: "flex",
-              width: "100%",
-              margin: "10px 0px",
-            }}
-          >
-            <div
-              style={{
-                width: "26%",
-                lineHeight: "22px",
-              }}
-            >
-              <div style={{ fontSize: 14 }}>Budget</div>
-              <div style={{ fontSize: 14 }}>PO Issued</div>
-              <div style={{ fontSize: 14 }}>Remaining Budget</div>
-            </div>
-            <div
-              style={{
-                lineHeight: "22px",
-              }}
-            >
-              <div style={{ color: "red", fontSize: 14 }}>
-                {SPServices.format(selItems[0].OverAllBudgetCost)}
-              </div>
-              <div style={{ color: "orange", fontSize: 14 }}>
-                {SPServices.format(selItems[0].OverAllPOIssuedCost)}
-              </div>
-              <div style={{ color: "green", fontSize: 14 }}>
-                {SPServices.format(selItems[0].OverAllRemainingCost)}
-              </div>
-            </div>
-          </div> */}
 
           {/* modal box Footer section */}
           {/* People picker section */}
