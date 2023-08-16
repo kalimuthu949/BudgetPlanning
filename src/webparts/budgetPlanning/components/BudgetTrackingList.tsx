@@ -44,6 +44,7 @@ import Loader from "./Loader";
 import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import * as moment from "moment";
+import { styled } from "office-ui-fabric-react";
 
 let propDropValue: IDropdowns;
 let isUserPermissions: IGroupUsers;
@@ -1065,7 +1066,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     <th style={{ width: 100 }}>Cost</th>
                     <th style={{ width: 100 }}>Type</th>
                     <th style={{ width: 120 }}>Vendor</th>
-                    <th style={{ width: 130 }}>Starting Date</th>
+                    <th style={{ width: 130 }}>Start Date</th>
                     <th style={{ width: 120 }}>To Date</th>
                     <th style={{ width: 120 }}>PO#</th>
                     <th style={{ width: 100 }}>PO Currency</th>
@@ -1098,15 +1099,14 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                           <td style={{ width: 100 }}>
                             {moment(data.EntryDate).format("MM/DD/YYYY")}
                           </td>
-                          <td
-                            style={{ width: 100, cursor: "pointer" }}
-                            title={data.Item}
-                          >
-                            {data.Item}
-                          </td>
                           <td style={{ width: 100 }}>
-                            {data.Cost}
+                            <div title={data.Item} className={styles.dripleDot}>
+                              {data.Item.length > 15
+                                ? `${data.Item.slice(0, 15)}...`
+                                : data.Item}
+                            </div>
                           </td>
+                          <td style={{ width: 100 }}>{data.Cost}</td>
                           <td style={{ width: 100 }}>{data.Type}</td>
                           <td
                             style={{ width: 120, cursor: "pointer" }}
@@ -1260,38 +1260,98 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 </table>
 
                 {/* Over All Amount Details */}
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "26%",
-                      lineHeight: "22px",
-                    }}
-                  >
-                    <div style={{ fontSize: 16 }}>Budget</div>
-                    <div style={{ fontSize: 16 }}>PO Issued</div>
-                    <div style={{ fontSize: 16 }}>Remaining Budget</div>
+                <div className={styles.indicatorSection}>
+                  <div className={styles.indicatorWidth}>
+                    <div className={styles.budgetIndicators}>
+                      <div className={styles.leftDiv}>Budget</div>
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(to right, #de7420, #fff)",
+                        }}
+                        className={styles.righttDiv}
+                      >
+                        {SPServices.format(item.OverAllBudgetCost)}
+                      </div>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      lineHeight: "22px",
-                    }}
-                  >
-                    <div style={{ color: "red", fontSize: 16 }}>
-                      {SPServices.format(item.OverAllBudgetCost)}
+                  {/* <div style={{ fontSize: 16, marginBottom: 16 }}>
+                      PO Issued
                     </div>
-                    <div style={{ color: "orange", fontSize: 16 }}>
-                      {SPServices.format(item.OverAllPOIssuedCost)}
-                    </div>
-                    <div style={{ color: "green", fontSize: 16 }}>
-                      {SPServices.format(item.OverAllRemainingCost)}
+                    <div style={{ fontSize: 16, marginBottom: 16 }}>
+                      Remaining Budget
+                    </div> */}
+                </div>
+                <div className={styles.indicatorSection}>
+                  <div className={styles.indicatorWidth}>
+                    <div className={styles.budgetIndicators}>
+                      <div className={styles.leftDiv}>PO Issued</div>
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(to right, #ded420, #fff)",
+                        }}
+                        className={styles.righttDiv}
+                      >
+                        {SPServices.format(item.OverAllPOIssuedCost)}
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                <div className={styles.indicatorSection}>
+                  <div className={styles.indicatorWidth}>
+                    <div className={styles.budgetIndicators}>
+                      <div className={styles.leftDiv}>Remaining Budget</div>
+                      <div
+                        style={{
+                          background:
+                            "linear-gradient(to right, #31de20, #fff)",
+                        }}
+                        className={styles.righttDiv}
+                      >
+                        {SPServices.format(item.OverAllPOIssuedCost)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* <div
+                    style={{
+                      background: "linear-gradient(to right, #de7420, #fff)",
+                      fontSize: 16,
+                      padding: "0px 10px",
+                      borderRadius: 4,
+                      height: 30,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {SPServices.format(item.OverAllBudgetCost)}
+                  </div>
+                  <div
+                    style={{
+                      background: "linear-gradient(to right, #ded420, #fff)",
+                      fontSize: 16,
+                      padding: "0px 10px",
+                      borderRadius: 4,
+                      height: 30,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {SPServices.format(item.OverAllPOIssuedCost)}
+                  </div>
+                  <div
+                    style={{
+                      background: "linear-gradient(to right, #31de20, #fff)",
+                      fontSize: 16,
+                      padding: "0px 10px",
+                      borderRadius: 4,
+                      height: 30,
+                      marginBottom: 16,
+                    }}
+                  >
+                    {SPServices.format(item.OverAllRemainingCost)}
+                  </div> */}
               </div>
             </Accordion>
           );
@@ -1338,7 +1398,63 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           />
 
           {/* modal box Budget Details section */}
-          <div
+          <div style={{ margin: "10px 0px" }}>
+            <div className={styles.indicatorSection}>
+              <div className={styles.indicatorWidth} style={{ width: "46%" }}>
+                <div className={styles.budgetIndicators}>
+                  <div className={styles.leftDiv} style={{ fontSize: 14 }}>
+                    Budget
+                  </div>
+                  <div
+                    style={{
+                      background: "linear-gradient(to right, #de7420, #fff)",
+                      fontSize: 14,
+                    }}
+                    className={styles.righttDiv}
+                  >
+                    {SPServices.format(selItems[0].OverAllBudgetCost)}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={styles.indicatorSection}>
+              <div className={styles.indicatorWidth} style={{ width: "46%" }}>
+                <div className={styles.budgetIndicators}>
+                  <div className={styles.leftDiv} style={{ fontSize: 14 }}>
+                    PO Issued
+                  </div>
+                  <div
+                    style={{
+                      background: "linear-gradient(to right, #ded420, #fff)",
+                      fontSize: 14,
+                    }}
+                    className={styles.righttDiv}
+                  >
+                    {SPServices.format(selItems[0].OverAllPOIssuedCost)}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className={styles.indicatorSection}>
+              <div className={styles.indicatorWidth} style={{ width: "46%" }}>
+                <div className={styles.budgetIndicators}>
+                  <div className={styles.leftDiv} style={{ fontSize: 14 }}>
+                    Remaining Budget
+                  </div>
+                  <div
+                    style={{
+                      background: "linear-gradient(to right, #31de20, #fff)",
+                      fontSize: 14,
+                    }}
+                    className={styles.righttDiv}
+                  >
+                    {SPServices.format(selItems[0].OverAllPOIssuedCost)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* <div
             style={{
               display: "flex",
               width: "100%",
@@ -1370,7 +1486,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 {SPServices.format(selItems[0].OverAllRemainingCost)}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* modal box Footer section */}
           {/* People picker section */}
