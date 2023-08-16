@@ -457,6 +457,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isSubModal, setIsSubModal] = useState<boolean>(false);
   const [isSubmitModal, setIsSubmitModal] = useState<boolean>(false);
+  const [isAllocateMSG, setIsAllocateMSG] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -1292,7 +1293,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         name: ur.Country ? (
           <div
             style={{
-              color: ur.OverAllBudgetCost ? "black" : "yellow",
+              color: ur.OverAllBudgetCost ? "#000" : "#a7a700",
             }}
           >
             {ur.Category +
@@ -1787,6 +1788,15 @@ const BudgetPlan = (props: any): JSX.Element => {
           }
         }
         setIsSubmitModal(false);
+        setIsAllocateMSG(false);
+      } else if (
+        _curOverAllBudgetCost === 0 &&
+        _curOverAllBudgetCost !== _curOverAllocatedAmount
+      ) {
+        _isFunTriger = false;
+        setIsSubModal(false);
+        setIsAllocateMSG(true);
+        break _loop;
       } else {
         _isFunTriger = false;
         setIsSubModal(false);
@@ -2249,6 +2259,62 @@ const BudgetPlan = (props: any): JSX.Element => {
               }}
               onClick={() => {
                 setIsSubmitModal(false);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* modal of allocate msg */}
+      <Modal isOpen={isAllocateMSG} isBlocking={false} styles={modalStyles}>
+        <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "Warning12" }}
+            />
+          </div>
+          <Label
+            style={{
+              color: "#202945",
+              fontSize: 16,
+              lineHeight: 1.3,
+              marginTop: 20,
+            }}
+          >
+            Budget allocated was not Updated and it will
+            <br />
+            be highlighted in the Yellow colour.Please
+            <br />
+            Export and Import to Update the Budget
+            <br />
+            Allocated details.
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              style={{
+                width: "26%",
+                height: 32,
+                background: "#dc3120",
+                border: "none",
+                color: "#FFF",
+                borderRadius: "3px",
+                cursor: "pointer",
+                padding: "4px 0px",
+              }}
+              onClick={() => {
+                setIsAllocateMSG(false);
               }}
             >
               Close
