@@ -1132,7 +1132,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           _curEmptyItem =
             _arrCateDatas[i].YearAcc == _curYear &&
             _getPrepareArrangedDatas(_arrCateDatas[i]);
-            !_isAdminView && _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+          !_isAdminView &&
+            _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
           [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
             return (e.isApproved = _isMasApprove);
           });
@@ -1288,17 +1289,23 @@ const BudgetPlan = (props: any): JSX.Element => {
         : "0";
       varGroup.push({
         key: ur.Category,
-        name: ur.Country
-          ? `${
-              ur.Category +
+        name: ur.Country ? (
+          <div
+            style={{
+              color: ur.OverAllBudgetCost ? "black" : "yellow",
+            }}
+          >
+            {ur.Category +
               " - " +
               ur.Country +
               " ( " +
               ur.Type +
               " ) ~ " +
-              SPServices.format(Number(_totalAmount))
-            }`
-          : ur.Category,
+              SPServices.format(Number(_totalAmount))}
+          </div>
+        ) : (
+          ur.Category
+        ),
         startIndex: ur.indexValue,
         count: recordLength,
       });
@@ -1815,6 +1822,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           .catch((err: any) => {
             _getErrorFunction(err);
           });
+      } else if (i === 1) {
+        setIsTrigger(!isTrigger);
       }
     }
   };

@@ -63,6 +63,7 @@ let _curRemainingCost: number = 0;
 let _subUsedCost: number = 0;
 let _subRemCost: number = 0;
 let _isAdminView: boolean = false;
+let _isDeleteIndex: number = null;
 
 const Vendor = (props: any): JSX.Element => {
   /* Variable creation */
@@ -496,9 +497,9 @@ const Vendor = (props: any): JSX.Element => {
                   onClick={() => {
                     isChangeRenual = true;
                     if (TypeFlag == "Add") {
-                      _prepareJSON(index);
+                      _prepareJSON(index, "check");
                     } else {
-                      _prepareJSON(index);
+                      _prepareJSON(index, "check");
                     }
                   }}
                 />
@@ -553,6 +554,7 @@ const Vendor = (props: any): JSX.Element => {
                     }}
                     onClick={() => {
                       if (isChangeRenual) {
+                        _isDeleteIndex = index;
                         setIsDelModal(true);
                         setVendorData(item);
                       }
@@ -773,6 +775,8 @@ const Vendor = (props: any): JSX.Element => {
 
   const getDefaultFunction = () => {
     setIsLoader(true);
+    isChangeRenual = true;
+    ConfimMsg = false;
     _getCategoryDatas();
   };
 
@@ -975,11 +979,13 @@ const Vendor = (props: any): JSX.Element => {
             getVendorData.push({ ...Config.Vendor });
           }
           setMData([...getVendorData]);
+          setIsDelModal(false);
           setIsLoader(false);
         } else {
           if (admin) {
             setMData([...MData, { ...Config.Vendor }]);
           }
+          setIsDelModal(false);
           setIsLoader(false);
         }
       })
@@ -1002,7 +1008,7 @@ const Vendor = (props: any): JSX.Element => {
     setVendorData(item);
   };
 
-  const _prepareJSON = (index: number): void => {
+  const _prepareJSON = (index: number, type: string): void => {
     let _curJSON: any = {};
     let _count: number = 0;
     let _indexNo: number = -1;
@@ -1039,12 +1045,28 @@ const Vendor = (props: any): JSX.Element => {
     );
 
     if (vendorData.ID) {
-      debugger;
       let _curSum: number = 0;
 
-      _curAmountArray.splice(_indexNo, 1, Number(vendorData.Pricing));
+      type === "delete"
+        ? _curAmountArray.splice(_indexNo, 1)
+        : _curAmountArray.splice(_indexNo, 1, Number(vendorData.Pricing));
 
       if (_curAmountArray.length === _arrOfMaster.length) {
+        let _overSum: number = 0;
+
+        _curSum = [..._curAmountArray].reduce((a, b) => a + b, _initial);
+        _count = _curSubAllocatedCost - _curSum;
+        _overSum = _overAllCount + _curSum;
+        _subRemCost = _count;
+        _subUsedCost = _curSum;
+        _curRemainingCost =
+          Number(props.vendorDetails.Item.OverAllBudgetCost) - _overSum;
+        _curPOIssuedCost = _overSum;
+
+        if (_subRemCost >= 0) {
+          _isValid = true;
+        }
+      } else if (_curAmountArray.length === _arrOfMaster.length - 1) {
         let _overSum: number = 0;
 
         _curSum = [..._curAmountArray].reduce((a, b) => a + b, _initial);
@@ -1087,6 +1109,7 @@ const Vendor = (props: any): JSX.Element => {
         BudgetId: props.vendorDetails.Item.ID,
         YearId: props.vendorDetails.Item.YearId,
         Area: props.vendorDetails.Item.Area,
+        isDeleted: type === "delete" ? true : false,
       };
 
       authendication = Validation(index);
@@ -1095,7 +1118,9 @@ const Vendor = (props: any): JSX.Element => {
     }
 
     if (authendication) {
-      vendorData.ID
+      type === "delete"
+        ? handleDelete({ ..._curJSON })
+        : vendorData.ID
         ? vendorUpdate({ ..._curJSON })
         : addVendor({ ..._curJSON });
     }
@@ -1541,24 +1566,25 @@ const Vendor = (props: any): JSX.Element => {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = (item: any) => {
     setIsLoader(true);
     SPServices.SPUpdateItem({
       Listname: Config.ListNames.DistributionList,
-      RequestJSON: { isDeleted: true },
+      RequestJSON: { ...item },
       ID: vendorData.ID,
     })
       .then((resUpdateItem) => {
-        let index: number = [...MData].findIndex(
-          (value) => value.ID === vendorData.ID
-        );
-        let items: IVendorItems[] = [...MData];
-        items.splice(index, 1);
+        // let index: number = [...MData].findIndex(
+        //   (value) => value.ID === vendorData.ID
+        // );
+        // let items: IVendorItems[] = [...MData];
+        // items.splice(index, 1);
 
-        setIsSubmit([...items]);
-        setMData(items);
-        setIsDelModal(false);
-        setIsLoader(false);
+        // setIsSubmit([...items]);
+        // setMData(items);
+        // setIsDelModal(false);
+        // setIsLoader(false);
+        _UpdateMasterCatercory();
       })
       .catch((error) => {
         getErrorFunction("Update distribution error");
@@ -1819,7 +1845,8 @@ const Vendor = (props: any): JSX.Element => {
                 padding: "4px 0px",
               }}
               onClick={() => {
-                handleDelete();
+                _prepareJSON(_isDeleteIndex, "delete");
+                // handleDelete();
               }}
             >
               Yes
