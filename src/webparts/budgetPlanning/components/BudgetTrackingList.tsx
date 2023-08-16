@@ -1105,7 +1105,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                             {data.Item}
                           </td>
                           <td style={{ width: 100 }}>
-                            {SPServices.format(Number(data.Cost))}
+                            {data.Cost}
                           </td>
                           <td style={{ width: 100 }}>{data.Type}</td>
                           <td
