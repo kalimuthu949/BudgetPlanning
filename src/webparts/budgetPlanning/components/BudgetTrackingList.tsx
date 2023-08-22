@@ -61,8 +61,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
   propDropValue = { ...props.dropValue };
   isUserPermissions = { ...props.groupUsers };
 
-  let currentYear: string =
-    propDropValue.Period[propDropValue.Period.length - 1].text;
+  let currentYear: string = moment().format("YYYY");
+  // let currentYear: string =
+  //   propDropValue.Period[propDropValue.Period.length - 1].text;
 
   const _selectedItemColumn: IColumn[] = [
     {
@@ -1305,7 +1306,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                         }}
                         className={styles.righttDiv}
                       >
-                        {SPServices.format(item.OverAllPOIssuedCost)}
+                        {SPServices.format(item.OverAllRemainingCost)}
                       </div>
                     </div>
                   </div>
@@ -1406,7 +1407,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                     }}
                     className={styles.righttDiv}
                   >
-                    {SPServices.format(selItems[0].OverAllPOIssuedCost)}
+                    {SPServices.format(selItems[0].OverAllRemainingCost)}
                   </div>
                 </div>
               </div>

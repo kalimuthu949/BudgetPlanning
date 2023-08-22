@@ -603,7 +603,7 @@ const Country = (props: any): JSX.Element => {
             cursor: "pointer",
           }}
           onClick={() => {
-            props.setIsNave({ ...Config.ComScreen });
+            props._getDropDownValues();
           }}
         />
         <Label className={styles.HeaderLable}>Budget Country</Label>

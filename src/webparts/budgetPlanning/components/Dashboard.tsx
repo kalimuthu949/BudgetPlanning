@@ -1,7 +1,17 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 
-const Dashboard = () => {
-  return <div>Dashboard</div>;
+const Dashboard = (props: any) => {
+  const _getPageNave = (): void => {
+    let _siteURL: any = `${props.context.context.pageContext.web.absoluteUrl}/SitePages/DashboardPowerBI.aspx`;
+    window.open(_siteURL, "_self");
+  };
+
+  useEffect(() => {
+    _getPageNave();
+  }, []);
+
+  return <div></div>;
 };
 
 export default Dashboard;
