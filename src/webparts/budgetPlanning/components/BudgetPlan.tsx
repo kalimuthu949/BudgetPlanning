@@ -60,6 +60,9 @@ let _curRemainingCost: number = 0;
 let _curUsedCost: number = 0;
 let _isAction: boolean = false;
 let _isAdminView: boolean = false;
+let nextYear: string = "";
+let newRecords: any[] = [];
+let _masRecords: ICurBudgetItem[] = [];
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
@@ -176,7 +179,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   _isAction = false;
                   _getEditItem(item, "Add");
                 } else {
-                  _getPageErrorMSG(item, "Add");
+                  _getPageErrorMSG(item, "Add", null);
                 }
               }}
             >
@@ -271,35 +274,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       minWidth: 150,
       maxWidth: 150,
       onRender: (item: ICurBudgetItem): any => {
-        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
+        return item.isDummy && !item.isEdit ? null : (
           <div style={{ color: "#E39C5A" }}>
             {SPServices.format(Number(item.BudgetAllocated))}
-          </div>
-        ) : item.ApproveStatus === "Pending" ||
-          isUserPermissions.isSuperAdmin ||
-          item.isApproved ? (
-          <div>
-            <TextField
-              value={curData.BudgetAllocated.toString()}
-              placeholder="Enter Here"
-              styles={
-                isValidation.isBudgetAllocated
-                  ? errtxtFieldStyle
-                  : textFieldStyle
-              }
-              onChange={(e: any, value: any) => {
-                if (/^[0-9]*\.?[0-9]*$/.test(value)) {
-                  curData.BudgetAllocated = value;
-                  setCurData({ ...curData });
-                }
-              }}
-            />
-          </div>
-        ) : (
-          <div style={{ color: "#E39C5A" }}>
-            {item.BudgetAllocated
-              ? SPServices.format(Number(item.BudgetAllocated))
-              : null}
           </div>
         );
       },
@@ -377,8 +354,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               </div>
             ) : item.ID &&
               item.Year == _curYear &&
-              (item.ApproveStatus !== "Approved" ||
-                isUserPermissions.isSuperAdmin) ? (
+              item.ApproveStatus !== "Approved" ? (
               <div
                 style={{
                   display: "flex",
@@ -398,7 +374,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                       _isAction = true;
                       _getEditItem(item, "Edit");
                     } else {
-                      _getPageErrorMSG(item, "Edit");
+                      _getPageErrorMSG(item, "Edit", null);
                     }
                   }}
                 />
@@ -413,7 +389,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     if (!_isBack) {
                       _getEditItem(item, "Deleted");
                     } else {
-                      _getPageErrorMSG(item, "Deleted");
+                      _getPageErrorMSG(item, "Deleted", null);
                     }
                   }}
                 />
@@ -458,6 +434,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [isSubModal, setIsSubModal] = useState<boolean>(false);
   const [isSubmitModal, setIsSubmitModal] = useState<boolean>(false);
   const [isAllocateMSG, setIsAllocateMSG] = useState<boolean>(false);
+  const [isNextYearModal, setIsNextYearModal] = useState<boolean>(false);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -482,6 +459,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         fontSize: "16px !important",
       },
       ".ms-GroupHeader-title": {
+        width: "100%",
         "span:nth-child(2)": {
           display: "none",
         },
@@ -494,6 +472,7 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
       ".ms-DetailsList-contentWrapper": {
         height: items.length ? "58vh" : 20,
+        width: items.length && "100%",
         overflowY: "auto",
         overflowX: "hidden",
       },
@@ -558,6 +537,25 @@ const BudgetPlan = (props: any): JSX.Element => {
       justifyContent: "center",
       textAlign: "center",
       overflow: "unset",
+    },
+  };
+
+  const nextYearBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: "#f5ce42 !important",
+      height: 33,
+      borderRadius: 5,
+      cursor: "pointer",
+    },
+    label: {
+      fontWeight: 500,
+      color: "#000",
+      fontSize: 16,
+    },
+    icon: {
+      fontSize: 16,
+      color: "#fff",
     },
   };
 
@@ -792,10 +790,7 @@ const BudgetPlan = (props: any): JSX.Element => {
 
         listItems.shift();
         [...listItems].forEach((e: any) => {
-          if (
-            e.CategoryType.toLowerCase() === "master category" &&
-            e.Status !== "Approved"
-          ) {
+          if (e.CategoryType.toLowerCase() === "master category") {
             _catArray.push({
               ID: e.ID,
               Status: e.Status,
@@ -803,10 +798,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               OverAllRemainingCost: e.BudgetAllocated,
             });
           }
-          if (
-            e.CategoryType.toLowerCase() === "sub category" &&
-            e.Status !== "Approved"
-          ) {
+          if (e.CategoryType.toLowerCase() === "sub category") {
             _subArray.push({
               ID: e.ID,
               ApproveStatus: e.Status,
@@ -833,6 +825,7 @@ const BudgetPlan = (props: any): JSX.Element => {
     alertifyMSG = "";
     _isBack = false;
     _isAction = false;
+    setIsNextYearModal(false);
     isValidation.isBudgetRequired = false;
     isValidation.isDescription = false;
     isValidation.isBudgetAllocated = false;
@@ -1255,14 +1248,15 @@ const BudgetPlan = (props: any): JSX.Element => {
         let sortingRecord = reOrderedRecords.concat(FilteredData);
         reOrderedRecords = sortingRecord;
       });
-      groupsforDL([...reOrderedRecords], [..._filRecord]);
+      _masRecords = [...reOrderedRecords];
+      groupsforDL([..._filRecord]);
     }
   };
 
-  const groupsforDL = (records: ICurBudgetItem[], arrCate: IOverAllItem[]) => {
-    let newRecords: any[] = [];
-    let varGroup: any[] = [];
+  const groupsforDL = (arrCate: IOverAllItem[]) => {
+    newRecords = [];
     let _recordsLength: number = 0;
+
     arrCate.forEach((arr: IOverAllItem, i: number) => {
       newRecords.push({
         Category: arr.CategoryAcc ? arr.CategoryAcc : "",
@@ -1274,35 +1268,135 @@ const BudgetPlan = (props: any): JSX.Element => {
         OverAllBudgetCost: arr.OverAllBudgetCost ? arr.OverAllBudgetCost : null,
         TotalProposed: arr.TotalProposed ? arr.TotalProposed : null,
         indexValue: _recordsLength,
+        isEdit: false,
       });
       _recordsLength += arr.subCategory.length;
     });
+
+    _groupAcc([...newRecords]);
+  };
+
+  const _groupAcc = (newRecords: any[]): void => {
+    let varGroup: any[] = [];
     newRecords.forEach((ur: any, index: number) => {
-      let recordLength: number = records.filter((arr: ICurBudgetItem) => {
+      let recordLength: number = _masRecords.filter((arr: ICurBudgetItem) => {
         return (
           arr.CateId === ur.ID && arr.Type === ur.Type && arr.Area === ur.Area
         );
       }).length;
+
       let _totalAmount: string = ur.OverAllBudgetCost
         ? ur.OverAllBudgetCost.toString()
         : ur.TotalProposed
         ? ur.TotalProposed.toString()
         : "0";
+
       varGroup.push({
         key: ur.Category,
         name: ur.Country ? (
           <div
             style={{
               color: ur.OverAllBudgetCost ? "#000" : "#a7a700",
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
-            {ur.Category +
-              " - " +
-              ur.Country +
-              " ( " +
-              ur.Type +
-              " ) ~ " +
-              SPServices.format(Number(_totalAmount))}
+            <div
+              style={{
+                display: "flex",
+              }}
+            >
+              <div>
+                {ur.Category + " - " + ur.Country + " ( " + ur.Type + " ) ~ "}
+              </div>
+              {ur.isEdit ? (
+                <div
+                  style={{
+                    marginLeft: 6,
+                  }}
+                >
+                  <TextField
+                    value={_totalAmount.toString()}
+                    placeholder="Enter Here"
+                    styles={textFieldStyle}
+                    onChange={(e: any, value: any) => {
+                      if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    marginLeft: 6,
+                  }}
+                >
+                  <span
+                    style={{
+                      marginRight: 6,
+                    }}
+                  >
+                    AED
+                  </span>
+                  {SPServices.format(Number(_totalAmount))}
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                marginRight: 78,
+                display: "none",
+              }}
+            >
+              {!ur.isEdit ? (
+                <Icon
+                  iconName="Edit"
+                  style={{
+                    color: "blue",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    if (!_isBack) {
+                      _isBack = !ur.isEdit;
+                      _isAction = true;
+                      _masEdit(index, "edit");
+                    } else {
+                      _getPageErrorMSG(ur, "edit", index);
+                    }
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "6%",
+                  }}
+                >
+                  <Icon
+                    iconName="CheckMark"
+                    style={{
+                      color: "green",
+                      fontSize: "20px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {}}
+                  />
+                  <Icon
+                    iconName="Cancel"
+                    style={{
+                      color: "red",
+                      fontSize: "20px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      _isBack = !ur.isEdit;
+                      _masEdit(index, "cancle");
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           ur.Category
@@ -1310,16 +1404,33 @@ const BudgetPlan = (props: any): JSX.Element => {
         startIndex: ur.indexValue,
         count: recordLength,
       });
+
       if (index == newRecords.length - 1) {
-        _Items = [...records];
+        _Items = [..._masRecords];
         _isBack = false;
-        setItems([...records]);
+        setItems([..._masRecords]);
         setGroup([...varGroup]);
         setIsDeleteModal(false);
         alertifyMSG && alertify.success(`Item ${alertifyMSG} successfully`);
         setIsLoader(false);
       }
     });
+  };
+
+  const _masEdit = (index: number, type: string): void => {
+    let _currentArr: any[] = [...newRecords];
+
+    _currentArr.forEach((e: any) => {
+      return (e.isEdit = false);
+    });
+
+    if (type === "edit") {
+      _currentArr[index].isEdit = true;
+    } else {
+      _currentArr[index].isEdit = false;
+    }
+
+    _groupAcc([..._currentArr]);
   };
 
   const _getEditItem = (_curItem: ICurBudgetItem, type: string): void => {
@@ -1706,7 +1817,11 @@ const BudgetPlan = (props: any): JSX.Element => {
       });
   };
 
-  const _getPageErrorMSG = (_item: ICurBudgetItem, _type: string): void => {
+  const _getPageErrorMSG = (
+    _item: ICurBudgetItem,
+    _type: string,
+    index: number
+  ): void => {
     if (_isBack) {
       if (_type == "Deleted") {
         if (
@@ -1718,6 +1833,17 @@ const BudgetPlan = (props: any): JSX.Element => {
           setIsValidation({ ...isValidation });
           _isBack = false;
           _getEditItem(_item, "Deleted");
+        }
+      } else if (_type == "edit") {
+        if (
+          confirm("You have unsaved changes, are you sure you want to leave?")
+        ) {
+          isValidation.isBudgetRequired = false;
+          isValidation.isDescription = false;
+          isValidation.isBudgetAllocated = false;
+          setIsValidation({ ...isValidation });
+          _isBack = false;
+          _masEdit(index, "edit");
         }
       } else if (
         confirm("You have unsaved changes, are you sure you want to leave?")
@@ -1767,7 +1893,10 @@ const BudgetPlan = (props: any): JSX.Element => {
         0
       );
 
-      if (_curOverAllBudgetCost >= _curOverAllocatedAmount) {
+      if (
+        _curOverAllBudgetCost >= _curOverAllocatedAmount &&
+        _curOverAllBudgetCost !== 0
+      ) {
         if (_curNewArray.length) {
           _curCateArray.push({
             ID: _preArray[i].ID,
@@ -1789,15 +1918,12 @@ const BudgetPlan = (props: any): JSX.Element => {
         }
         setIsSubmitModal(false);
         setIsAllocateMSG(false);
-      } else if (
-        _curOverAllBudgetCost === 0 &&
-        _curOverAllBudgetCost !== _curOverAllocatedAmount
-      ) {
+      } else if (_curOverAllBudgetCost === 0 && _curSubArrayNumber.length) {
         _isFunTriger = false;
         setIsSubModal(false);
         setIsAllocateMSG(true);
         break _loop;
-      } else {
+      } else if (_curOverAllBudgetCost !== 0) {
         _isFunTriger = false;
         setIsSubModal(false);
         setIsSubmitModal(true);
@@ -1836,6 +1962,20 @@ const BudgetPlan = (props: any): JSX.Element => {
         setIsTrigger(!isTrigger);
       }
     }
+  };
+
+  const _addYear = (nextYear: string): void => {
+    SPServices.SPAddItem({
+      Listname: Config.ListNames.YearList,
+      RequestJSON: { Title: nextYear },
+    })
+      .then((res: any) => {
+        setIsNextYearModal(false);
+        alertify.success(`Please wait ${nextYear} year data's processing.`);
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
   };
 
   /* Life cycle of onload */
@@ -1953,6 +2093,22 @@ const BudgetPlan = (props: any): JSX.Element => {
 
         {/* btn sections */}
         <div className={styles.rightBtns}>
+          {/* Next year plan btn section */}
+          {isUserPermissions.isSuperAdmin && (
+            <DefaultButton
+              text="Next Year Plan"
+              styles={nextYearBtnStyle}
+              onClick={() => {
+                nextYear = (
+                  Number(
+                    propDropValue.Period[propDropValue.Period.length - 1].text
+                  ) + 1
+                ).toString();
+                setIsNextYearModal(true);
+              }}
+            />
+          )}
+
           {/* import btn section */}
           {filPeriodDrop == _curYear && !_isAdminView && (
             <>
@@ -2040,16 +2196,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             }}
           >
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.noBTN}
               onClick={() => {
                 setIsDeleteModal(false);
               }}
@@ -2057,16 +2204,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               No
             </button>
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                color: "#FFF",
-                background: "#2580e0",
-                border: "none",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.yesBTN}
               onClick={() => {
                 setIsLoader(true);
                 let data: any = {};
@@ -2110,16 +2248,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             }}
           >
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.noBTN}
               onClick={() => {
                 setIsModal(false);
               }}
@@ -2127,16 +2256,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               No
             </button>
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                color: "#FFF",
-                background: "#2580e0",
-                border: "none",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.yesBTN}
               onClick={() => {
                 _getUpdateBulkDatas([..._masArray]);
               }}
@@ -2179,16 +2299,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             }}
           >
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.noBTN}
               onClick={() => {
                 setIsSubModal(false);
               }}
@@ -2196,16 +2307,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               No
             </button>
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                color: "#FFF",
-                background: "#2580e0",
-                border: "none",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.yesBTN}
               onClick={() => {
                 _getPrepareJSON();
               }}
@@ -2247,16 +2349,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             }}
           >
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.noBTN}
               onClick={() => {
                 setIsSubmitModal(false);
               }}
@@ -2303,21 +2396,59 @@ const BudgetPlan = (props: any): JSX.Element => {
             }}
           >
             <button
-              style={{
-                width: "26%",
-                height: 32,
-                background: "#dc3120",
-                border: "none",
-                color: "#FFF",
-                borderRadius: "3px",
-                cursor: "pointer",
-                padding: "4px 0px",
-              }}
+              className={styles.noBTN}
               onClick={() => {
                 setIsAllocateMSG(false);
               }}
             >
               Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* modal section*/}
+      <Modal isOpen={isNextYearModal} isBlocking={false} styles={modalStyles}>
+        <div>
+          <div className={styles.deleteIconCircle}>
+            <IconButton
+              className={styles.deleteImg}
+              iconProps={{ iconName: "WebAppBuilderFragmentCreate" }}
+            />
+          </div>
+          <Label
+            style={{
+              color: "#000",
+              fontSize: 16,
+            }}
+          >
+            Are you want sure {nextYear} planning?
+          </Label>
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              className={styles.noBTN}
+              onClick={() => {
+                setIsNextYearModal(false);
+              }}
+            >
+              No
+            </button>
+            <button
+              className={styles.yesBTN}
+              onClick={() => {
+                _addYear(nextYear);
+              }}
+            >
+              Yes
             </button>
           </div>
         </div>

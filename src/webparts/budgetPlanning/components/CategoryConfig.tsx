@@ -510,7 +510,7 @@ const CategoryConfig = (props: any): JSX.Element => {
             cursor: "pointer",
           }}
           onClick={() => {
-            props.setIsNave({ ...Config.ComScreen });
+            props._getDropDownValues();
           }}
         />
         <Label className={styles.HeaderLable}>Category Configuration</Label>
