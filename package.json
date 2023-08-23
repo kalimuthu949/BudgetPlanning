@@ -20,7 +20,7 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@pnp/sp": "^2.11.0",
-    "@pnp/spfx-controls-react": "^3.10.0-beta.3081239",
+    "@pnp/spfx-controls-react": "^3.8.0",
     "alertifyjs": "^1.13.1",
     "exceljs": "^4.1.1",
     "file-saver": "^2.0.2",

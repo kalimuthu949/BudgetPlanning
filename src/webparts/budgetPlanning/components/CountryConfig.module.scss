@@ -1,0 +1,43 @@
+.Container {
+  width: 100%;
+  .HeaderLable {
+    font-size: 28px;
+    color: #202945;
+  }
+  .Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    .HeaderFilters {
+      width: 80%;
+      display: "flex";
+      gap: 2%;
+      align-items: flex-end;
+      .dropdowns {
+        width: 100%;
+        display: flex;
+        gap: 2%;
+      }
+    }
+  }
+}
+
+.modalHeader {
+  margin-bottom: 20px;
+  h3 {
+    margin: 0;
+    color: #202945;
+  }
+  i {
+    color: #000;
+  }
+}
+
+.noRecords {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  font-weight: 600;
+  font-size: 16px;
+  color: #4d546a;
+}

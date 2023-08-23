@@ -10,6 +10,7 @@ export interface IList {
   DistributionList: string;
   DistributionLibrary: string;
   MasterCategoryBackupList: string;
+  CountryConfig: string;
 }
 
 /* Interface of Year List Column */
@@ -99,6 +100,7 @@ export interface INave {
   BudgetAnalysis: string;
   BudgetDistribution: string;
   BudgetTrackingList: string;
+  CountryConfig: string;
 }
 
 /* Interface of Dropdown */
@@ -407,5 +409,33 @@ export interface ITrackUpdateItem {
 export interface IComScreen {
   isCountry: boolean;
   isBudgetCategory: boolean;
+  isCountryConfig: boolean;
   isCategoryConfig: boolean;
+}
+
+// country config interfaces
+
+export interface ICountryAdminData {
+  Title: string;
+  Email: string;
+  EmailId: number;
+}
+
+export interface ICountryConfigItems {
+  ID: number;
+  Area: string;
+  Country: string;
+  Admins: ICountryAdminData[];
+  IsEdit?: boolean;
+}
+
+export interface ICountryConfigData {
+  Area: string;
+  Country: string;
+  CountryId: number;
+  Email: any[];
+  IsAreaValidate: boolean;
+  IsCountryValidate: boolean;
+  IsEmailValidate: boolean;
+  isAdd: boolean;
 }

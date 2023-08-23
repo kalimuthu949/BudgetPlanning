@@ -377,12 +377,13 @@ const App = (props: any): JSX.Element => {
             {pageNave == Config.Navigation.Dashboard ? (
               <Dashboard context={props} />
             ) : pageNave == Config.Navigation.Configuration ? (
-              <CommonScreen dropValue={dropValue} groupUsers={groupUsers} />
-            ) : pageNave == Config.Navigation.BudgetPlanning ? (
-              <BudgetPlan
+              <CommonScreen
                 dropValue={dropValue}
                 groupUsers={groupUsers}
+                context={props}
               />
+            ) : pageNave == Config.Navigation.BudgetPlanning ? (
+              <BudgetPlan dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetAnalysis ? (
               <BudgetAnalysis dropValue={dropValue} groupUsers={groupUsers} />
             ) : pageNave == Config.Navigation.BudgetDistribution ? (
