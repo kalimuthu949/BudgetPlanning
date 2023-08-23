@@ -131,46 +131,46 @@ const CommonScreen = (props: any): JSX.Element => {
                     dropValue.masterCate = [..._typeMasterCate];
 
                     // get Vendor datas function
-                    SPServices.SPReadItems({
-                      Listname: Config.ListNames.VendorList,
-                      Filter: [
-                        {
-                          FilterKey: "isDeleted",
-                          Operator: "ne",
-                          FilterValue: "1",
-                        },
-                      ],
-                      Topcount: 5000,
-                    })
-                      .then((resVend: any) => {
-                        let _strVendorArray: IDrop[] = [];
-                        let _typeVendor: IDrop[] = [];
+                    // SPServices.SPReadItems({
+                    //   Listname: Config.ListNames.VendorList,
+                    //   Filter: [
+                    //     {
+                    //       FilterKey: "isDeleted",
+                    //       Operator: "ne",
+                    //       FilterValue: "1",
+                    //     },
+                    //   ],
+                    //   Topcount: 5000,
+                    // })
+                    //   .then((resVend: any) => {
+                    //     let _strVendorArray: IDrop[] = [];
+                    //     let _typeVendor: IDrop[] = [];
 
-                        resVend.length &&
-                          resVend.forEach((e: any) => {
-                            _strVendorArray.push({
-                              key: e.ID,
-                              text: e.Title,
-                            });
-                          });
+                    //     resVend.length &&
+                    //       resVend.forEach((e: any) => {
+                    //         _strVendorArray.push({
+                    //           key: e.ID,
+                    //           text: e.Title,
+                    //         });
+                    //       });
 
-                        if (resVend.length == _strVendorArray.length) {
-                          _typeVendor = _strVendorArray.sort((a, b) => {
-                            let _firstText: string = a.text.toLowerCase();
-                            let _secondText: string = b.text.toLowerCase();
-                            if (_firstText < _secondText) return -1;
-                            if (_firstText > _secondText) return 1;
-                          });
-                          _typeVendor.unshift({ key: 0, text: "All" });
-                        }
-                        dropValue.Vendor = [..._typeVendor];
+                    //     if (resVend.length == _strVendorArray.length) {
+                    //       _typeVendor = _strVendorArray.sort((a, b) => {
+                    //         let _firstText: string = a.text.toLowerCase();
+                    //         let _secondText: string = b.text.toLowerCase();
+                    //         if (_firstText < _secondText) return -1;
+                    //         if (_firstText > _secondText) return 1;
+                    //       });
+                    //       _typeVendor.unshift({ key: 0, text: "All" });
+                    //     }
+                    //     dropValue.Vendor = [..._typeVendor];
+                    //   })
+                    //   .catch((err: any) => {
+                    //     _getErrorFunction(err);
+                    //   });
 
-                        setDropValue({ ...dropValue });
-                        _getNaveFun("");
-                      })
-                      .catch((err: any) => {
-                        _getErrorFunction(err);
-                      });
+                    setDropValue({ ...dropValue });
+                    _getNaveFun("");
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -196,9 +196,9 @@ const CommonScreen = (props: any): JSX.Element => {
     if (type === "Budget Category") {
       setIsNave({ ...isNave, isBudgetCategory: true });
     }
-    // if (type === "Country Configuration") {
-    //   setIsNave({ ...isNave, isCountryConfig: true });
-    // }
+    if (type === "Country Configuration") {
+      setIsNave({ ...isNave, isCountryConfig: true });
+    }
     if (type === "Category Configuration") {
       setIsNave({ ...isNave, isCategoryConfig: true });
     }
