@@ -19,6 +19,7 @@ const _filterArray = (
         CommentName == Config.Navigation.CategoryConfig ||
         CommentName == Config.Navigation.BudgetPlanning ||
         CommentName == Config.Navigation.BudgetAnalysis ||
+        CommentName == Config.Navigation.CountryConfig ||
         CommentName == Config.Navigation.BudgetTrackingList
       ) {
         if (

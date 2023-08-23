@@ -20,6 +20,8 @@ import {
   IApprovalStatus,
   ITrackSelectedItem,
   IComScreen,
+  ICountryConfigData,
+  ICountryConfigItems,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -35,6 +37,7 @@ export namespace Config {
     DistributionList: "Distribution List",
     DistributionLibrary: "DistributionLibrary",
     MasterCategoryBackupList: "Master Category Backup List",
+    CountryConfig: "Country Configuration List",
   };
 
   /* Global Year List Column Names */
@@ -115,7 +118,7 @@ export namespace Config {
   /* Global Navigation Names */
   export const Navigation: INave = {
     Dashboard: "dashboard",
-    Configuration: 'configuration',
+    Configuration: "configuration",
     Country: "country",
     VendorCreate: "vendor",
     BudgetCategory: "budgetcategory",
@@ -124,6 +127,7 @@ export namespace Config {
     BudgetAnalysis: "budgetanalysis",
     BudgetDistribution: "budgetdistribution",
     BudgetTrackingList: "budgettrackinglist",
+    CountryConfig: "countryconfig",
   };
 
   /* Global Dropdowns Names */
@@ -186,7 +190,7 @@ export namespace Config {
   export const GroupNames: IGroupNames = {
     SuperAdmin: "Super Admin",
     InfraAdmin: "Infra Admin",
-    InfraManger: "Infra Manger",
+    InfraManger: "Infra Manager",
     EnterpricesAdmin: "Enterprices Admin",
     EnterpricesManager: "Enterprices Manager",
     SpecialAdmin: "Special Admin",
@@ -261,6 +265,25 @@ export namespace Config {
   export const ComScreen: IComScreen = {
     isCountry: false,
     isBudgetCategory: false,
+    isCountryConfig: false,
     isCategoryConfig: false,
+  };
+
+  export const CountryConfigData: ICountryConfigData = {
+    Area: "All",
+    Country: "All",
+    CountryId: null,
+    Email: [],
+    IsAreaValidate: false,
+    IsCountryValidate: false,
+    IsEmailValidate: false,
+    isAdd: false,
+  };
+
+  export const CountryConfigInput: ICountryConfigItems = {
+    ID: null,
+    Area: "",
+    Country: "",
+    Admins: [],
   };
 }

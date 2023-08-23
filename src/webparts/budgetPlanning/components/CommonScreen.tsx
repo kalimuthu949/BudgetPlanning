@@ -17,6 +17,7 @@ import alertify from "alertifyjs";
 import "alertifyjs/build/css/alertify.css";
 import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
+import CountryConfig from "./CountryConfig";
 
 let groupUsers: IGroupUsers;
 
@@ -27,6 +28,7 @@ const CommonScreen = (props: any): JSX.Element => {
   const _Blocks: any[] = [
     { name: "Country", iconName: "MyNetwork" },
     { name: "Budget Category", iconName: "DocumentManagement" },
+    // { name: "Country Configuration", iconName: "WaitlistConfirm" },
     { name: "Category Configuration", iconName: "ContactLink" },
   ];
 
@@ -194,6 +196,9 @@ const CommonScreen = (props: any): JSX.Element => {
     if (type === "Budget Category") {
       setIsNave({ ...isNave, isBudgetCategory: true });
     }
+    // if (type === "Country Configuration") {
+    //   setIsNave({ ...isNave, isCountryConfig: true });
+    // }
     if (type === "Category Configuration") {
       setIsNave({ ...isNave, isCategoryConfig: true });
     }
@@ -229,6 +234,13 @@ const CommonScreen = (props: any): JSX.Element => {
           dropValue={dropValue}
           groupUsers={groupUsers}
           _getDropDownValues={_getDropDownValues}
+        />
+      ) : isNave.isCountryConfig ? (
+        <CountryConfig
+          dropValue={dropValue}
+          groupUsers={groupUsers}
+          _getDropDownValues={_getDropDownValues}
+          context={props.context}
         />
       ) : (
         <div className={styles.masBox}>
