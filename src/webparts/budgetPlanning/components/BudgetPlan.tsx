@@ -63,6 +63,7 @@ let _isAdminView: boolean = false;
 let nextYear: string = "";
 let newRecords: any[] = [];
 let _masRecords: ICurBudgetItem[] = [];
+let _isSubmit: boolean = false;
 
 const BudgetPlan = (props: any): JSX.Element => {
   /* Variable creation */
@@ -124,9 +125,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           <div title={item.Description} style={{ cursor: "pointer" }}>
             {item.Description}
           </div>
-        ) : item.ApproveStatus === "Not Started" ||
-          (isUserPermissions.isSuperAdmin &&
-            item.ApproveStatus !== "Approved") ? (
+        ) : isUserPermissions.isSuperAdmin ||
+          item.ApproveStatus !== "Approved" ? (
           <div>
             <TextField
               value={curData.Description ? curData.Description : ""}
@@ -177,6 +177,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 if (!_isBack) {
                   _isBack = !item.isEdit;
                   _isAction = false;
+                  _isSubmit = false;
                   _getEditItem(item, "Add");
                 } else {
                   _getPageErrorMSG(item, "Add", null);
@@ -198,9 +199,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           >
             {item.Comments.trim() ? item.Comments : "N/A"}
           </div>
-        ) : item.ApproveStatus === "Not Started" ||
-          (isUserPermissions.isSuperAdmin &&
-            item.ApproveStatus !== "Approved") ? (
+        ) : isUserPermissions.isSuperAdmin ||
+          item.ApproveStatus !== "Approved" ? (
           <div>
             <TextField
               multiline
@@ -240,9 +240,8 @@ const BudgetPlan = (props: any): JSX.Element => {
           <div style={{ color: "#E39C5A" }}>
             {SPServices.format(Number(item.BudgetProposed))}
           </div>
-        ) : item.ApproveStatus === "Not Started" ||
-          (isUserPermissions.isSuperAdmin &&
-            item.ApproveStatus !== "Approved") ? (
+        ) : isUserPermissions.isSuperAdmin ||
+          item.ApproveStatus !== "Approved" ? (
           <div>
             <TextField
               value={curData.BudgetProposed.toString()}
@@ -302,7 +301,10 @@ const BudgetPlan = (props: any): JSX.Element => {
           <div
             style={{
               padding: "4px 12px",
-              backgroundImage: "linear-gradient(to right, #59e27f, #f1f1f1)",
+              backgroundImage:
+                item.RemainingCost >= 0
+                  ? "linear-gradient(to right, #59e27f, #f1f1f1)"
+                  : "linear-gradient(to right, #e25e59, #f1f1f1)",
               display: "inline",
               borderRadius: 4,
               color: "#000",
@@ -336,7 +338,8 @@ const BudgetPlan = (props: any): JSX.Element => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    _getValidation();
+                    !_isSubmit && _getValidation();
+                    _isSubmit = true;
                   }}
                 />
                 <Icon
@@ -349,6 +352,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   onClick={() => {
                     _isBack = !item.isEdit;
                     _getCancelItems();
+                    _isSubmit = false;
                   }}
                 />
               </div>
@@ -372,6 +376,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                     if (!_isBack) {
                       _isBack = !item.isEdit;
                       _isAction = true;
+                      _isSubmit = false;
                       _getEditItem(item, "Edit");
                     } else {
                       _getPageErrorMSG(item, "Edit", null);
@@ -387,6 +392,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                   }}
                   onClick={() => {
                     if (!_isBack) {
+                      _isSubmit = false;
                       _getEditItem(item, "Deleted");
                     } else {
                       _getPageErrorMSG(item, "Deleted", null);
@@ -598,7 +604,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getGenerateExcel = (): void => {
-    let _arrGenExcel: IOverAllItem[] = [..._arrOfMaster];
+    let _arrGenExcel: IOverAllItem[] = JSON.parse(JSON.stringify(_arrOfMaster));
     let _arrExport: IOverAllItem[] = [];
 
     for (let i: number = 0; _arrGenExcel.length > i; i++) {
@@ -627,8 +633,17 @@ const BudgetPlan = (props: any): JSX.Element => {
 
       for (let i: number = 0; _arrExport.length > i; i++) {
         let _curObject: any = {};
+        let _isCreate: boolean = true;
 
-        if (_arrExport[i].subCategory.length) {
+        if (_arrExport[i].subCategory.length && filPeriodDrop === _curYear) {
+          _isCreate = _arrExport[i].subCategory.every(
+            (e: ICurBudgetItem) => e.ApproveStatus === "Approved"
+          );
+        } else if (filPeriodDrop !== _curYear) {
+          _isCreate = false;
+        }
+
+        if (!_isCreate) {
           _curObject = {
             ID: _arrExport[i].ID,
             CategoryType: _arrExport[i].CategoryType,
@@ -655,19 +670,38 @@ const BudgetPlan = (props: any): JSX.Element => {
           }
 
           for (let j: number = 0; _arrExport[i].subCategory.length > j; j++) {
-            worksheet.addRow({
-              ID: _arrExport[i].subCategory[j].ID,
-              CategoryType: _arrExport[i].subCategory[j].CategoryType,
-              Status: _arrExport[i].subCategory[j].ApproveStatus,
-              Area: _arrExport[i].subCategory[j].Area,
-              Category: _arrExport[i].subCategory[j].Category,
-              Country: _arrExport[i].subCategory[j].Country,
-              Year: _arrExport[i].subCategory[j].Year,
-              Type: _arrExport[i].subCategory[j].Type,
-              Description: _arrExport[i].subCategory[j].Description,
-              BudgetRequired: _arrExport[i].subCategory[j].BudgetProposed,
-              BudgetAllocated: _arrExport[i].subCategory[j].BudgetAllocated,
-            });
+            if (
+              filPeriodDrop === _curYear &&
+              _arrExport[i].subCategory[j].ApproveStatus !== "Approved"
+            ) {
+              worksheet.addRow({
+                ID: _arrExport[i].subCategory[j].ID,
+                CategoryType: _arrExport[i].subCategory[j].CategoryType,
+                Status: _arrExport[i].subCategory[j].ApproveStatus,
+                Area: _arrExport[i].subCategory[j].Area,
+                Category: _arrExport[i].subCategory[j].Category,
+                Country: _arrExport[i].subCategory[j].Country,
+                Year: _arrExport[i].subCategory[j].Year,
+                Type: _arrExport[i].subCategory[j].Type,
+                Description: _arrExport[i].subCategory[j].Description,
+                BudgetRequired: _arrExport[i].subCategory[j].BudgetProposed,
+                BudgetAllocated: _arrExport[i].subCategory[j].BudgetAllocated,
+              });
+            } else if (filPeriodDrop !== _curYear) {
+              worksheet.addRow({
+                ID: _arrExport[i].subCategory[j].ID,
+                CategoryType: _arrExport[i].subCategory[j].CategoryType,
+                Status: _arrExport[i].subCategory[j].ApproveStatus,
+                Area: _arrExport[i].subCategory[j].Area,
+                Category: _arrExport[i].subCategory[j].Category,
+                Country: _arrExport[i].subCategory[j].Country,
+                Year: _arrExport[i].subCategory[j].Year,
+                Type: _arrExport[i].subCategory[j].Type,
+                Description: _arrExport[i].subCategory[j].Description,
+                BudgetRequired: _arrExport[i].subCategory[j].BudgetProposed,
+                BudgetAllocated: _arrExport[i].subCategory[j].BudgetAllocated,
+              });
+            }
           }
         }
       }
@@ -977,7 +1011,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title",
       Expand: "Category, Year, Country",
       Filter:
-        filPeriodDrop == _curYear
+        filPeriodDrop === _curYear
           ? [
               {
                 FilterKey: "isDeleted",
@@ -1012,8 +1046,17 @@ const BudgetPlan = (props: any): JSX.Element => {
     })
       .then((resBudget: any) => {
         let _curItem: ICurBudgetItem[] = [];
+
         if (resBudget.length) {
           for (let i: number = 0; resBudget.length > i; i++) {
+            let _remainCost: number = 0;
+
+            if (resBudget[i].Used || resBudget[i].BudgetAllocated) {
+              _remainCost = resBudget[i].BudgetAllocated
+                ? resBudget[i].BudgetAllocated - resBudget[i].Used
+                : 0 - resBudget[i].Used;
+            }
+
             _curItem.push({
               ID: resBudget[i].ID,
               Category: resBudget[i].CategoryId
@@ -1040,9 +1083,7 @@ const BudgetPlan = (props: any): JSX.Element => {
                 ? resBudget[i].Description
                 : "",
               Comments: resBudget[i].Comments ? resBudget[i].Comments : "",
-              RemainingCost: resBudget[i].RemainingCost
-                ? resBudget[i].RemainingCost
-                : 0,
+              RemainingCost: _remainCost,
               isDeleted: resBudget[i].isDeleted,
               isEdit: false,
               isDummy: false,
@@ -1126,8 +1167,9 @@ const BudgetPlan = (props: any): JSX.Element => {
           _curEmptyItem =
             _arrCateDatas[i].YearAcc == _curYear &&
             _getPrepareArrangedDatas(_arrCateDatas[i]);
-          !_isAdminView &&
+          if (filPeriodDrop === _curYear && !_isAdminView) {
             _arrCateDatas[i].subCategory.push({ ..._curEmptyItem });
+          }
           [..._arrCateDatas[i].subCategory].map((e: ICurBudgetItem) => {
             return (e.isApproved = _isMasApprove);
           });
@@ -1555,105 +1597,109 @@ const BudgetPlan = (props: any): JSX.Element => {
       alertify.error("Please enter description");
     }
 
-    for (let n: number = 0; _arrOfMaster.length > n; n++) {
-      let _count: number = 0;
-      let _TotalAllocated: number = 0;
-      let _indexNo: number = null;
+    // for (let n: number = 0; _arrOfMaster.length > n; n++) {
+    //   let _count: number = 0;
+    //   let _TotalAllocated: number = 0;
+    //   let _indexNo: number = null;
 
-      if (
-        _arrOfMaster[n].CategoryAcc === curData.Category &&
-        _arrOfMaster[n].CountryAcc === curData.Country &&
-        _arrOfMaster[n].YearAcc === curData.Year &&
-        _arrOfMaster[n].Type === curData.Type &&
-        _arrOfMaster[n].ID === curData.CateId &&
-        _arrOfMaster[n].Area === curData.Area
-      ) {
-        let _initial: number = 0;
-        let _curNewSubCategory: ICurBudgetItem[] = [];
-        let _curAmountArray: number[] = [];
+    //   if (
+    //     _arrOfMaster[n].CategoryAcc === curData.Category &&
+    //     _arrOfMaster[n].CountryAcc === curData.Country &&
+    //     _arrOfMaster[n].YearAcc === curData.Year &&
+    //     _arrOfMaster[n].Type === curData.Type &&
+    //     _arrOfMaster[n].ID === curData.CateId &&
+    //     _arrOfMaster[n].Area === curData.Area
+    //   ) {
+    //     let _initial: number = 0;
+    //     let _curNewSubCategory: ICurBudgetItem[] = [];
+    //     let _curAmountArray: number[] = [];
 
-        _curNewSubCategory = _arrOfMaster[n].subCategory.filter(
-          (e: ICurBudgetItem) => e.BudgetAllocated !== null
-        );
+    //     _curNewSubCategory = _arrOfMaster[n].subCategory.filter(
+    //       (e: ICurBudgetItem) => e.BudgetAllocated !== null
+    //     );
 
-        _indexNo = [..._curNewSubCategory].findIndex(
-          (e: ICurBudgetItem) => e.ID === curData.ID
-        );
+    //     _indexNo = [..._curNewSubCategory].findIndex(
+    //       (e: ICurBudgetItem) => e.ID === curData.ID
+    //     );
 
-        [..._curNewSubCategory].forEach((e: ICurBudgetItem) =>
-          _curAmountArray.push(
-            e.BudgetAllocated ? Number(e.BudgetAllocated) : 0
-          )
-        );
+    //     [..._curNewSubCategory].forEach((e: ICurBudgetItem) =>
+    //       _curAmountArray.push(
+    //         e.BudgetAllocated ? Number(e.BudgetAllocated) : 0
+    //       )
+    //     );
 
-        if (curData.ID) {
-          _curAmountArray.splice(_indexNo, 1, Number(curData.BudgetAllocated));
-        }
+    //     if (curData.ID) {
+    //       _curAmountArray.splice(_indexNo, 1, Number(curData.BudgetAllocated));
+    //     }
 
-        if (_curAmountArray.length === _curNewSubCategory.length) {
-          _curOverAllAllocatedAmount = _arrOfMaster[n].OverAllBudgetCost
-            ? _arrOfMaster[n].OverAllBudgetCost
-            : 0;
-          _TotalAllocated = _curOverAllAllocatedAmount;
-          _count = [..._curAmountArray].reduce((a, b) => a + b, _initial);
-          _totalRemaningAmount = _TotalAllocated - _count;
-          _curRemainingCost =
-            _curUsedCost === 0
-              ? Number(curData.BudgetAllocated)
-              : Number(curData.BudgetAllocated) - _curUsedCost;
-        }
-      }
-    }
+    //     if (_curAmountArray.length === _curNewSubCategory.length) {
+    //       _curOverAllAllocatedAmount = _arrOfMaster[n].OverAllBudgetCost
+    //         ? _arrOfMaster[n].OverAllBudgetCost
+    //         : 0;
+    //       _TotalAllocated = _curOverAllAllocatedAmount;
+    //       _count = [..._curAmountArray].reduce((a, b) => a + b, _initial);
+    //       _totalRemaningAmount = _TotalAllocated - _count;
+    //       _curRemainingCost =
+    //         _curUsedCost === 0
+    //           ? Number(curData.BudgetAllocated)
+    //           : Number(curData.BudgetAllocated) - _curUsedCost;
+    //     }
+    //   }
+    // }
 
     if (_isValid) {
-      isValidation.isBudgetRequired = false;
-      isValidation.isDescription = false;
+      setIsValidation({ ...Config.budgetValidation });
+      _getPrepareDatas();
 
-      if (
-        _curOverAllAllocatedAmount !== 0 &&
-        _curUsedCost > Number(curData.BudgetAllocated)
-      ) {
-        isValidation.isBudgetAllocated = true;
-        setIsValidation({ ...isValidation });
-        alertify.error("You have less than of used amount");
-      } else if (
-        _curOverAllAllocatedAmount === 0 ||
-        (_totalRemaningAmount >= 0 && _isAction)
-      ) {
-        _isBack = !curData.isEdit;
-        setIsLoader(true);
-        isValidation.isBudgetAllocated = false;
-        setIsValidation({ ...isValidation });
-        _getPrepareDatas();
-      } else if (
-        _curOverAllAllocatedAmount === 0 ||
-        (_totalRemaningAmount >= Number(curData.BudgetAllocated) &&
-          _totalRemaningAmount >= 0)
-      ) {
-        _isBack = !curData.isEdit;
-        setIsLoader(true);
-        isValidation.isBudgetAllocated = false;
-        setIsValidation({ ...isValidation });
-        _getPrepareDatas();
-      } else if (_curOverAllAllocatedAmount !== 0) {
-        isValidation.isBudgetAllocated = true;
-        setIsValidation({ ...isValidation });
-        alertify.error("The budget allocated amount limit crossed");
-      }
+      // isValidation.isBudgetRequired = false;
+      // isValidation.isDescription = false;
+
+      // if (
+      //   _curOverAllAllocatedAmount !== 0 &&
+      //   _curUsedCost > Number(curData.BudgetAllocated)
+      // ) {
+      //   isValidation.isBudgetAllocated = true;
+      //   setIsValidation({ ...isValidation });
+      //   alertify.error("You have less than of used amount");
+      // } else if (
+      //   _curOverAllAllocatedAmount === 0 ||
+      //   (_totalRemaningAmount >= 0 && _isAction)
+      // ) {
+      //   _isBack = !curData.isEdit;
+      //   setIsLoader(true);
+      //   isValidation.isBudgetAllocated = false;
+      //   setIsValidation({ ...isValidation });
+      //   _getPrepareDatas();
+      // } else if (
+      //   _curOverAllAllocatedAmount === 0 ||
+      //   (_totalRemaningAmount >= Number(curData.BudgetAllocated) &&
+      //     _totalRemaningAmount >= 0)
+      // ) {
+      //   _isBack = !curData.isEdit;
+      //   setIsLoader(true);
+      //   isValidation.isBudgetAllocated = false;
+      //   setIsValidation({ ...isValidation });
+      //   _getPrepareDatas();
+      // } else if (_curOverAllAllocatedAmount !== 0) {
+      //   isValidation.isBudgetAllocated = true;
+      //   setIsValidation({ ...isValidation });
+      //   alertify.error("The budget allocated amount limit crossed");
+      // }
     } else {
       setIsValidation({ ...isValidation });
     }
   };
 
   const _getPrepareDatas = (): void => {
+    setIsLoader(true);
     let data: any = {};
     const columns: IBudgetListColumn = Config.BudgetListColumns;
     if (curData.ID) {
       _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
       data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      data[columns.RemainingCost] = Number(_curRemainingCost);
+      // data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      // data[columns.RemainingCost] = Number(_curRemainingCost);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
       _getEditData({ ...data }, "Updated");
@@ -1662,15 +1708,16 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.CountryId] = curData.CounId;
       data[columns.YearId] = curData.YearId;
       data[columns.Description] = curData.Description;
-      data[columns.ApproveStatus] = curData.isApproved
-        ? curData.ApproveStatus === "Approved"
-          ? curData.ApproveStatus
-          : "Pending"
-        : "Not Started";
+      // data[columns.ApproveStatus] = curData.isApproved
+      //   ? curData.ApproveStatus === "Approved"
+      //     ? curData.ApproveStatus
+      //     : "Pending"
+      //   : "Not Started";
+      data[columns.ApproveStatus] = curData.ApproveStatus;
       data[columns.CategoryType] = curData.Type;
       data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
-      data[columns.RemainingCost] = Number(_curRemainingCost);
+      // data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      // data[columns.RemainingCost] = Number(_curRemainingCost);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
       _getAddData({ ...data });
@@ -1686,7 +1733,9 @@ const BudgetPlan = (props: any): JSX.Element => {
         let _arrNewBudget: ICurBudgetItem[] = [];
         let _TotalAmount: number = 0;
         curData.ID = _resAdd.data.ID;
+        curData.CategoryType = "Sub Category";
         _Items.push({ ...curData });
+
         for (let i: number = 0; _Items.length > i; i++) {
           if (
             _Items[i].CateId == curData.CateId &&
@@ -1860,74 +1909,59 @@ const BudgetPlan = (props: any): JSX.Element => {
   };
 
   const _getPrepareJSON = (): void => {
-    let _preArray: IOverAllItem[] = [..._arrOfMaster];
+    let _curMasterArray: IOverAllItem[] = JSON.parse(
+      JSON.stringify(_arrOfMaster)
+    );
     let _curArray: any[] = [];
     let _curCateArray: any[] = [];
     let _curSubArray: any[] = [];
-    let _curSubArrayNumber: number[] = [];
-    let _curNewArray: ICurBudgetItem[] = [];
     let _isFunTriger: boolean = true;
+    let _curNewBudgetArray: ICurBudgetItem[] = [];
+    let _curIdRemoveArray: ICurBudgetItem[] = [];
 
-    _loop: for (let i: number = 0; _preArray.length > i; i++) {
-      let _curOverAllBudgetCost: number = 0;
-      let _curOverAllocatedAmount: number = 0;
-      _curNewArray = [];
-      _curSubArrayNumber = [];
+    _loop: for (let j: number = 0; _curMasterArray.length > j; j++) {
+      _curIdRemoveArray = [];
+      _curNewBudgetArray = [];
 
-      _curOverAllBudgetCost = _preArray[i].OverAllBudgetCost
-        ? _preArray[i].OverAllBudgetCost
-        : 0;
-
-      _curNewArray = _preArray[i].subCategory.filter(
+      _curIdRemoveArray = _curMasterArray[j].subCategory.filter(
         (e: ICurBudgetItem) => e.ID !== null
       );
 
-      _curNewArray.forEach((e: ICurBudgetItem) => {
-        _curSubArrayNumber.push(
-          e.BudgetAllocated ? Number(e.BudgetAllocated) : 0
-        );
-      });
-
-      _curOverAllocatedAmount = [..._curSubArrayNumber].reduce(
-        (a, b) => a + b,
-        0
+      _curNewBudgetArray = _curIdRemoveArray.filter(
+        (e: ICurBudgetItem) => e.ApproveStatus === "Not Started"
       );
 
       if (
-        _curOverAllBudgetCost >= _curOverAllocatedAmount &&
-        _curOverAllBudgetCost !== 0
+        _curMasterArray[j].Status !== "Not Started" &&
+        _curIdRemoveArray.length
       ) {
-        if (_curNewArray.length) {
-          _curCateArray.push({
-            ID: _preArray[i].ID,
-            Status: "Approved",
-            OverAllRemainingCost: _preArray[i].OverAllRemainingCost
-              ? _preArray[i].OverAllRemainingCost
-              : _preArray[i].OverAllBudgetCost,
-          });
+        _curCateArray.push({
+          ID: _curMasterArray[j].ID,
+          Status: "Approved",
+        });
 
-          for (let j: number = 0; _curNewArray.length > j; j++) {
+        if (!_curNewBudgetArray.length) {
+          _isFunTriger = true;
+
+          for (let k: number = 0; _curIdRemoveArray.length > k; k++) {
             _curSubArray.push({
-              ID: _curNewArray[j].ID,
+              ID: _curIdRemoveArray[k].ID,
               ApproveStatus: "Approved",
-              RemainingCost: _curNewArray[j].RemainingCost
-                ? _curNewArray[j].RemainingCost
-                : _curNewArray[j].BudgetAllocated,
             });
           }
+        } else {
+          _isFunTriger = false;
+          setIsSubModal(false);
+          setIsSubmitModal(true);
+          break _loop;
         }
-        setIsSubmitModal(false);
-        setIsAllocateMSG(false);
-      } else if (_curOverAllBudgetCost === 0 && _curSubArrayNumber.length) {
-        _isFunTriger = false;
-        setIsSubModal(false);
-        setIsAllocateMSG(true);
-        break _loop;
-      } else if (_curOverAllBudgetCost !== 0) {
-        _isFunTriger = false;
-        setIsSubModal(false);
-        setIsSubmitModal(true);
-        break _loop;
+      } else {
+        if (_curIdRemoveArray.length) {
+          _isFunTriger = false;
+          setIsSubModal(false);
+          setIsAllocateMSG(true);
+          break _loop;
+        }
       }
     }
 
@@ -1937,6 +1971,8 @@ const BudgetPlan = (props: any): JSX.Element => {
         { ListName: Config.ListNames.BudgetList, _Array: [..._curSubArray] },
       ];
 
+      _isFunTriger = false;
+      setIsSubModal(false);
       _getUpdateBulkDatas([..._curArray]);
     }
   };
@@ -2094,7 +2130,7 @@ const BudgetPlan = (props: any): JSX.Element => {
         {/* btn sections */}
         <div className={styles.rightBtns}>
           {/* Next year plan btn section */}
-          {isUserPermissions.isSuperAdmin && (
+          {filPeriodDrop == _curYear && isUserPermissions.isSuperAdmin && (
             <DefaultButton
               text="Next Year Plan"
               styles={nextYearBtnStyle}
@@ -2137,7 +2173,7 @@ const BudgetPlan = (props: any): JSX.Element => {
             Export
           </button>
 
-          {/* New btn section */}
+          {/* submit btn section */}
           {filPeriodDrop == _curYear && !_isAdminView && (
             <DefaultButton
               text="Submit"
@@ -2335,8 +2371,8 @@ const BudgetPlan = (props: any): JSX.Element => {
               marginTop: 20,
             }}
           >
-            Entered amount has crossed the budget allocated amount. <br />
-            Please correct amount properly.
+            Budget allocated was not update for the sub category. <br />
+            Please export and import to update.
           </Label>
 
           {/* btn section */}
