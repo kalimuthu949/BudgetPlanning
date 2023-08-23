@@ -224,7 +224,7 @@ const CountryConfig = (props: any): JSX.Element => {
   const [isDelModal, setIsDelModal] = useState<boolean>(false);
   // const [isValidation, setIsValidation] = useState<ICountryConfigValidation[]>([]);
   const [data, setData] = useState<ICountryConfigData[]>([
-    { ...Config.CountryConfigData },
+    { ...Config.CountryConfigData, isAdd: false },
   ]);
   const [inputData, setInputData] = useState({ ...Config.CountryConfigInput });
   const [pagination, setPagination] = useState<IPagination>({
@@ -507,7 +507,7 @@ const CountryConfig = (props: any): JSX.Element => {
     setItems(itms);
   };
 
-  const getPeoplePickerItems = (datas: any[], index: number, type) => {
+  const getPeoplePickerItems = (datas: any[], index: number, type: string) => {
     // console.log("items", items);
     let isAdd = type === "add";
     let users: ICountryAdminData[] = [];
@@ -535,7 +535,7 @@ const CountryConfig = (props: any): JSX.Element => {
   const Validation = (value: any, index: number, type: string): boolean => {
     let isAdd: boolean = true;
     let isUpdate = type === "Update";
-    let datas = JSON.parse(JSON.stringify(data));
+    let datas: ICountryConfigData[] = JSON.parse(JSON.stringify(data));
 
     if (value.Area === "All") {
       isAdd && alertify.error("Please select the Area");
@@ -573,7 +573,6 @@ const CountryConfig = (props: any): JSX.Element => {
       });
 
       console.log("emailDatas", emailDatas);
-
       let currentDatas = [...data];
       currentDatas.splice(index, 1);
 
@@ -861,6 +860,7 @@ const CountryConfig = (props: any): JSX.Element => {
               selectedUsers = [...value.Email].map((value) => value.Email);
             }
             // console.log("selectedUsers", selectedUsers);
+            let isAddBtn = index === data.length - 1;
             return (
               <div
                 style={{
@@ -937,7 +937,7 @@ const CountryConfig = (props: any): JSX.Element => {
                   required={false}
                   //groupName={""} // Leave this blank in case you want to filter from all users
                 />
-                {value.isAdd ? (
+                {value.isAdd && (
                   <IconButton
                     styles={iconStyle}
                     iconProps={{
@@ -949,10 +949,14 @@ const CountryConfig = (props: any): JSX.Element => {
                     onClick={() => {
                       let datas = [...data];
                       datas.splice(index, 1);
+                      if (datas.length === 1) {
+                        datas[0].isAdd = false;
+                      }
                       setData(datas);
                     }}
                   />
-                ) : (
+                )}
+                {isAddBtn && (
                   <IconButton
                     styles={iconStyle}
                     iconProps={{
