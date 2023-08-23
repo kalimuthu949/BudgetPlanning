@@ -277,7 +277,7 @@ export namespace Config {
     IsAreaValidate: false,
     IsCountryValidate: false,
     IsEmailValidate: false,
-    isAdd: false,
+    isAdd: true,
   };
 
   export const CountryConfigInput: ICountryConfigItems = {
