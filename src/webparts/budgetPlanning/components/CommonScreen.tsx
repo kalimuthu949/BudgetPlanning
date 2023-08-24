@@ -28,7 +28,7 @@ const CommonScreen = (props: any): JSX.Element => {
   const _Blocks: any[] = [
     { name: "Country", iconName: "MyNetwork" },
     { name: "Budget Category", iconName: "DocumentManagement" },
-    // { name: "Country Configuration", iconName: "WaitlistConfirm" },
+    { name: "Country Configuration", iconName: "WaitlistConfirm" },
     { name: "Category Configuration", iconName: "ContactLink" },
   ];
 
