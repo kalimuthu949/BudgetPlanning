@@ -22,6 +22,7 @@ import {
   IComScreen,
   ICountryConfigData,
   ICountryConfigItems,
+  IVendorNave,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -285,5 +286,11 @@ export namespace Config {
     Area: "",
     Country: "",
     Admins: [],
+  };
+
+  export const VenNaveigation: IVendorNave = {
+    isVendorCreate: false,
+    isVendorConfig: false,
+    isVendorApprove: false,
   };
 }
