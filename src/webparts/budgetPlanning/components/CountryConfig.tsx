@@ -232,7 +232,7 @@ const CountryConfig = (props: any): JSX.Element => {
     currentPage: 1,
   });
 
-  console.log("data", data);
+  // console.log("data", data);
   // console.log("inputData", inputData);
 
   /* Style Section */
@@ -431,6 +431,11 @@ const CountryConfig = (props: any): JSX.Element => {
         if (result.length) {
           // console.log("result", result);
           setAllData(result);
+        } else {
+          setAllItems([]);
+          setItems([]);
+          setViewItems([]);
+          setIsLoader(false);
         }
       })
       .catch((error) => _getErrorFunction("get country configration"));
@@ -532,99 +537,110 @@ const CountryConfig = (props: any): JSX.Element => {
     // setValue({...value,EmailId:items[0].id,Email:items[0].secondaryText})
   };
 
-  const Validation = (value: any, index: number, type: string): boolean => {
+  const Validation = (allDatas: any, type: string): boolean => {
     let isAdd: boolean = true;
     let isUpdate = type === "Update";
-    let datas: ICountryConfigData[] = JSON.parse(JSON.stringify(data));
+    let isAreaValidation = false;
+    let isCountryValidation = false;
+    let isEmailValidation = false;
+    let datas = !isUpdate ? [...allDatas] : [];
 
-    if (value.Area === "All") {
-      isAdd && alertify.error("Please select the Area");
-      isAdd = false;
-      !isUpdate ? (datas[index].IsAreaValidate = true) : null;
-    } else {
-      !isUpdate ? (datas[index].IsAreaValidate = false) : null;
-    }
+    allDatas.forEach((value: any, index: number) => {
+      if (!isUpdate) {
+        if (value.Area === "All") {
+          isAdd = false;
+          isAreaValidation = true;
+        }
 
-    if (value.Country === "All") {
-      isAdd && alertify.error("Please select the Country");
-      isAdd = false;
-      !isUpdate ? (datas[index].IsCountryValidate = true) : null;
-    } else {
-      !isUpdate ? (datas[index].IsCountryValidate = false) : null;
-    }
-
-    if (!value.Email.length) {
-      isAdd && alertify.error("Please select the user");
-      isAdd = false;
-      !isUpdate ? (datas[index].IsEmailValidate = true) : null;
-    } else {
-      let emailDatas: ICountryAdminData[] = [];
-
-      let itms: ICountryConfigItems[] = [...allItems];
-      if (type === "Update") {
-        let indx = [...itms].findIndex((val) => val.ID === value.ID);
-        itms.splice(indx, 1);
+        if (value.Country === "All") {
+          isAdd = false;
+          isCountryValidation = true;
+        }
       }
 
-      [...itms].forEach((val: ICountryConfigItems) => {
-        if (val.Area === value.Area && val.Country === value.Country) {
-          emailDatas.push(...val.Admins);
+      if (!value.Email.length) {
+        isAdd = false;
+        isEmailValidation = true;
+      } else {
+        let emailDatas: ICountryAdminData[] = [];
+        let itms: ICountryConfigItems[] = [...allItems];
+        let currentDatas: ICountryConfigData[] = [...data];
+
+        if (isUpdate) {
+          let indx = [...itms].findIndex((val) => val.ID === value.ID);
+          itms.splice(indx, 1);
+        } else {
+          currentDatas.splice(index, 1);
         }
-      });
 
-      console.log("emailDatas", emailDatas);
-      let currentDatas = [...data];
-      currentDatas.splice(index, 1);
+        [...itms].forEach((val: ICountryConfigItems) => {
+          if (val.Area === value.Area && val.Country === value.Country) {
+            emailDatas.push(...val.Admins);
+          }
+        });
 
-      [...currentDatas].forEach((val: ICountryConfigData) => {
-        if (val.Area === value.Area && val.Country === value.Country) {
-          emailDatas.push(...val.Email);
+        [...currentDatas].forEach((val: ICountryConfigData) => {
+          if (val.Area === value.Area && val.Country === value.Country) {
+            emailDatas.push(...val.Email);
+          }
+        });
+
+        console.log("emailDatas", emailDatas);
+        let authendication = [...emailDatas].some((user: ICountryAdminData) => {
+          let isDuplicate = [...value.Email].some(
+            (val) => user.Email === val.Email
+          );
+          return isDuplicate;
+        });
+
+        if (authendication) {
+          isAdd = false;
+          isEmailValidation = true;
         }
-      });
+      }
 
-      let authendication = [...emailDatas].some((user: ICountryAdminData) => {
-        let isDuplicate = [...value.Email].some(
-          (val) => user.Email === val.Email
-        );
-        return isDuplicate;
-      });
-
-      if (authendication) {
-        isAdd &&
+      if (isAreaValidation) {
+        alertify.error("Please select the Area");
+      } else if (isCountryValidation) {
+        alertify.error("Please select the Country");
+      } else if (isEmailValidation) {
+        if (!value.Email.length) {
+          alertify.error("Please select the user");
+        } else {
           alertify.error(
             "Some user are already exist in the same area and category"
           );
-        isAdd = false;
-        !isUpdate ? (datas[index].IsEmailValidate = true) : null;
-      } else {
-        !isUpdate ? (datas[index].IsEmailValidate = false) : null;
+        }
       }
-    }
 
-    setData(datas);
+      if (!isUpdate) {
+        datas[index].IsAreaValidate = isAreaValidation;
+        datas[index].IsCountryValidate = isCountryValidation;
+        datas[index].IsEmailValidate = isEmailValidation;
+      } else {
+      }
+    });
+
+    !isAdd && setData(datas);
     return isAdd;
   };
 
   const handleAdd = (value: ICountryConfigData, index: number) => {
-    let isAdd: boolean = Validation(value, index, "Add");
+    let isAdd: boolean = Validation(data, "Add");
 
     if (isAdd) {
       let datas: ICountryConfigData[] = [...data];
       datas[index].isAdd = true;
+      datas[index].IsAreaValidate = false;
+      datas[index].IsCountryValidate = false;
+      datas[index].IsEmailValidate = false;
       datas.push({ ...Config.CountryConfigData });
       setData(datas);
     }
   };
 
   const handleModalSave = () => {
-    let isValidationArr: boolean[] = [];
-    data.forEach((value: ICountryConfigData, index: number) => {
-      isValidationArr.push(Validation(value, index, "Add"));
-    });
-    console.log("isValidationArr", isValidationArr);
-    let isAdd: boolean = [...isValidationArr].every(
-      (value: boolean) => value === true
-    );
+    let isAdd: boolean = Validation(data, "Add");
 
     if (isAdd) {
       setIsLoader(true);
@@ -673,9 +689,9 @@ const CountryConfig = (props: any): JSX.Element => {
     })
       .then((result) => {
         console.log("res", result);
-        alertify.error("Data added successfully");
+        alertify.success("Data added successfully");
         getDefaultFunction();
-        setData([{ ...Config.CountryConfigData }]);
+        setData([{ ...Config.CountryConfigData, isAdd: false }]);
         setIsModalOpen(false);
         setIsLoader(false);
       })
@@ -710,7 +726,7 @@ const CountryConfig = (props: any): JSX.Element => {
       Email: inputData.Admins,
       ID: inputData.ID,
     };
-    let isUpdate = Validation({ ...values }, index, "Update");
+    let isUpdate = Validation([{ ...values }], "Update");
 
     if (isUpdate) {
       setIsLoader(true);
@@ -806,6 +822,19 @@ const CountryConfig = (props: any): JSX.Element => {
                 setCountryDrop(text.text);
               }}
             />
+            <div style={{ display: "flex", alignItems: "end" }}>
+              <div
+                className={styles.refIcon}
+                onClick={() => {
+                  setIsLoader(true);
+                  handleFilter([...allItems], "All", "All");
+                  setAreaDrop("All");
+                  setCountryDrop("All");
+                }}
+              >
+                <Icon iconName="Refresh" style={{ color: "#ffff" }} />
+              </div>
+            </div>
           </div>
         </div>
         <div>
@@ -910,6 +939,7 @@ const CountryConfig = (props: any): JSX.Element => {
                     setData(datas);
                   }}
                 />
+                {/* {value.IsEmailValidate ? "true" : "false"} */}
                 <PeoplePicker
                   // titleText="Admins"
                   styles={{
@@ -978,6 +1008,7 @@ const CountryConfig = (props: any): JSX.Element => {
               styles={cancelBtnStyle}
               text={"Cancel"}
               onClick={() => {
+                setData([{ ...Config.CountryConfigData, isAdd: false }]);
                 setIsModalOpen(false);
               }}
             />
@@ -996,12 +1027,12 @@ const CountryConfig = (props: any): JSX.Element => {
           <div>
             {/* Content section */}
             {/* img */}
-            {/* <div className={styles.deleteIconCircle}>
-            <IconButton
-              className={styles.unlinkImg}
-              iconProps={{ iconName: "RemoveLinkChain" }}
-            />
-          </div> */}
+            <div className={styles.deleteIconCircle}>
+              <IconButton
+                className={styles.deleteImg}
+                iconProps={{ iconName: "Delete" }}
+              />
+            </div>
 
             <Label
               style={{
