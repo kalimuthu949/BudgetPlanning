@@ -439,3 +439,10 @@ export interface ICountryConfigData {
   IsEmailValidate: boolean;
   isAdd: boolean;
 }
+
+// VendorNave interface
+export interface IVendorNave {
+  isVendorCreate: boolean;
+  isVendorConfig: boolean;
+  isVendorApprove: boolean;
+}

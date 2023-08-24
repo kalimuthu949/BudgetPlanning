@@ -13,6 +13,8 @@ import {
   NormalPeoplePicker,
   IPersonaProps,
   IPeoplePickerItemSelectedStyles,
+  DefaultButton,
+  IButtonStyles,
 } from "@fluentui/react";
 import {
   IDrop,
@@ -23,6 +25,7 @@ import {
   IGroupUsers,
   IVendorProp,
   IUserDetail,
+  IVendorNave,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { Config } from "../../../globals/Config";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
@@ -34,6 +37,9 @@ import styles from "./BudgetDistribution.module.scss";
 import Vendor from "./Vendor";
 import { _filterArray } from "../../../CommonServices/filterCommonArray";
 import * as moment from "moment";
+import VendorApprove from "./VendorApprove";
+import VendorConfig from "./VendorConfig";
+import Supplier from "./Supplier";
 
 let propDropValue: IDropdowns;
 let _isCurYear: boolean = true;
@@ -46,8 +52,6 @@ const BudgetDistribution = (props: any): JSX.Element => {
   _isAdminView = props.groupUsers.isSuperAdminView;
   propDropValue = { ...props.dropValue };
   let _curYear: string = moment().format("YYYY");
-  // let _curYear: string =
-  //   propDropValue.Period[propDropValue.Period.length - 1].text;
   isUserPermissions = { ...props.groupUsers };
 
   const _budgetPlanColumns: IColumn[] = [
@@ -236,6 +240,9 @@ const BudgetDistribution = (props: any): JSX.Element => {
     ...Config.VendorProp,
   });
   const [isTrigger, setIsTrigger] = useState<boolean>(true);
+  const [isVendorNave, setIsVendorNave] = useState<IVendorNave>({
+    ...Config.VenNaveigation,
+  });
 
   /* Style Section */
   const DropdownStyle: Partial<IDropdownStyles> = {
@@ -302,7 +309,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
     root: {
-      width: "66%",
+      width: "48%",
       ".ms-BasePicker-text": {
         "::after": {
           border: "1px solid rgb(96, 94, 92) !important",
@@ -315,6 +322,46 @@ const BudgetDistribution = (props: any): JSX.Element => {
     },
   };
 
+  const VendorBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: "#2580e0 !important",
+      height: 33,
+      width: "144px !important",
+      borderRadius: 5,
+      cursor: "pointer",
+    },
+    label: {
+      fontWeight: 500,
+      color: "#fff",
+      fontSize: 16,
+    },
+    icon: {
+      fontSize: 16,
+      color: "#fff",
+    },
+  };
+
+  const VendorConfigBtnStyle: Partial<IButtonStyles> = {
+    root: {
+      border: "none",
+      background: "#2580e0 !important",
+      height: 33,
+      width: "192px !important",
+      borderRadius: 5,
+      cursor: "pointer",
+    },
+    label: {
+      fontWeight: 500,
+      color: "#fff",
+      fontSize: 16,
+    },
+    icon: {
+      fontSize: 16,
+      color: "#fff",
+    },
+  };
+
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
     setIsLoader(false);
@@ -323,6 +370,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   const _getDefaultFunction = (): void => {
     setIsLoader(true);
+    setIsVendorNave({ ...Config.VenNaveigation });
     filPeriodDrop === _curYear ? _budgetPlanColumns : _budgetPlanColumns.pop();
     setDetailColumn([..._budgetPlanColumns]);
     _getCategoryDatas();
@@ -713,6 +761,18 @@ const BudgetDistribution = (props: any): JSX.Element => {
       });
   };
 
+  const _getVendorNave = (type: string): void => {
+    if (type === "vendorcreate") {
+      setIsVendorNave({ ...Config.VenNaveigation, isVendorCreate: true });
+    } else if (type === "vendorconfig") {
+      setIsVendorNave({ ...Config.VenNaveigation, isVendorConfig: true });
+    } else if (type === "vendorapprove") {
+      setIsVendorNave({ ...Config.VenNaveigation, isVendorApprove: true });
+    } else {
+      setIsVendorNave({ ...Config.VenNaveigation });
+    }
+  };
+
   /* Life cycle of onload */
   useEffect(() => {
     _getDefaultFunction();
@@ -734,6 +794,12 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   return isLoader ? (
     <Loader />
+  ) : isVendorNave.isVendorApprove ? (
+    <VendorApprove _getVendorNave={_getVendorNave} />
+  ) : isVendorNave.isVendorConfig ? (
+    <VendorConfig _getVendorNave={_getVendorNave} />
+  ) : isVendorNave.isVendorCreate ? (
+    <Supplier _getVendorNave={_getVendorNave} />
   ) : vendorDetails.isVendor ? (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
@@ -743,7 +809,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
         {/* Left side section */}
         <div className={styles.filters}>
           {/* Country section */}
-          <div style={{ width: "20%" }}>
+          <div style={{ width: "26%" }}>
             <Label>Country</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -764,7 +830,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
           </div>
 
           {/* Area section */}
-          <div style={{ width: "20%" }}>
+          <div style={{ width: "26%" }}>
             <Label>Area</Label>
             <Dropdown
               styles={DropdownStyle}
@@ -845,7 +911,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
             isUserPermissions.isEnterpricesManager ||
             isUserPermissions.isSpecialManager ||
             isUserPermissions.isSuperAdmin) && (
-            <div style={{ display: "flex", alignItems: "end", width: "22%" }}>
+            <div style={{ display: "flex", alignItems: "end", width: "46%" }}>
               <div
                 style={{
                   display: "flex",
@@ -890,7 +956,33 @@ const BudgetDistribution = (props: any): JSX.Element => {
                 >
                   Send
                 </button>
+
+                {/* vendor config btn section */}
+                <DefaultButton
+                  text="Vendor Configuration"
+                  styles={VendorConfigBtnStyle}
+                  onClick={() => {
+                    _getVendorNave("vendorconfig");
+                  }}
+                />
               </div>
+            </div>
+          )}
+
+        {/* vendor create btn section */}
+        {!_isAdminView &&
+          (isUserPermissions.isInfraAdmin ||
+            isUserPermissions.isEnterpricesAdmin ||
+            isUserPermissions.isSpecialAdmin ||
+            isUserPermissions.isSuperAdmin) && (
+            <div style={{ marginLeft: 20 }}>
+              <DefaultButton
+                text="Vendor Create"
+                styles={VendorBtnStyle}
+                onClick={() => {
+                  _getVendorNave("vendorcreate");
+                }}
+              />
             </div>
           )}
       </div>
