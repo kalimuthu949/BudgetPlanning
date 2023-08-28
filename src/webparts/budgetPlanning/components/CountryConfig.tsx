@@ -246,8 +246,8 @@ const CountryConfig = (props: any): JSX.Element => {
     {
       ...Config.CountryConfigData,
       isAdd: false,
-      Area: areaDropValue[0].text,
-      Country: countryDropValue[0].text,
+      Area: areaDropValue ? areaDropValue[0].text : "",
+      Country: countryDropValue.length ? countryDropValue[0].text : "",
     },
   ]);
   const [inputData, setInputData] = useState({ ...Config.CountryConfigInput });
@@ -642,8 +642,8 @@ const CountryConfig = (props: any): JSX.Element => {
       datas[index].IsEmailValidate = false;
       datas.push({
         ...Config.CountryConfigData,
-        Area: areaDropValue[0].text,
-        Country: countryDropValue[0].text,
+        Area: areaDropValue ? areaDropValue[0].text : "",
+        Country: countryDropValue.length ? countryDropValue[0].text : "",
       });
       setData(datas);
     }
@@ -705,8 +705,8 @@ const CountryConfig = (props: any): JSX.Element => {
           {
             ...Config.CountryConfigData,
             isAdd: false,
-            Area: areaDropValue[0].text,
-            Country: countryDropValue[0].text,
+            Area: areaDropValue ? areaDropValue[0].text : "",
+            Country: countryDropValue.length ? countryDropValue[0].text : "",
           },
         ]);
         setIsModalOpen(false);
@@ -909,16 +909,13 @@ const CountryConfig = (props: any): JSX.Element => {
             if (value.Email.length) {
               selectedUsers = [...value.Email].map((value) => value.Email);
             }
-            // console.log("selectedUsers", selectedUsers);
             let isAddBtn = index === data.length - 1;
-            console.log("check", value.IsEmailValidate);
             return (
               <div
                 style={{
                   display: "flex",
                   gap: "1%",
                   padding: "5px 0px",
-                  // justifyContent: "center",
                 }}
               >
                 <Dropdown
@@ -927,8 +924,6 @@ const CountryConfig = (props: any): JSX.Element => {
                       ? ErrModalDropdownStyle
                       : ModalDropdownStyle
                   }
-                  // style={{ width: "10%" }}
-                  // label="Area"
                   options={[...areaDropValue]}
                   selectedKey={_getFilterDropValues(
                     "Area",
@@ -948,13 +943,16 @@ const CountryConfig = (props: any): JSX.Element => {
                       ? ErrModalDropdownStyle
                       : ModalDropdownStyle
                   }
-                  // label="Country"
                   options={[...countryDropValue]}
-                  selectedKey={_getFilterDropValues(
-                    "Country",
-                    { ...propDropValue },
+                  selectedKey={
                     value.Country
-                  )}
+                      ? _getFilterDropValues(
+                          "Country",
+                          { ...propDropValue },
+                          value.Country
+                        )
+                      : null
+                  }
                   onChange={(e: any, text: IDrop) => {
                     let datas = [...data];
                     datas[index].Country = text.text;
@@ -1047,8 +1045,10 @@ const CountryConfig = (props: any): JSX.Element => {
                   {
                     ...Config.CountryConfigData,
                     isAdd: false,
-                    Area: areaDropValue[0].text,
-                    Country: countryDropValue[0].text,
+                    Area: areaDropValue ? areaDropValue[0].text : "",
+                    Country: countryDropValue.length
+                      ? countryDropValue[0].text
+                      : "",
                   },
                 ]);
                 setIsModalOpen(false);
