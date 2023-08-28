@@ -433,7 +433,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                 ? SPServices.format(Number(e.Price))
                 : SPServices.format(0),
               Vendor: e.VendorName ? e.VendorName : "",
-              Po: e.LastYearPO ? e.LastYearPO : "",
+              Po: e.Po ? e.Po : "",
               PoCurrency: e.PoCurrency ? e.PoCurrency : "",
               InvoiceNo: e.InvoiceNo ? e.InvoiceNo : "",
               Area: e.Area ? e.Area : "",
@@ -811,13 +811,13 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         ? curEditItem.StartDate.toISOString()
         : null,
       ToDate: curEditItem.ToDate ? curEditItem.ToDate.toISOString() : null,
-      PO: curEditItem.Po,
+      Po: curEditItem.Po,
       PoCurrency: curEditItem.PoCurrency,
       InvoiceNo: curEditItem.InvoiceNo,
     };
 
     SPServices.SPUpdateItem({
-      Listname: Config.ListNames.DistributionList,
+      Listname: Config.ListNames.VendorDetails,
       ID: Number(curEditItem.ID),
       RequestJSON: json,
     })
@@ -825,7 +825,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
         _getDefaultFunction();
       })
       .catch((error: any) => {
-        _getErrorFunction("distribution update");
+        _getErrorFunction("Vendor details update issue");
       });
   };
 
@@ -1025,7 +1025,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               className={styles.accordion}
               title={`${item.CategoryAcc} - ${item.CountryAcc} ( ${
                 item.Type
-              } ) ~ ${SPServices.format(item.OverAllBudgetCost)}`}
+              } ) ~ AED ${SPServices.format(item.OverAllBudgetCost)}`}
               defaultCollapsed={true}
               collapsedIcon={"ChevronRight"}
               expandedIcon={"ChevronDown"}
@@ -1268,7 +1268,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                       <div
                         style={{
                           background:
-                            "linear-gradient(to right, #de7420, #fff)",
+                            "linear-gradient(to right, #20cbde, #fff)",
                         }}
                         className={styles.righttDiv}
                       >
@@ -1300,7 +1300,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                       <div
                         style={{
                           background:
-                            "linear-gradient(to right, #31de20, #fff)",
+                            item.OverAllRemainingCost >= 0
+                              ? "linear-gradient(to right, #31de20, #fff)"
+                              : "linear-gradient(to right, #e25e59, #f1f1f1)",
                         }}
                         className={styles.righttDiv}
                       >
@@ -1364,7 +1366,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                   </div>
                   <div
                     style={{
-                      background: "linear-gradient(to right, #de7420, #fff)",
+                      background: "linear-gradient(to right, #20cbde, #fff)",
                       fontSize: 14,
                     }}
                     className={styles.righttDiv}
@@ -1400,7 +1402,10 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                   </div>
                   <div
                     style={{
-                      background: "linear-gradient(to right, #31de20, #fff)",
+                      background:
+                        selItems[0].OverAllRemainingCost >= 0
+                          ? "linear-gradient(to right, #31de20, #fff)"
+                          : "linear-gradient(to right, #e25e59, #f1f1f1)",
                       fontSize: 14,
                     }}
                     className={styles.righttDiv}
