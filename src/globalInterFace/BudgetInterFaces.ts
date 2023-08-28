@@ -11,6 +11,7 @@ export interface IList {
   DistributionLibrary: string;
   MasterCategoryBackupList: string;
   CountryConfig: string;
+  VendorDetails: string;
 }
 
 /* Interface of Year List Column */
@@ -120,6 +121,7 @@ export interface IDropdowns {
   ctgryDropOptions: IDrop[];
   Area: IDrop[];
   Vendor: IDrop[];
+  NuberOfVendors: IDrop[];
 }
 
 /* Interface of lookup obj */
@@ -445,4 +447,178 @@ export interface IVendorNave {
   isVendorCreate: boolean;
   isVendorConfig: boolean;
   isVendorApprove: boolean;
+}
+
+// Vendor data master category interface
+export interface IVenMasCategory {
+  MasCategory: string;
+  Area: string;
+  Country: string;
+  Type: string;
+  ID: number;
+  OverAllBudgetCost: number;
+  OverAllUsedCost: number;
+  OverAllRemainingCost: number;
+}
+
+// Vendor data sub category interface
+export interface IVenSubCategory {
+  SubCategory: string;
+  MasCategory: string;
+  Area: string;
+  Country: string;
+  Type: string;
+  ID: number;
+  MasCategoryID: number;
+  BudgetAllocated: number;
+  BudgetUsed: number;
+  BudgetRemaining: number;
+}
+
+// Vendor data Attachment interface
+export interface IAttach {
+  Name: string;
+  Path: string;
+}
+
+// Vendor data interface
+export interface IVendorData {
+  Description: string;
+  Type: string;
+  VendorName: string;
+  Payment: string;
+  Delivery: string;
+  LastYearPO: string;
+  Recommended: string;
+  Year: string;
+  Status: string;
+  Comment: string;
+  Area: string;
+  Country: string;
+  Category: string;
+  ID: number;
+  CountryId: number;
+  Price: number;
+  LastYearCost: number;
+  RequestedAmount: number;
+  index: number;
+  Attachments: IAttach[];
+  subCategory?: string;
+  Budget?: IVenDrop[];
+  curDetailObj?: IVenDrop;
+}
+
+// Vendor drop interface
+export interface IVenDrop {
+  Area: string;
+  Type: string;
+  Country: string;
+  key: number;
+  text: string;
+  BudgetAllocated: number;
+  BudgetUsed: number;
+  BudgetRemaining: number;
+  CategoryID: number;
+  Category: string;
+  CategoryAllocated: number;
+  CategoryUsed: number;
+  CategoryRemaining: number;
+}
+
+// Category list update interface
+export interface ICateList {
+  ID: number;
+  OverAllPOIssuedCost: number;
+  OverAllRemainingCost: number;
+}
+
+// Budget list update interface
+export interface IBudList {
+  ID: number;
+  Used: number;
+  RemainingCost: number;
+}
+
+// Vendor list update interface
+export interface IVenList {
+  ID: number;
+  CategoryId: number;
+  BudgetId: number;
+  Status: string;
+}
+
+// Update json interface
+export interface IUpdateJSON {
+  ListName: string;
+  CateList?: ICateList[];
+  BudList?: IBudList[];
+  VenList?: IVenList[];
+}
+
+// country datas interface
+export interface ICountryData {
+  Area: string;
+  Country: string;
+  AdminEmail: string;
+}
+
+// suplier interface
+export interface ISuplierDetail {
+  Type: string;
+  Description: string;
+  NumberOfVendor: string;
+  Attachments: any[];
+  Comments: string;
+  Area: string;
+  Country: string;
+  CountryId: number;
+}
+
+export interface ISuplierData {
+  Name: string;
+  Pricing: string;
+  PaymentTerms: string;
+  Delivery: string;
+  LastYearCost: string;
+  RecomendedName: string;
+  LastYearPO: string;
+  RequestAmount: string;
+  NameValidation: boolean;
+  PricingValidation: boolean;
+}
+
+export interface ISuplierDetailValidation {
+  TypeValidate: boolean;
+  DescriptionValidate: boolean;
+  NumberOfVendorValidate: boolean;
+  AttachmentsValidate: boolean;
+  CommentsValidate: boolean;
+  AreaValidate: boolean;
+  CountryValidate: boolean;
+}
+
+export interface ISuplierDropData {
+  Area: string;
+  Country: string;
+  CountryId: null;
+}
+
+// suplier view interface
+export interface ISupplierViewData {
+  Name: string;
+  PaymentTerms: string;
+  Delivery: string;
+  RecomendedName: string;
+  LastYearPO: string;
+  Type: string;
+  Description: string;
+  NumberOfVendor: string;
+  Comments: string;
+  Area: string;
+  Country: string;
+  Status: string;
+  Pricing: number;
+  RequestAmount: number;
+  LastYearCost: number;
+  Attachments: any[];
 }

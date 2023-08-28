@@ -384,7 +384,7 @@ const BudgetTrackingList = (props: any): JSX.Element => {
               isDummy: false,
             });
             i + 1 == resBudget.length &&
-              _getDistributionDatas([..._arrCate], [..._curItem]);
+              _getVendorDetail([..._arrCate], [..._curItem]);
           }
         } else {
           setSelItems([]);
@@ -397,29 +397,25 @@ const BudgetTrackingList = (props: any): JSX.Element => {
       });
   };
 
-  const _getDistributionDatas = (
+  const _getVendorDetail = (
     _arrCate: ICurCategoryItem[],
     _arrBud: ICurBudgetItem[]
   ): void => {
     SPServices.SPReadItems({
-      Listname: Config.ListNames.DistributionList,
-      Select: "*, Year/ID, Year/Title, Budget/ID, Budget/Title",
-      Expand: "Year, Budget",
+      Listname: Config.ListNames.VendorDetails,
+      Select:
+        "*, Category/ID, Category/Title, Budget/ID, Budget/Description, Country/ID, Country/Title, AttachmentFiles",
+      Expand: "Category, Budget, Country, AttachmentFiles",
       Filter: [
         {
-          FilterKey: "isDeleted",
-          FilterValue: "1",
-          Operator: "ne",
+          FilterKey: "Year",
+          Operator: "eq",
+          FilterValue: filPeriodDrop,
         },
         {
           FilterKey: "Status",
+          Operator: "eq",
           FilterValue: "Approved",
-          Operator: "eq",
-        },
-        {
-          FilterKey: "Year/Title",
-          Operator: "eq",
-          FilterValue: filPeriodDrop,
         },
       ],
       Topcount: 5000,
@@ -432,10 +428,12 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           resDis.forEach((e: any) => {
             _arrDis.push({
               ID: e.ID,
-              BudgetId: e.BudgetId ? e.Budget.ID : null,
-              Cost: e.Pricing ? SPServices.format(Number(e.Pricing)) : null,
-              Vendor: e.Vendor ? e.Vendor : "",
-              Po: e.PO ? e.PO : "",
+              BudgetId: e.BudgetId ? e.BudgetId : null,
+              Cost: e.Price
+                ? SPServices.format(Number(e.Price))
+                : SPServices.format(0),
+              Vendor: e.VendorName ? e.VendorName : "",
+              Po: e.LastYearPO ? e.LastYearPO : "",
               PoCurrency: e.PoCurrency ? e.PoCurrency : "",
               InvoiceNo: e.InvoiceNo ? e.InvoiceNo : "",
               Area: e.Area ? e.Area : "",

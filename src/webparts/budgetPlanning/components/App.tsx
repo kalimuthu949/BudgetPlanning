@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Config } from "../../../globals/Config";
 import {
+  ICountryData,
   IDrop,
   IDropdowns,
   IGroupUsers,
@@ -85,7 +86,45 @@ const App = (props: any): JSX.Element => {
     alertify.error("Error message");
   };
 
-  const getUsers = async () => {
+  const _getCountryConfigData = (): void => {
+    SPServices.SPReadItems({
+      Listname: Config.ListNames.CountryConfig,
+      Select:
+        "*, Country/ID, Country/Title, AreaAdmins/Title, AreaAdmins/EMail, AreaAdmins/ID",
+      Expand: "Country, AreaAdmins",
+      Filter: [
+        {
+          FilterKey: "isDeleted",
+          Operator: "ne",
+          FilterValue: "1",
+        },
+      ],
+    })
+      .then((res: any) => {
+        let _countryData: ICountryData[] = [];
+
+        res.length &&
+          res.forEach((e: any) => {
+            e.AreaAdminsId.length &&
+              e.AreaAdmins.forEach((data: any) => {
+                if (currentUser.toLowerCase() === data.EMail.toLowerCase()) {
+                  _countryData.push({
+                    Area: e.Area ? e.Area : "",
+                    Country: e.CountryId ? e.Country.Title : "",
+                    AdminEmail: data.EMail.toLowerCase(),
+                  });
+                }
+              });
+          });
+
+        getUsers([..._countryData]);
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const getUsers = async (_countryData: ICountryData[]) => {
     let allUsers: any = { ...groupUsers };
     let _userDetail: IUserDetail[] = [];
     let _DirArray: IUserDetail[] = [];
@@ -269,6 +308,14 @@ const App = (props: any): JSX.Element => {
                     }
                     dropValue.masterCate = [..._typeMasterCate];
 
+                    let NumberOfVendors: IDrop[] = [{ key: 0, text: "All" }];
+
+                    for (let i = 1; i <= 10; i++) {
+                      NumberOfVendors.push({ key: i, text: i.toString() });
+                    }
+
+                    dropValue.NuberOfVendors = [...NumberOfVendors];
+
                     // get Vendor datas function
                     // SPServices.SPReadItems({
                     //   Listname: Config.ListNames.VendorList,
@@ -308,8 +355,8 @@ const App = (props: any): JSX.Element => {
                     //     _getErrorFunction(err);
                     //   });
 
-                      setDropValue({ ...dropValue });
-                      _getPageName();
+                    setDropValue({ ...dropValue });
+                    _getPageName();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);
@@ -362,7 +409,7 @@ const App = (props: any): JSX.Element => {
 
   /* Life cycle of onload */
   useEffect(() => {
-    getUsers();
+    _getCountryConfigData();
   }, []);
 
   return (
@@ -391,6 +438,7 @@ const App = (props: any): JSX.Element => {
                 dropValue={dropValue}
                 groupUsers={groupUsers}
                 adminUsers={adminUsers}
+                currentUser={currentUser}
               />
             ) : (
               <BudgetTrackingList
