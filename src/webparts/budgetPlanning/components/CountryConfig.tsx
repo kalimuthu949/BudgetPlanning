@@ -234,12 +234,8 @@ const CountryConfig = (props: any): JSX.Element => {
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
-  const [filAreaDrop, setAreaDrop] = useState<string>(
-    propDropValue.Area[1].text
-  );
-  const [filCountryDrop, setCountryDrop] = useState<string>(
-    propDropValue.Country[1].text
-  );
+  const [filAreaDrop, setAreaDrop] = useState<string>("All");
+  const [filCountryDrop, setCountryDrop] = useState<string>("All");
   const [allItems, setAllItems] = useState<ICountryConfigItems[]>([]);
   const [viewItems, setViewItems] = useState<ICountryConfigItems[]>([]);
   const [items, setItems] = useState<ICountryConfigItems[]>([]);
@@ -247,7 +243,12 @@ const CountryConfig = (props: any): JSX.Element => {
   const [isDelModal, setIsDelModal] = useState<boolean>(false);
   // const [isValidation, setIsValidation] = useState<ICountryConfigValidation[]>([]);
   const [data, setData] = useState<ICountryConfigData[]>([
-    { ...Config.CountryConfigData, isAdd: false },
+    {
+      ...Config.CountryConfigData,
+      isAdd: false,
+      Area: areaDropValue[0].text,
+      Country: countryDropValue[0].text,
+    },
   ]);
   const [inputData, setInputData] = useState({ ...Config.CountryConfigInput });
   const [pagination, setPagination] = useState<IPagination>({
@@ -509,13 +510,17 @@ const CountryConfig = (props: any): JSX.Element => {
   ) => {
     let itms: ICountryConfigItems[] = [...datas];
 
-    itms = [...itms].filter(
-      (value: ICountryConfigItems) => value.Area === Area
-    );
+    if (Area !== "All") {
+      itms = [...itms].filter(
+        (value: ICountryConfigItems) => value.Area === Area
+      );
+    }
 
-    itms = [...itms].filter(
-      (value: ICountryConfigItems) => value.Country === Country
-    );
+    if (Country !== "All") {
+      itms = [...itms].filter(
+        (value: ICountryConfigItems) => value.Country === Country
+      );
+    }
 
     setViewItems(itms);
     setPaginationData(itms, 1);
@@ -565,8 +570,10 @@ const CountryConfig = (props: any): JSX.Element => {
     let datas = !isUpdate ? [...allDatas] : [];
 
     allDatas.forEach((value: any, index: number) => {
+      let isEmtyValidate: boolean = false;
+      let isExistValidate: boolean = false;
       if (!value.Email.length) {
-        datas[index].IsEmailEmty = true;
+        isEmtyValidate = true;
       } else {
         let emailDatas: ICountryAdminData[] = [];
         let itms: ICountryConfigItems[] = [...allItems];
@@ -591,16 +598,15 @@ const CountryConfig = (props: any): JSX.Element => {
           }
         });
 
-        console.log("emailDatas", emailDatas);
-        let authendication = [...emailDatas].some((user: ICountryAdminData) => {
+        isExistValidate = [...emailDatas].some((user: ICountryAdminData) => {
           let isDuplicate = [...value.Email].some(
             (val) => user.Email === val.Email
           );
           return isDuplicate;
         });
-
-        datas[index].IsEmailValidate = authendication;
       }
+      datas[index].IsEmailEmty = isEmtyValidate;
+      datas[index].IsEmailValidate = isExistValidate;
     });
 
     let emailValidationCount = [...datas].filter(
@@ -610,23 +616,16 @@ const CountryConfig = (props: any): JSX.Element => {
       (value) => value.IsEmailEmty
     ).length;
 
-    if (emailValidationCount > 1 && emtyValidationCount > 1) {
+    if (emailValidationCount && emtyValidationCount) {
       alertify.error("Please select the users and some users already exists");
-    } else if (emailValidationCount > 1 && emtyValidationCount) {
-      alertify.error("Please select the user and some users already exists");
-    } else if (emailValidationCount && emtyValidationCount > 1) {
-      alertify.error("Please select the users and user already exists");
-    } else if (emailValidationCount > 1 && !emtyValidationCount) {
+    } else if (emailValidationCount && !emtyValidationCount) {
       alertify.error("some users already exists");
-    } else if (!emailValidationCount && emtyValidationCount > 1) {
+    } else if (!emailValidationCount && emtyValidationCount) {
       alertify.error("Please select the users");
     }
 
     isAdd = [...datas].some(
-      (value) =>
-        value.IsAreaValidate ||
-        value.IsCountryValidate ||
-        value.isEmailValidation
+      (value) => value.IsEmailEmty || value.IsEmailValidate
     );
 
     isAdd && setData(datas);
@@ -641,7 +640,11 @@ const CountryConfig = (props: any): JSX.Element => {
       datas[index].isAdd = true;
       datas[index].IsEmailEmty = false;
       datas[index].IsEmailValidate = false;
-      datas.push({ ...Config.CountryConfigData });
+      datas.push({
+        ...Config.CountryConfigData,
+        Area: areaDropValue[0].text,
+        Country: countryDropValue[0].text,
+      });
       setData(datas);
     }
   };
@@ -698,7 +701,14 @@ const CountryConfig = (props: any): JSX.Element => {
         console.log("res", result);
         alertify.success("Data added successfully");
         getDefaultFunction();
-        setData([{ ...Config.CountryConfigData, isAdd: false }]);
+        setData([
+          {
+            ...Config.CountryConfigData,
+            isAdd: false,
+            Area: areaDropValue[0].text,
+            Country: countryDropValue[0].text,
+          },
+        ]);
         setIsModalOpen(false);
         setIsLoader(false);
       })
@@ -805,7 +815,7 @@ const CountryConfig = (props: any): JSX.Element => {
               <Dropdown
                 styles={DropdownStyle}
                 label="Area"
-                options={[...areaDropValue]}
+                options={[...propDropValue.Area]}
                 selectedKey={_getFilterDropValues(
                   "Area",
                   { ...propDropValue },
@@ -821,7 +831,7 @@ const CountryConfig = (props: any): JSX.Element => {
               <Dropdown
                 styles={DropdownStyle}
                 label="Country"
-                options={[...countryDropValue]}
+                options={[...propDropValue.Country]}
                 selectedKey={_getFilterDropValues(
                   "Country",
                   { ...propDropValue },
@@ -901,6 +911,7 @@ const CountryConfig = (props: any): JSX.Element => {
             }
             // console.log("selectedUsers", selectedUsers);
             let isAddBtn = index === data.length - 1;
+            console.log("check", value.IsEmailValidate);
             return (
               <div
                 style={{
@@ -918,7 +929,7 @@ const CountryConfig = (props: any): JSX.Element => {
                   }
                   // style={{ width: "10%" }}
                   // label="Area"
-                  options={[...propDropValue.Area]}
+                  options={[...areaDropValue]}
                   selectedKey={_getFilterDropValues(
                     "Area",
                     { ...propDropValue },
@@ -938,7 +949,7 @@ const CountryConfig = (props: any): JSX.Element => {
                       : ModalDropdownStyle
                   }
                   // label="Country"
-                  options={[...propDropValue.Country]}
+                  options={[...countryDropValue]}
                   selectedKey={_getFilterDropValues(
                     "Country",
                     { ...propDropValue },
@@ -958,9 +969,10 @@ const CountryConfig = (props: any): JSX.Element => {
                     styles={{
                       root: {
                         ".ms-BasePicker-text": {
-                          border: value.IsEmailValidate
-                            ? " 1px solid red"
-                            : "1px solid #605e5b",
+                          border:
+                            value.IsEmailValidate || value.IsEmailEmty
+                              ? " 1px solid red"
+                              : "1px solid #605e5b",
                           "::after": {
                             border: "none",
                           },
@@ -1031,7 +1043,14 @@ const CountryConfig = (props: any): JSX.Element => {
               styles={cancelBtnStyle}
               text={"Cancel"}
               onClick={() => {
-                setData([{ ...Config.CountryConfigData, isAdd: false }]);
+                setData([
+                  {
+                    ...Config.CountryConfigData,
+                    isAdd: false,
+                    Area: areaDropValue[0].text,
+                    Country: countryDropValue[0].text,
+                  },
+                ]);
                 setIsModalOpen(false);
               }}
             />
