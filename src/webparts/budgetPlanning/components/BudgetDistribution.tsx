@@ -311,7 +311,6 @@ const BudgetDistribution = (props: any): JSX.Element => {
       height: 33,
       width: "144px !important",
       borderRadius: 5,
-      cursor: "pointer",
     },
     label: {
       fontWeight: 500,
@@ -726,7 +725,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
               ur.Country +
               " ( " +
               ur.Type +
-              " ) ~ " +
+              " ) ~ AED " +
               SPServices.format(Number(_totalAmount))
             }`
           : ur.Category,
@@ -815,7 +814,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
       dropValue={props.dropValue}
       currentUser={props.currentUser}
     />
-  ) : vendorDetails.isVendor ? (
+  ) : true ? (
     <div style={{ width: "100%" }}>
       {/* Heading section */}
       <Label className={styles.HeaderLable}>Budget Distribution</Label>
@@ -994,9 +993,12 @@ const BudgetDistribution = (props: any): JSX.Element => {
             <div style={{ marginLeft: 20 }}>
               <DefaultButton
                 text="Vendor Create"
+                style={{
+                  cursor: group.length ? "pointer" : "not-allowed",
+                }}
                 styles={VendorBtnStyle}
                 onClick={() => {
-                  _getVendorNave("vendorcreate", null);
+                  group.length && _getVendorNave("vendorcreate", null);
                 }}
               />
             </div>

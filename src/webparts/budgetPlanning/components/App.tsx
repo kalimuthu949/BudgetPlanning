@@ -40,14 +40,17 @@ const App = (props: any): JSX.Element => {
     {
       user: "isInfraAdmin",
       groupName: Config.GroupNames.InfraAdmin,
+      Area: Config.AreaName.InfraStructure,
     },
     {
       user: "isSpecialAdmin",
       groupName: Config.GroupNames.SpecialAdmin,
+      Area: Config.AreaName.SpecialProject,
     },
     {
       user: "isEnterpricesAdmin",
       groupName: Config.GroupNames.EnterpricesAdmin,
+      Area: Config.AreaName.EnterpriseApplication,
     },
     {
       user: "isInfraManager",
@@ -133,15 +136,29 @@ const App = (props: any): JSX.Element => {
       await sp.web.siteGroups
         .getByName(_allUsers[i].groupName)
         .users.get()
-        .then((result) => {
+        .then((result: any) => {
           if (result.length) {
             let authendication: boolean =
               _allUsers[i].user !== "Director"
                 ? [...result].some((value) => value.Email === currentUser)
                 : false;
 
-            if (authendication) {
-              allUsers[_allUsers[i].user] = authendication;
+            if (
+              (_allUsers[i].user === "isInfraAdmin" ||
+                _allUsers[i].user === "isEnterpricesAdmin" ||
+                _allUsers[i].user === "isSpecialAdmin") &&
+              authendication
+            ) {
+              _countryData.length &&
+                _countryData.forEach((e: ICountryData) => {
+                  if (e.Area === _allUsers[i].Area) {
+                    allUsers[_allUsers[i].user] = authendication;
+                  }
+                });
+            } else {
+              if (authendication) {
+                allUsers[_allUsers[i].user] = authendication;
+              }
             }
 
             if (
