@@ -23,6 +23,11 @@ import {
   ICountryConfigData,
   ICountryConfigItems,
   IVendorNave,
+  IVenDrop,
+  ISuplierDetail,
+  ISuplierData,
+  ISuplierDetailValidation,
+  ISupplierViewData,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -39,6 +44,7 @@ export namespace Config {
     DistributionLibrary: "DistributionLibrary",
     MasterCategoryBackupList: "Master Category Backup List",
     CountryConfig: "Country Configuration List",
+    VendorDetails: "Vendor Details",
   };
 
   /* Global Year List Column Names */
@@ -140,6 +146,7 @@ export namespace Config {
     ctgryDropOptions: [],
     Area: [],
     Vendor: [],
+    NuberOfVendors: [],
   };
 
   /* Global of current budget items names */
@@ -292,5 +299,55 @@ export namespace Config {
     isVendorCreate: false,
     isVendorConfig: false,
     isVendorApprove: false,
+  };
+
+  export const VenDrop: IVenDrop = {
+    Area: "",
+    Type: "",
+    Country: "",
+    key: 0,
+    text: "Please select",
+    BudgetAllocated: 0,
+    BudgetUsed: 0,
+    BudgetRemaining: 0,
+    CategoryID: null,
+    Category: "",
+    CategoryAllocated: 0,
+    CategoryUsed: 0,
+    CategoryRemaining: 0,
+  };
+
+  export const SuplierDetails: ISuplierDetail = {
+    Type: "All",
+    Description: "",
+    NumberOfVendor: "All",
+    Attachments: [],
+    Comments: "",
+    Area: "All",
+    Country: "All",
+    CountryId: null,
+  };
+
+  export const SuplierData: ISuplierData = {
+    Name: "",
+    Pricing: "0",
+    PaymentTerms: "",
+    Delivery: "",
+    LastYearCost: "0",
+    RecomendedName: "",
+    RequestAmount: "0",
+    LastYearPO: "",
+    NameValidation: false,
+    PricingValidation: false,
+  };
+
+  export const SuplierDetailsValidation: ISuplierDetailValidation = {
+    TypeValidate: false,
+    DescriptionValidate: false,
+    NumberOfVendorValidate: false,
+    AttachmentsValidate: false,
+    CommentsValidate: false,
+    AreaValidate: false,
+    CountryValidate: false,
   };
 }

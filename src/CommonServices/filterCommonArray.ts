@@ -213,4 +213,20 @@ const _filAreaDrop = (user: IGroupUsers): IDrop[] => {
   return _arrArea;
 };
 
-export { _filterArray, _filAreaDrop };
+const _areaVoiceFilter = (_area: IDrop[], _masArr: any[]): any[] => {
+  let _filArray: any[] = [];
+  
+  for (let i: number = 0; _area.length > i; i++) {
+    for (let j: number = 0; _masArr.length > j; j++) {
+      if (_area[i].text === _masArr[j].Area) {
+        _filArray.push(_masArr[j]);
+      }
+
+      if (_area.length === i + 1 && _masArr.length === j + 1) {
+        return _filArray;
+      }
+    }
+  }
+};
+
+export { _filterArray, _filAreaDrop, _areaVoiceFilter };
