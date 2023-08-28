@@ -89,6 +89,20 @@ const CountryConfig = (props: any): JSX.Element => {
           return (
             <PeoplePicker
               // titleText="Admins"
+              styles={{
+                root: {
+                  ".ms-BasePicker-text": {
+                    border: "1px solid #605e5b",
+                    "::after": {
+                      border: "none",
+                    },
+                    minHeigth: 36,
+                    maxHeight: 70,
+                    overflowX: "hidden",
+                    // padding: "3px 5px",
+                  },
+                },
+              }}
               disabled={false}
               context={props.context.context}
               placeholder={`Insert area admins`}
@@ -228,7 +242,7 @@ const CountryConfig = (props: any): JSX.Element => {
   ]);
   const [inputData, setInputData] = useState({ ...Config.CountryConfigInput });
   const [pagination, setPagination] = useState<IPagination>({
-    perPage: 4,
+    perPage: 10,
     currentPage: 1,
   });
 
@@ -277,7 +291,7 @@ const CountryConfig = (props: any): JSX.Element => {
 
   const DropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "10%",
+      width: "100%",
       ".ms-Dropdown-container": {
         width: "100%",
       },
@@ -294,7 +308,7 @@ const CountryConfig = (props: any): JSX.Element => {
 
   const ModalDropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "20%",
+      width: "28%",
       ".ms-Dropdown-container": {
         width: "100%",
       },
@@ -308,7 +322,7 @@ const CountryConfig = (props: any): JSX.Element => {
 
   const ErrModalDropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "20%",
+      width: "28%",
       ".ms-Dropdown-container": {
         width: "100%",
       },
@@ -347,7 +361,7 @@ const CountryConfig = (props: any): JSX.Element => {
       color: "#fff",
       background: "#2580e0 !important",
       borderRadius: 3,
-      width: "26%",
+      width: "18%",
     },
     rootHovered: {
       background: "#2580e0",
@@ -363,7 +377,7 @@ const CountryConfig = (props: any): JSX.Element => {
       borderRadius: 3,
       border: "none",
       marginRight: 20,
-      width: "26%",
+      width: "18%",
     },
     rootHovered: {
       background: "#dc3120",
@@ -794,34 +808,38 @@ const CountryConfig = (props: any): JSX.Element => {
       <div className={styles.Header}>
         <div className={styles.HeaderFilters}>
           <div className={styles.dropdowns}>
-            <Dropdown
-              styles={DropdownStyle}
-              label="Area"
-              options={[...propDropValue.Area]}
-              selectedKey={_getFilterDropValues(
-                "Area",
-                { ...propDropValue },
-                filAreaDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                handleFilter([...allItems], text.text, filCountryDrop);
-                setAreaDrop(text.text);
-              }}
-            />
-            <Dropdown
-              styles={DropdownStyle}
-              label="Country"
-              options={[...propDropValue.Country]}
-              selectedKey={_getFilterDropValues(
-                "Country",
-                { ...propDropValue },
-                filCountryDrop
-              )}
-              onChange={(e: any, text: IDrop) => {
-                handleFilter([...allItems], filAreaDrop, text.text);
-                setCountryDrop(text.text);
-              }}
-            />
+            <div style={{ width: "32%" }}>
+              <Dropdown
+                styles={DropdownStyle}
+                label="Area"
+                options={[...propDropValue.Area]}
+                selectedKey={_getFilterDropValues(
+                  "Area",
+                  { ...propDropValue },
+                  filAreaDrop
+                )}
+                onChange={(e: any, text: IDrop) => {
+                  handleFilter([...allItems], text.text, filCountryDrop);
+                  setAreaDrop(text.text);
+                }}
+              />
+            </div>
+            <div style={{ width: "32%" }}>
+              <Dropdown
+                styles={DropdownStyle}
+                label="Country"
+                options={[...propDropValue.Country]}
+                selectedKey={_getFilterDropValues(
+                  "Country",
+                  { ...propDropValue },
+                  filCountryDrop
+                )}
+                onChange={(e: any, text: IDrop) => {
+                  handleFilter([...allItems], filAreaDrop, text.text);
+                  setCountryDrop(text.text);
+                }}
+              />
+            </div>
             <div style={{ display: "flex", alignItems: "end" }}>
               <div
                 className={styles.refIcon}
@@ -894,9 +912,9 @@ const CountryConfig = (props: any): JSX.Element => {
               <div
                 style={{
                   display: "flex",
-                  gap: "2%",
+                  gap: "1%",
                   padding: "5px 0px",
-                  justifyContent: "center",
+                  // justifyContent: "center",
                 }}
               >
                 <Dropdown
@@ -919,6 +937,7 @@ const CountryConfig = (props: any): JSX.Element => {
                     setData(datas);
                   }}
                 />
+
                 <Dropdown
                   styles={
                     value.IsCountryValidate
@@ -939,67 +958,78 @@ const CountryConfig = (props: any): JSX.Element => {
                     setData(datas);
                   }}
                 />
-                {/* {value.IsEmailValidate ? "true" : "false"} */}
-                <PeoplePicker
-                  // titleText="Admins"
-                  styles={{
-                    root: {
-                      ".ms-BasePicker-text": {
-                        border: value.IsEmailValidate
-                          ? " 1px solid red"
-                          : "1px solid #605e5b",
+                <div style={{ width: "30%" }}>
+                  {/* {value.IsEmailValidate ? "true" : "false"} */}
+                  <PeoplePicker
+                    // titleText="Admins"
+                    styles={{
+                      root: {
+                        ".ms-BasePicker-text": {
+                          border: value.IsEmailValidate
+                            ? " 1px solid red"
+                            : "1px solid #605e5b",
+                          "::after": {
+                            border: "none",
+                          },
+                          minHeigth: 36,
+                          maxHeight: 70,
+                          overflowX: "hidden",
+                          // padding: "3px 5px",
+                        },
                       },
-                    },
-                  }}
-                  disabled={false}
-                  context={props.context.context}
-                  placeholder={`Insert area admins`}
-                  personSelectionLimit={10}
-                  showtooltip={true}
-                  ensureUser={true}
-                  showHiddenInUI={false}
-                  principalTypes={[PrincipalType.User]}
-                  resolveDelay={1000}
-                  onChange={(users) =>
-                    getPeoplePickerItems(users, index, "add")
-                  }
-                  defaultSelectedUsers={[...selectedUsers]}
-                  required={false}
-                  //groupName={""} // Leave this blank in case you want to filter from all users
-                />
-                {value.isAdd && (
-                  <IconButton
-                    styles={iconStyle}
-                    iconProps={{
-                      iconName: "Delete",
                     }}
-                    style={{ color: "red" }}
-                    title="Delete"
-                    ariaLabel="Delete"
-                    onClick={() => {
-                      let datas = [...data];
-                      datas.splice(index, 1);
-                      if (datas.length === 1) {
-                        datas[0].isAdd = false;
-                      }
-                      setData(datas);
-                    }}
+                    disabled={false}
+                    context={props.context.context}
+                    placeholder={`Insert area admins`}
+                    personSelectionLimit={10}
+                    showtooltip={true}
+                    ensureUser={true}
+                    showHiddenInUI={false}
+                    principalTypes={[PrincipalType.User]}
+                    resolveDelay={1000}
+                    onChange={(users) =>
+                      getPeoplePickerItems(users, index, "add")
+                    }
+                    defaultSelectedUsers={[...selectedUsers]}
+                    required={false}
+                    //groupName={""} // Leave this blank in case you want to filter from all users
                   />
-                )}
-                {isAddBtn && (
-                  <IconButton
-                    styles={iconStyle}
-                    iconProps={{
-                      iconName: "Add",
-                    }}
-                    style={{ color: "#000" }}
-                    title="Add"
-                    ariaLabel="Add"
-                    onClick={() => {
-                      handleAdd(value, index);
-                    }}
-                  />
-                )}
+                </div>
+                <div>
+                  {value.isAdd && (
+                    <IconButton
+                      styles={iconStyle}
+                      iconProps={{
+                        iconName: "Delete",
+                      }}
+                      style={{ color: "red" }}
+                      title="Delete"
+                      ariaLabel="Delete"
+                      onClick={() => {
+                        let datas = [...data];
+                        datas.splice(index, 1);
+                        if (datas.length === 1) {
+                          datas[0].isAdd = false;
+                        }
+                        setData(datas);
+                      }}
+                    />
+                  )}
+                  {isAddBtn && (
+                    <IconButton
+                      styles={iconStyle}
+                      iconProps={{
+                        iconName: "Add",
+                      }}
+                      style={{ color: "#000" }}
+                      title="Add"
+                      ariaLabel="Add"
+                      onClick={() => {
+                        handleAdd(value, index);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}
