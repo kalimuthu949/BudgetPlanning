@@ -402,7 +402,7 @@ export interface ITrackSelectedItem {
 export interface ITrackUpdateItem {
   StartingDate: Date | string;
   ToDate: Date | string;
-  PO: string;
+  Po: string;
   PoCurrency: string;
   InvoiceNo: string;
 }
@@ -436,8 +436,7 @@ export interface ICountryConfigData {
   Country: string;
   CountryId: number;
   Email: any[];
-  IsAreaValidate: boolean;
-  IsCountryValidate: boolean;
+  IsEmailEmty: boolean;
   IsEmailValidate: boolean;
   isAdd: boolean;
 }

@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import SPServices from "../../../CommonServices/SPServices";
 import * as moment from "moment";
 import { ISupplierViewData } from "../../../globalInterFace/BudgetInterFaces";
+import { _filterArray } from "../../../CommonServices/filterCommonArray";
 
 const ViewSupplier = (props: any): JSX.Element => {
   const columns = [
@@ -32,9 +33,10 @@ const ViewSupplier = (props: any): JSX.Element => {
       fieldName: "Pricing",
       minWidth: 200,
       maxWidth: 300,
-      // onRender: (item: any, index: number) => {
-      //   return <></>;
-      // },
+      onRender: (item: any, index: number) => {
+        let value = SPServices.format(item.Pricing);
+        return <div>{value}</div>;
+      },
     },
     {
       key: "column3",
@@ -102,9 +104,10 @@ const ViewSupplier = (props: any): JSX.Element => {
       fieldName: "LastYearCost",
       minWidth: 200,
       maxWidth: 300,
-      // onRender: (item: any, index: number) => {
-      //   return <></>;
-      // },
+      onRender: (item: any, index: number) => {
+        let value = SPServices.format(item.LastYearCost);
+        return <div>{value}</div>;
+      },
     },
     {
       key: "column10",
@@ -132,9 +135,10 @@ const ViewSupplier = (props: any): JSX.Element => {
       fieldName: "RequestAmount",
       minWidth: 200,
       maxWidth: 300,
-      // onRender: (item: any, index: number) => {
-      //   return <></>;
-      // },
+      onRender: (item: any, index: number) => {
+        let value = SPServices.format(item.RequestAmount);
+        return <div>{value}</div>;
+      },
     },
     {
       key: "column13",
@@ -149,9 +153,9 @@ const ViewSupplier = (props: any): JSX.Element => {
             <a href={item.Attachments[0].ServerRelativeUrl}>
               <Icon
                 title={item.Attachments[0].FileName}
-                iconName="Attach"
+                iconName="OpenFile"
                 style={{
-                  color: "blue",
+                  color: "green",
                   fontSize: "20px",
                   cursor: "pointer",
                 }}
@@ -275,7 +279,15 @@ const ViewSupplier = (props: any): JSX.Element => {
       });
     });
 
-    setItems(itms);
+    // console.log("grp users", props.groupUsers);
+    let newItems = _filterArray(
+      props.groupUsers,
+      itms,
+      Config.Navigation.BudgetAnalysis
+    );
+
+    // console.log("newItems", newItems);
+    setItems(newItems);
     setIsLoader(false);
   };
 

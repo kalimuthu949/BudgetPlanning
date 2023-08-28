@@ -282,8 +282,7 @@ export namespace Config {
     Country: "All",
     CountryId: null,
     Email: [],
-    IsAreaValidate: false,
-    IsCountryValidate: false,
+    IsEmailEmty: false,
     IsEmailValidate: false,
     isAdd: true,
   };
