@@ -236,12 +236,9 @@ const Supplier = (props: any): JSX.Element => {
       ...Config.SuplierDetailsValidation,
     });
 
-  console.log("vendorDetails", vendorDetails);
-  console.log("areaDropdownValues", areaDropdownValues);
-
   const DropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "10%",
+      width: "100%",
       ".ms-Dropdown-container": {
         width: "100%",
       },
@@ -258,7 +255,7 @@ const Supplier = (props: any): JSX.Element => {
 
   const ErrDropdownStyle: Partial<IDropdownStyles> = {
     root: {
-      width: "10%",
+      width: "100%",
       ".ms-Dropdown-container": {
         width: "100%",
       },
@@ -279,10 +276,7 @@ const Supplier = (props: any): JSX.Element => {
 
   const textFieldStyle: Partial<ITextFieldStyles> = {
     root: {
-      width: "10%",
-      ".ms-TextField-wrapper": {
-        with: "10%",
-      },
+      width: "100%",
     },
     fieldGroup: {
       "::after": {
@@ -329,10 +323,7 @@ const Supplier = (props: any): JSX.Element => {
 
   const errtxtFieldStyle: Partial<ITextFieldStyles> = {
     root: {
-      width: "10%",
-      ".ms-TextField-wrapper": {
-        with: "10%",
-      },
+      width: "100%",
     },
     fieldGroup: {
       border: "1px solid red",
@@ -816,163 +807,212 @@ const Supplier = (props: any): JSX.Element => {
             />
             <Label className={styles.HeaderLable}>Vendor Details</Label>
           </div>
-          <div className={styles.VendorDetails}>
-            <Dropdown
-              styles={
-                vendorDetailsValidation.AreaValidate
-                  ? ErrDropdownStyle
-                  : DropdownStyle
-              }
-              label="Area"
-              options={[...areaDropdownValues]}
-              selectedKey={_getFilterDropValues(
-                "Area",
-                { ...propDropValue },
-                vendorDetails.Area
-              )}
-              disabled={isAreaDisabled}
-              onChange={(e: any, text: IDrop) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({
-                  ...vendorDetails,
-                  Area: text.text,
-                });
-              }}
-            />
-            <Dropdown
-              styles={
-                vendorDetailsValidation.CountryValidate
-                  ? ErrDropdownStyle
-                  : DropdownStyle
-              }
-              label="Country"
-              disabled={isCountryDisabled}
-              options={[...countryDropValues]}
-              selectedKey={_getFilterDropValues(
-                "Country",
-                { ...propDropValue },
-                vendorDetails.Country
-              )}
-              onChange={(e: any, text: IDrop) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({
-                  ...vendorDetails,
-                  Country: text.text,
-                  CountryId: text.ID,
-                });
-              }}
-            />
-            <Dropdown
-              styles={
-                vendorDetailsValidation.TypeValidate
-                  ? ErrDropdownStyle
-                  : DropdownStyle
-              }
-              label="Type"
-              options={[...propDropValue.Type]}
-              selectedKey={_getFilterDropValues(
-                "Type",
-                { ...propDropValue },
-                vendorDetails.Type
-              )}
-              onChange={(e: any, text: IDrop) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({
-                  ...vendorDetails,
-                  Type: text.text,
-                });
-              }}
-            />
-            <TextField
-              value={vendorDetails.Description}
-              label="Description"
-              styles={
-                vendorDetailsValidation.DescriptionValidate
-                  ? errtxtFieldStyle
-                  : textFieldStyle
-              }
-              onChange={(e: any, value: any) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({ ...vendorDetails, Description: value });
-              }}
-            />
-            <Dropdown
-              styles={
-                vendorDetailsValidation.NumberOfVendorValidate
-                  ? ErrDropdownStyle
-                  : DropdownStyle
-              }
-              label="Number of vendors"
-              options={[...propDropValue.NuberOfVendors]}
-              selectedKey={_getFilterDropValues(
-                "Number of vendors",
-                { ...propDropValue },
-                vendorDetails.NumberOfVendor
-              )}
-              onChange={(e: any, text: IDrop) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({
-                  ...vendorDetails,
-                  NumberOfVendor: text.text,
-                });
-              }}
-            />
-            <div className={styles.Attachment}>
-              <p>Procurement confirmation email/approved iMemo</p>
-              <input
-                id="AttachmentFile"
-                type="file"
-                style={{ display: "none" }}
-                // accept=".xlsx,.docx,.txt"
-                onChange={(event) => {
-                  setIsSubmitBtn(false);
-                  if (event.target.files.length) {
-                    setAttachmentData(event.target.files);
-                  }
-                }}
-              />
 
-              <label
-                htmlFor="AttachmentFile"
-                style={{
-                  border: `1px solid ${
-                    vendorDetailsValidation.AttachmentsValidate
-                      ? "red"
-                      : "black"
-                  }`,
-                }}
-                placeholder="choose the file"
-              >
-                {vendorDetails.Attachments.length
-                  ? vendorDetails.Attachments[0].name + ",.."
-                  : "Choose the file"}
-              </label>
+          {/* Master data add section */}
+          <div>
+            {/* First row */}
+            <div
+              className={styles.supplierAdd}
+              style={{
+                marginBottom: "20px",
+              }}
+            >
+              {/* Area section */}
+              <div className={styles.supplierRow}>
+                <Dropdown
+                  styles={
+                    vendorDetailsValidation.AreaValidate
+                      ? ErrDropdownStyle
+                      : DropdownStyle
+                  }
+                  label="Area"
+                  options={[...areaDropdownValues]}
+                  selectedKey={_getFilterDropValues(
+                    "Area",
+                    { ...propDropValue },
+                    vendorDetails.Area
+                  )}
+                  disabled={isAreaDisabled}
+                  onChange={(e: any, text: IDrop) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({
+                      ...vendorDetails,
+                      Area: text.text,
+                    });
+                  }}
+                />
+              </div>
+
+              {/* Country section */}
+              <div className={styles.supplierRow}>
+                <Dropdown
+                  styles={
+                    vendorDetailsValidation.CountryValidate
+                      ? ErrDropdownStyle
+                      : DropdownStyle
+                  }
+                  label="Country"
+                  disabled={isCountryDisabled}
+                  options={[...countryDropValues]}
+                  selectedKey={_getFilterDropValues(
+                    "Country",
+                    { ...propDropValue },
+                    vendorDetails.Country
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({
+                      ...vendorDetails,
+                      Country: text.text,
+                      CountryId: text.ID,
+                    });
+                  }}
+                />
+              </div>
+
+              {/* Area section */}
+              <div className={styles.supplierRow}>
+                <Dropdown
+                  styles={
+                    vendorDetailsValidation.TypeValidate
+                      ? ErrDropdownStyle
+                      : DropdownStyle
+                  }
+                  label="Type"
+                  options={[...propDropValue.Type]}
+                  selectedKey={_getFilterDropValues(
+                    "Type",
+                    { ...propDropValue },
+                    vendorDetails.Type
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({
+                      ...vendorDetails,
+                      Type: text.text,
+                    });
+                  }}
+                />
+              </div>
+
+              {/* Description section */}
+              <div className={styles.supplierRow}>
+                <TextField
+                  value={vendorDetails.Description}
+                  label="Description"
+                  styles={
+                    vendorDetailsValidation.DescriptionValidate
+                      ? errtxtFieldStyle
+                      : textFieldStyle
+                  }
+                  onChange={(e: any, value: any) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({ ...vendorDetails, Description: value });
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Secind row */}
+            <div className={styles.supplierAdd}>
+              {/* Number of vendors section */}
+              <div className={styles.supplierRow}>
+                <Dropdown
+                  styles={
+                    vendorDetailsValidation.NumberOfVendorValidate
+                      ? ErrDropdownStyle
+                      : DropdownStyle
+                  }
+                  label="Number of vendors"
+                  options={[...propDropValue.NuberOfVendors]}
+                  selectedKey={_getFilterDropValues(
+                    "Number of vendors",
+                    { ...propDropValue },
+                    vendorDetails.NumberOfVendor
+                  )}
+                  onChange={(e: any, text: IDrop) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({
+                      ...vendorDetails,
+                      NumberOfVendor: text.text,
+                    });
+                  }}
+                />
+              </div>
+
+              {/* Attachment section */}
+              <div className={styles.supplierRow}>
+                <div className={styles.Attachment}>
+                  <Label>Procurement confirmation email/approved iMemo</Label>
+
+                  <input
+                    id="AttachmentFile"
+                    type="file"
+                    style={{ display: "none" }}
+                    onChange={(event) => {
+                      setIsSubmitBtn(false);
+                      if (event.target.files.length) {
+                        setAttachmentData(event.target.files);
+                      }
+                    }}
+                  />
+
+                  <label
+                    htmlFor="AttachmentFile"
+                    style={{
+                      border: `1px solid ${
+                        vendorDetailsValidation.AttachmentsValidate
+                          ? "red"
+                          : "black"
+                      }`,
+                      paddingLeft: "8px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      height: "30px",
+                    }}
+                  >
+                    {vendorDetails.Attachments.length
+                      ? vendorDetails.Attachments[0].name + ",.."
+                      : "Choose the file"}
+                  </label>
+                </div>
+              </div>
+
+              {/* Comments section */}
+              <div className={styles.supplierRow}>
+                <TextField
+                  value={vendorDetails.Comments}
+                  styles={
+                    vendorDetailsValidation.CommentsValidate
+                      ? errtxtFieldStyle
+                      : textFieldStyle
+                  }
+                  label="Comments"
+                  multiline
+                  onChange={(e: any, value: any) => {
+                    setIsSubmitBtn(false);
+                    setVendorDetails({ ...vendorDetails, Comments: value });
+                  }}
+                />
+              </div>
+
+              {/* btn section */}
+              <div className={styles.submitBTN}>
+                <DefaultButton
+                  text="Submit"
+                  styles={btnStyle}
+                  disabled={isSubmitBtn}
+                  onClick={() => {
+                    handleSubmit();
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <TextField
-              value={vendorDetails.Comments}
-              styles={
-                vendorDetailsValidation.CommentsValidate
-                  ? errtxtFieldStyle
-                  : textFieldStyle
-              }
-              label="Comments"
-              onChange={(e: any, value: any) => {
-                setIsSubmitBtn(false);
-                setVendorDetails({ ...vendorDetails, Comments: value });
-              }}
-            />
-            <DefaultButton
-              text="Submit"
-              styles={btnStyle}
-              disabled={isSubmitBtn}
-              onClick={() => {
-                handleSubmit();
-                // setIsModalOpen(true);
-              }}
-            />
-          </div>
+
+          <div className={styles.border} />
+
           <div className={styles.VendorData}>
             <Label className={styles.SubHeaderLable}>Vendor Data</Label>
             <div className={styles.btns}>
@@ -990,11 +1030,11 @@ const Supplier = (props: any): JSX.Element => {
                 styles={btnStyle}
                 onClick={() => {
                   handleSave();
-                  // setIsModalOpen(true);
                 }}
               />
             </div>
           </div>
+
           <DetailsList
             items={vendorData}
             columns={columns}
