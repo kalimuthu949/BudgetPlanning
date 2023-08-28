@@ -36,7 +36,7 @@ let isOpex: boolean = false;
 
 const Supplier = (props: any): JSX.Element => {
   const currentUser = props.currentUser;
-  console.log("currentUser", currentUser);
+  // console.log("currentUser", currentUser);
 
   const allCoumns = [
     {
@@ -217,7 +217,7 @@ const Supplier = (props: any): JSX.Element => {
   let columns = isOpex ? [...allCoumns] : [...allCoumns].slice(0, 4);
 
   propDropValue = props.dropValue;
-  console.log("propDropValue", propDropValue);
+  // console.log("propDropValue/", propDropValue);
 
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [isSubmitBtn, setIsSubmitBtn] = useState<boolean>(false);
@@ -226,7 +226,6 @@ const Supplier = (props: any): JSX.Element => {
   const [isAreaDisabled, setIsAreaDisabled] = useState<boolean>(false);
   const [isCountryDisabled, setIsCountryDisabled] = useState<boolean>(false);
   const [countryDropValues, setCountryDropvalues] = useState<IDrop[]>([]);
-  const [areaDrop, setAreaDrop] = useState<string>("All");
   const [areaDropdownValues, setAreaDropdownValues] = useState<IDrop[]>([]);
   const [vendorDetails, setVendorDetails] = useState<ISuplierDetail>({
     ...Config.SuplierDetails,
@@ -238,6 +237,7 @@ const Supplier = (props: any): JSX.Element => {
     });
 
   console.log("vendorDetails", vendorDetails);
+  console.log("areaDropdownValues", areaDropdownValues);
 
   const DropdownStyle: Partial<IDropdownStyles> = {
     root: {
@@ -467,6 +467,7 @@ const Supplier = (props: any): JSX.Element => {
 
   const setCountryDropdown = (AllDatas: ISuplierDropData[]) => {
     let datas = [...AllDatas];
+    let allCountryDropValues: IDrop[] = [...propDropValue.Country];
     let CountryDropValues: IDrop[] = [{ key: 0, text: "All", ID: null }];
     let keys: number = 1;
     datas.forEach((value: ISuplierDropData) => {
@@ -475,28 +476,26 @@ const Supplier = (props: any): JSX.Element => {
       );
 
       if (!isDuplicate) {
-        CountryDropValues.push({
-          key: keys,
-          text: value.Country,
-          ID: value.CountryId,
-        });
-        keys++;
+        let _Option: IDrop = [...allCountryDropValues].find(
+          (val: IDrop) => val.text === value.Country
+        );
+        CountryDropValues.push({ ..._Option });
       }
     });
 
-    // if (CountryDropValues.length === 2) {
-    //   setVendorDetails({
-    //     ...vendorDetails,
-    //     Country: CountryDropValues.pop().text,
-    //   });
-    //   setIsCountryDisabled(true);
-    // }
+    let vendorDtls = { ...vendorDetails };
+
+    if (CountryDropValues.length === 2) {
+      (vendorDtls.Country =
+        CountryDropValues[CountryDropValues.length - 1].text),
+        setIsCountryDisabled(true);
+    }
 
     setCountryDropvalues([...CountryDropValues]);
-    getAreaDropdown();
+    getAreaDropdown(vendorDtls);
   };
 
-  const getAreaDropdown = () => {
+  const getAreaDropdown = (vendorDtls) => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.BudgetList,
       Select:
@@ -516,15 +515,14 @@ const Supplier = (props: any): JSX.Element => {
       ],
     })
       .then((res: any) => {
-        console.log("res", res);
-        getAllAreas(res);
+        getAllAreas(res, vendorDtls);
       })
       .catch((err: any) => {
         console.log("err", err);
       });
   };
 
-  const getAllAreas = (datas: any) => {
+  const getAllAreas = (datas: any, vendorDtls) => {
     let allData = [...datas];
     let allArea = [];
     allData.forEach((value: any) => {
@@ -537,17 +535,14 @@ const Supplier = (props: any): JSX.Element => {
       }
     });
 
-    console.log("allAreas", allArea);
-    setAreaDropdown(allArea);
+    setAreaDropdown(allArea, vendorDtls);
   };
 
-  const setAreaDropdown = (allAreas: string[]) => {
+  const setAreaDropdown = (allAreas: string[], vendorDtls) => {
     let areas: string[] = [...allAreas];
-    let areaDropdown = [
-      { key: 0, text: "All" },
-      { key: 1, text: "Infra Structure" },
-    ];
+    let areaDropdown = [{ key: 0, text: "All" }];
     let areaDropValues: IDrop[] = [...propDropValue.Area];
+    let venDetails = { ...vendorDtls };
 
     areas.forEach((area: string, index: number) => {
       areaDropValues.forEach((value: IDrop) => {
@@ -557,29 +552,23 @@ const Supplier = (props: any): JSX.Element => {
       });
     });
 
-    // areaDropValues.pop();
-    console.log("areaDropdown", areaDropdown);
-    // if (areaDropdown.length === 2) {
-    //   console.log("check", areaDropdown.pop().text);
-
-    //   setVendorDetails({
-    //     ...vendorDetails,
-    //     Area: areaDropdown.pop().text,
-    //   });
-    //   setIsAreaDisabled(true);
-    // }
+    if (areaDropdown.length === 2) {
+      (venDetails.Area = areaDropdown[areaDropdown.length - 1].text),
+        setIsAreaDisabled(true);
+    }
 
     setAreaDropdownValues([...areaDropdown]);
+    setVendorDetails({ ...venDetails });
     setIsLoader(false);
   };
 
   const setAttachmentData = (files: any) => {
     let attachments = [];
-    console.log("files", files);
+    // console.log("files", files);
     for (let i = 0; i < files.length; i++) {
       attachments.push({ name: files[i].name, content: files[i] });
     }
-    console.log("attachments", attachments);
+    // console.log("attachments", attachments);
     setVendorDetails({ ...vendorDetails, Attachments: attachments });
   };
 
@@ -795,7 +784,11 @@ const Supplier = (props: any): JSX.Element => {
   return (
     <>
       {isViewSupplier ? (
-        <ViewSupplier currentUser={currentUser} handleBack={handleBack} />
+        <ViewSupplier
+          currentUser={currentUser}
+          handleBack={handleBack}
+          groupUsers={props.groupUsers}
+        />
       ) : isLoader ? (
         <Loader />
       ) : (
