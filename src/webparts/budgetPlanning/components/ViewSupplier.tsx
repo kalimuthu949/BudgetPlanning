@@ -270,7 +270,7 @@ const ViewSupplier = (props: any): JSX.Element => {
         NumberOfVendor: "",
         Comments: value.Comment ? value.Comment : "",
         Area: value.Area ? value.Area : "",
-        Country: value.Country.Title ? value.Country.Title : "",
+        Country: value.CountryId ? value.Country.Title : "",
         Status: value.Status ? value.Status : "",
         Pricing: value.Price ? value.Price : null,
         RequestAmount: value.RequestedAmount ? value.RequestedAmount : null,
@@ -283,7 +283,7 @@ const ViewSupplier = (props: any): JSX.Element => {
     let newItems = _filterArray(
       props.groupUsers,
       itms,
-      Config.Navigation.BudgetAnalysis
+      Config.Navigation.BudgetDistribution
     );
 
     // console.log("newItems", newItems);

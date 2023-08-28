@@ -412,8 +412,8 @@ const Supplier = (props: any): JSX.Element => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.CountryConfig,
       Select:
-        "*,Country/Title,Country/ID,AreaAdmins/Title,AreaAdmins/EMail,AreaAdmins/ID",
-      Expand: "Country,AreaAdmins",
+        "*, Country/Title,Country/ID, AreaAdmins/Title, AreaAdmins/EMail, AreaAdmins/ID",
+      Expand: "Country, AreaAdmins",
       Filter: [
         {
           FilterKey: "isDeleted",
