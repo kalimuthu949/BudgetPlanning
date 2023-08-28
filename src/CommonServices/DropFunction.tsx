@@ -28,6 +28,9 @@ const _getFilterDropValues = (
   if (type == "Vendor" && value.Vendor.length) {
     key = value.Vendor.filter((e: IDrop) => e.text == filValue)[0].key;
   }
+  if (type == "Number of vendors" && value.NuberOfVendors.length) {
+    key = value.NuberOfVendors.filter((e: IDrop) => e.text == filValue)[0].key;
+  }
   return key;
 };
 

@@ -1,0 +1,43 @@
+.Container {
+  .HeaderLable {
+    font-size: 28px;
+    color: #202945;
+  }
+  .VendorDetails {
+    display: flex;
+    gap: 1%;
+    // align-content: flex-end;
+    .Attachment {
+      p {
+        font-weight: bolder;
+        margin: 5px 0px;
+        padding-bottom: 8px;
+      }
+      label {
+        padding: 7px 10px;
+      }
+    }
+  }
+  .VendorData {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    .btns {
+      display: flex;
+      gap: 1%;
+    }
+    .SubHeaderLable {
+      padding-top: 30px;
+      font-size: 28px;
+      color: #202945;
+    }
+  }
+  .noRecords {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    font-weight: 600;
+    font-size: 16px;
+    color: #4d546a;
+  }
+}
