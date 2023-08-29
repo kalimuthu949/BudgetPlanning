@@ -292,6 +292,24 @@ const format = (number: number): string => {
   return num;
 };
 
+const numberFormat = (number: string) => {
+  let string: any = number;
+  if (string.length > 1) {
+    string = number.split("");
+
+    for (let i = 0; i < number.length; i++) {
+      if (number[i] === "0" && number[i + 1] !== ".") {
+        string.shift();
+      } else {
+        i = number.length;
+      }
+    }
+
+    string = string ? string.join("") : "0";
+  }
+  return string;
+};
+
 export default {
   getAllUsers,
   SPAddItem,
@@ -309,4 +327,5 @@ export default {
   batchDelete,
   decimalCount,
   format,
+  numberFormat,
 };

@@ -561,6 +561,11 @@ export interface ICountryData {
   AdminEmail: string;
 }
 
+export interface IUpdateValidation {
+  emty: boolean;
+  duplicate: boolean;
+}
+
 // suplier interface
 export interface ISuplierDetail {
   Type: string;

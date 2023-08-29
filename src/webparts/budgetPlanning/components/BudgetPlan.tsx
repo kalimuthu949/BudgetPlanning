@@ -244,7 +244,9 @@ const BudgetPlan = (props: any): JSX.Element => {
           item.ApproveStatus !== "Approved" ? (
           <div>
             <TextField
-              value={curData.BudgetProposed.toString()}
+              value={
+                curData.BudgetProposed ? curData.BudgetProposed.toString() : "0"
+              }
               placeholder="Enter Here"
               styles={
                 isValidation.isBudgetRequired
@@ -253,7 +255,7 @@ const BudgetPlan = (props: any): JSX.Element => {
               }
               onChange={(e: any, value: any) => {
                 if (/^[0-9]*\.?[0-9]*$/.test(value)) {
-                  curData.BudgetProposed = value;
+                  curData.BudgetProposed = SPServices.numberFormat(value);
                   setCurData({ ...curData });
                 }
               }}

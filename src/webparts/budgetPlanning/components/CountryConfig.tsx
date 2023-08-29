@@ -29,6 +29,7 @@ import {
   IDrop,
   IDropdowns,
   IGroupUsers,
+  IUpdateValidation,
 } from "../../../globalInterFace/BudgetInterFaces";
 import SPServices from "../../../CommonServices/SPServices";
 import { Config } from "../../../globals/Config";
@@ -65,6 +66,8 @@ const CountryConfig = (props: any): JSX.Element => {
   let countryDropValue: IDrop[] = [...propDropValue.Country];
   countryDropValue.shift();
 
+  let isNewConfig: boolean = countryDropValue.length ? false : true;
+
   const columns = [
     {
       key: "column1",
@@ -97,7 +100,10 @@ const CountryConfig = (props: any): JSX.Element => {
               styles={{
                 root: {
                   ".ms-BasePicker-text": {
-                    border: "1px solid #605e5b",
+                    border:
+                      isUpdateValidation.emty || isUpdateValidation.duplicate
+                        ? " 1px solid red"
+                        : "1px solid #605e5b",
                     "::after": {
                       border: "none",
                     },
@@ -189,6 +195,7 @@ const CountryConfig = (props: any): JSX.Element => {
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  setIsUpdateValidation({ ...Config.UpdateValidation });
                   handleEdit(index, "Close");
                 }}
               />
@@ -232,6 +239,8 @@ const CountryConfig = (props: any): JSX.Element => {
     },
   ];
 
+  _isAdminView && columns.pop();
+
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(false);
   const [filAreaDrop, setAreaDrop] = useState<string>("All");
@@ -241,6 +250,10 @@ const CountryConfig = (props: any): JSX.Element => {
   const [items, setItems] = useState<ICountryConfigItems[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDelModal, setIsDelModal] = useState<boolean>(false);
+  const [isUpdateValidation, setIsUpdateValidation] =
+    useState<IUpdateValidation>({
+      ...Config.UpdateValidation,
+    });
   // const [isValidation, setIsValidation] = useState<ICountryConfigValidation[]>([]);
   const [data, setData] = useState<ICountryConfigData[]>([
     {
@@ -248,6 +261,7 @@ const CountryConfig = (props: any): JSX.Element => {
       isAdd: false,
       Area: areaDropValue ? areaDropValue[0].text : "",
       Country: countryDropValue.length ? countryDropValue[0].text : "",
+      CountryId: countryDropValue.length ? countryDropValue[0].ID : null,
     },
   ]);
   const [inputData, setInputData] = useState({ ...Config.CountryConfigInput });
@@ -564,11 +578,12 @@ const CountryConfig = (props: any): JSX.Element => {
   };
 
   const Validation = (allDatas: any, type: string): boolean => {
-    let isAdd: boolean = true;
+    let isAdd: boolean = false;
     let isUpdate = type === "Update";
 
     let datas = !isUpdate ? [...allDatas] : [];
-
+    let updateValidate: IUpdateValidation = { ...Config.UpdateValidation };
+    console.log("allDatas", allDatas);
     allDatas.forEach((value: any, index: number) => {
       let isEmtyValidate: boolean = false;
       let isExistValidate: boolean = false;
@@ -605,30 +620,48 @@ const CountryConfig = (props: any): JSX.Element => {
           return isDuplicate;
         });
       }
-      datas[index].IsEmailEmty = isEmtyValidate;
-      datas[index].IsEmailValidate = isExistValidate;
+
+      if (isUpdate) {
+        updateValidate.emty = isEmtyValidate;
+        updateValidate.duplicate = isExistValidate;
+      } else {
+        datas[index].IsEmailEmty = isEmtyValidate;
+        datas[index].IsEmailValidate = isExistValidate;
+      }
     });
 
-    let emailValidationCount = [...datas].filter(
-      (value) => value.IsEmailValidate
-    ).length;
-    let emtyValidationCount = [...datas].filter(
-      (value) => value.IsEmailEmty
-    ).length;
+    if (isUpdate) {
+      isAdd = updateValidate.emty === true || updateValidate.duplicate === true;
 
-    if (emailValidationCount && emtyValidationCount) {
-      alertify.error("Please select the users and some users already exists");
-    } else if (emailValidationCount && !emtyValidationCount) {
-      alertify.error("some users already exists");
-    } else if (!emailValidationCount && emtyValidationCount) {
-      alertify.error("Please select the users");
+      if (updateValidate.duplicate) {
+        alertify.error("some users already exists");
+      } else if (updateValidate.emty) {
+        alertify.error("Please select the users");
+      }
+
+      isAdd && setIsUpdateValidation({ ...updateValidate });
+    } else {
+      let emailValidationCount = [...datas].filter(
+        (value) => value.IsEmailValidate
+      ).length;
+      let emtyValidationCount = [...datas].filter(
+        (value) => value.IsEmailEmty
+      ).length;
+
+      if (emailValidationCount && emtyValidationCount) {
+        alertify.error("Please select the users and some users already exists");
+      } else if (emailValidationCount && !emtyValidationCount) {
+        alertify.error("some users already exists");
+      } else if (!emailValidationCount && emtyValidationCount) {
+        alertify.error("Please select the users");
+      }
+
+      isAdd = [...datas].some(
+        (value) => value.IsEmailEmty || value.IsEmailValidate
+      );
+
+      isAdd && setData(datas);
     }
-
-    isAdd = [...datas].some(
-      (value) => value.IsEmailEmty || value.IsEmailValidate
-    );
-
-    isAdd && setData(datas);
     return !isAdd;
   };
 
@@ -644,6 +677,7 @@ const CountryConfig = (props: any): JSX.Element => {
         ...Config.CountryConfigData,
         Area: areaDropValue ? areaDropValue[0].text : "",
         Country: countryDropValue.length ? countryDropValue[0].text : "",
+        CountryId: countryDropValue.length ? countryDropValue[0].ID : null,
       });
       setData(datas);
     }
@@ -707,6 +741,7 @@ const CountryConfig = (props: any): JSX.Element => {
             isAdd: false,
             Area: areaDropValue ? areaDropValue[0].text : "",
             Country: countryDropValue.length ? countryDropValue[0].text : "",
+            CountryId: countryDropValue.length ? countryDropValue[0].ID : null,
           },
         ]);
         setIsModalOpen(false);
@@ -737,13 +772,16 @@ const CountryConfig = (props: any): JSX.Element => {
   };
 
   const handleModalUpdate = (index: number) => {
-    let values = {
+    let values = [];
+
+    values.push({
       Area: inputData.Area,
       Country: inputData.Country,
       Email: inputData.Admins,
       ID: inputData.ID,
-    };
-    let isUpdate = Validation([{ ...values }], "Update");
+    });
+
+    let isUpdate = Validation(values, "Update");
 
     if (isUpdate) {
       setIsLoader(true);
@@ -770,6 +808,7 @@ const CountryConfig = (props: any): JSX.Element => {
           // setItems(itms);
           // setInputData({ ...Config.CountryConfigInput });
           // setIsLoader(false);
+          setIsUpdateValidation({ ...Config.UpdateValidation });
           getDefaultFunction();
         })
         .catch((err) => _getErrorFunction("Country config update"));
@@ -861,14 +900,17 @@ const CountryConfig = (props: any): JSX.Element => {
         <div>
           <div>
             {/*Counter Add Btn section*/}
-            <DefaultButton
-              text="New Config"
-              styles={btnStyle}
-              iconProps={addIcon}
-              onClick={() => {
-                setIsModalOpen(true);
-              }}
-            />
+            {!_isAdminView && (
+              <DefaultButton
+                text="New Config"
+                styles={btnStyle}
+                iconProps={addIcon}
+                disabled={isNewConfig}
+                onClick={() => {
+                  setIsModalOpen(true);
+                }}
+              />
+            )}
           </div>
         </div>
         {/* import btn section */}

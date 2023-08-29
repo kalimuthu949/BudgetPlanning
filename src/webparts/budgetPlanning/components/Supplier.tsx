@@ -79,10 +79,7 @@ const Supplier = (props: any): JSX.Element => {
             onChange={(e: any, value: any) => {
               let _isNumber: boolean = /^[0-9]*\.?[0-9]*$/.test(value);
               if (_isNumber) {
-                let number = value;
-                if (value.length > 1) {
-                  number = numberFormat(number);
-                }
+                let number = SPServices.numberFormat(value);
                 handleInputValue("Pricing", number, index);
               }
             }}
@@ -140,11 +137,8 @@ const Supplier = (props: any): JSX.Element => {
             onChange={(e: any, value: any) => {
               let _isNumber: boolean = /^[0-9]*\.?[0-9]*$/.test(value);
               if (_isNumber) {
-                let number = value;
-                if (value.length > 1) {
-                  number = numberFormat(number);
-                }
-                handleInputValue("LastYearCost", value, index);
+                let number = SPServices.numberFormat(value);
+                handleInputValue("LastYearCost", number, index);
               }
             }}
           />
@@ -201,11 +195,8 @@ const Supplier = (props: any): JSX.Element => {
             onChange={(e: any, value: any) => {
               let _isNumber: boolean = /^[0-9]*\.?[0-9]*$/.test(value);
               if (_isNumber) {
-                let number = value;
-                if (value.length > 1) {
-                  number = numberFormat(number);
-                }
-                handleInputValue("RequestAmount", value, index);
+                let number = SPServices.numberFormat(value);
+                handleInputValue("RequestAmount", number, index);
               }
             }}
           />
@@ -460,26 +451,30 @@ const Supplier = (props: any): JSX.Element => {
     let datas = [...AllDatas];
     let allCountryDropValues: IDrop[] = [...propDropValue.Country];
     let CountryDropValues: IDrop[] = [{ key: 0, text: "All", ID: null }];
-    let keys: number = 1;
-    datas.forEach((value: ISuplierDropData) => {
-      let isDuplicate = [...CountryDropValues].some(
-        (val: IDrop) => val.text === value.Country
-      );
 
-      if (!isDuplicate) {
-        let _Option: IDrop = [...allCountryDropValues].find(
+    if (!props.groupUsers.isSuperAdmin) {
+      datas.forEach((value: ISuplierDropData) => {
+        let isDuplicate = [...CountryDropValues].some(
           (val: IDrop) => val.text === value.Country
         );
-        CountryDropValues.push({ ..._Option });
-      }
-    });
+
+        if (!isDuplicate) {
+          let _Option: IDrop = [...allCountryDropValues].find(
+            (val: IDrop) => val.text === value.Country
+          );
+          CountryDropValues.push({ ..._Option });
+        }
+      });
+    } else {
+      CountryDropValues = [...propDropValue.Country];
+    }
 
     let vendorDtls = { ...vendorDetails };
 
     if (CountryDropValues.length === 2) {
-      (vendorDtls.Country =
-        CountryDropValues[CountryDropValues.length - 1].text),
-        setIsCountryDisabled(true);
+      vendorDtls.Country = CountryDropValues[CountryDropValues.length - 1].text;
+      vendorDtls.CountryId = CountryDropValues[CountryDropValues.length - 1].ID;
+      setIsCountryDisabled(true);
     }
 
     setCountryDropvalues([...CountryDropValues]);
@@ -647,22 +642,6 @@ const Supplier = (props: any): JSX.Element => {
     setVendorData([...datas]);
   };
 
-  const numberFormat = (number: string) => {
-    let string = number.split("");
-
-    for (let i = 0; i < number.length; i++) {
-      if (number[i] === "0" && number[i + 1] !== ".") {
-        console.log("i", i);
-        string.shift();
-        // console.log('string',string)
-      } else {
-        i = number.length;
-      }
-    }
-
-    return string ? string.join("") : "0";
-  };
-
   const vendorDataValidation = (): boolean => {
     let data: ISuplierData[] = [...vendorData];
     data.forEach((value: ISuplierData, index: number) => {
@@ -762,10 +741,15 @@ const Supplier = (props: any): JSX.Element => {
   };
 
   const handleBack = (type: string) => {
+    setIsLoader(true);
     let value = type !== "";
+    console.log("type", value);
     setIsviewSupplier(value);
-    if (value) {
-      getDefaultFunction();
+    if (!value) {
+      setVendorDetails({ ...Config.SuplierDetails });
+      setVendorDetailsValidaion({ ...Config.SuplierDetailsValidation });
+      setVendorData([]);
+      setIsLoader(false);
     }
   };
 
