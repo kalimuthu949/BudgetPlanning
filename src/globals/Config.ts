@@ -28,6 +28,7 @@ import {
   ISuplierData,
   ISuplierDetailValidation,
   ISupplierViewData,
+  IUpdateValidation,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -292,6 +293,11 @@ export namespace Config {
     Area: "",
     Country: "",
     Admins: [],
+  };
+
+  export const UpdateValidation: IUpdateValidation = {
+    emty: false,
+    duplicate: false,
   };
 
   export const VenNaveigation: IVendorNave = {
