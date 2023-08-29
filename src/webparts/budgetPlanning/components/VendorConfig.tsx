@@ -690,7 +690,7 @@ const VendorConfig = (props: any): JSX.Element => {
           _overAllAllocated = _calArray[i].curDetailObj.CategoryAllocated;
           _overAllUsed = _calArray[i].curDetailObj.CategoryUsed;
 
-          _masUsed += _masUsed + _calArray[i].Price;
+          _masUsed = _masUsed + _calArray[i].Price;
         }
 
         if (_calArray.length === i + 1) {
@@ -726,7 +726,7 @@ const VendorConfig = (props: any): JSX.Element => {
           _budgetAllocated = _calArray[i].curDetailObj.BudgetAllocated;
           _budgetUsed = _calArray[i].curDetailObj.BudgetUsed;
 
-          _subUsed += _subUsed + _calArray[i].Price;
+          _subUsed = _subUsed + _calArray[i].Price;
         }
 
         if (_calArray.length === i + 1) {
