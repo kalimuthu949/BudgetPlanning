@@ -675,22 +675,33 @@ const VendorConfig = (props: any): JSX.Element => {
     let _isCate: boolean = false;
     let _isBud: boolean = false;
     let _isVen: boolean = false;
+    let _overAllAllocated: number = 0;
+    let _overAllUsed: number = 0;
+    let _budgetAllocated: number = 0;
+    let _budgetUsed: number = 0;
 
     for (let m: number = 0; _uniqueMas.length > m; m++) {
-      for (let i: number = 0; _calArray.length > i; i++) {
-        _masUsed = i === 0 ? _calArray[i].curDetailObj.CategoryUsed : _masUsed;
+      _masUsed = 0;
+      _overAllAllocated = 0;
+      _overAllUsed = 0;
 
+      for (let i: number = 0; _calArray.length > i; i++) {
         if (_uniqueMas[m] === _calArray[i].curDetailObj.CategoryID) {
-          _masUsed = _masUsed + _calArray[i].Price;
+          _overAllAllocated = _calArray[i].curDetailObj.CategoryAllocated;
+          _overAllUsed = _calArray[i].curDetailObj.CategoryUsed;
+
+          _masUsed += _masUsed + _calArray[i].Price;
         }
 
         if (_calArray.length === i + 1) {
-          _masRemaining =
-            _calArray[i].curDetailObj.CategoryAllocated - _masUsed;
+          let _sum: number = 0;
+
+          _sum = _overAllUsed + _masUsed;
+          _masRemaining = _overAllAllocated - _sum;
 
           _preCateList.push({
             ID: _uniqueMas[m],
-            OverAllPOIssuedCost: _masUsed,
+            OverAllPOIssuedCost: _sum,
             OverAllRemainingCost: _masRemaining,
           });
         }
@@ -706,19 +717,27 @@ const VendorConfig = (props: any): JSX.Element => {
     }
 
     for (let s: number = 0; _uniqueSub.length > s; s++) {
-      for (let i: number = 0; _calArray.length > i; i++) {
-        _subUsed = i === 0 ? _calArray[i].curDetailObj.BudgetUsed : _subUsed;
+      _subUsed = 0;
+      _budgetAllocated = 0;
+      _budgetUsed = 0;
 
+      for (let i: number = 0; _calArray.length > i; i++) {
         if (_uniqueSub[s] === _calArray[i].curDetailObj.key) {
-          _subUsed = _subUsed + _calArray[i].Price;
+          _budgetAllocated = _calArray[i].curDetailObj.BudgetAllocated;
+          _budgetUsed = _calArray[i].curDetailObj.BudgetUsed;
+
+          _subUsed += _subUsed + _calArray[i].Price;
         }
 
         if (_calArray.length === i + 1) {
-          _subRemaining = _calArray[i].curDetailObj.BudgetAllocated - _subUsed;
+          let _sum: number = 0;
+
+          _sum = _budgetUsed + _subUsed;
+          _subRemaining = _budgetAllocated - _sum;
 
           _preBudList.push({
             ID: _uniqueSub[s],
-            Used: _subUsed,
+            Used: _sum,
             RemainingCost: _subRemaining,
           });
         }
@@ -826,7 +845,10 @@ const VendorConfig = (props: any): JSX.Element => {
                 filAreaDrop
               )}
               onChange={(e: any, text: IDrop) => {
-                _Area = text.text as string;
+                _Area =
+                  (text.text as string) !== "All"
+                    ? (text.text as string)
+                    : "Please select";
                 setFilAreaDrop(text.text as string);
                 _getFilterFunction();
               }}
@@ -847,7 +869,10 @@ const VendorConfig = (props: any): JSX.Element => {
                 filCountryDrop
               )}
               onChange={(e: any, text: IDrop) => {
-                _Country = text.text as string;
+                _Country =
+                  (text.text as string) !== "All"
+                    ? (text.text as string)
+                    : "Please select";
                 setFilCountryDrop(text.text as string);
                 _getFilterFunction();
               }}
@@ -866,7 +891,10 @@ const VendorConfig = (props: any): JSX.Element => {
                 filTypeDrop
               )}
               onChange={(e: any, text: IDrop) => {
-                _Type = text.text as string;
+                _Type =
+                  (text.text as string) !== "All"
+                    ? (text.text as string)
+                    : "Please select";
                 setFilTypeDrop(text.text as string);
                 _getFilterFunction();
               }}
