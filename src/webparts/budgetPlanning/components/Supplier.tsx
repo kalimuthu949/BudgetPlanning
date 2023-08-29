@@ -268,6 +268,7 @@ const Supplier = (props: any): JSX.Element => {
   const textFieldStyle: Partial<ITextFieldStyles> = {
     root: {
       width: "100%",
+      resize: "none",
     },
     fieldGroup: {
       "::after": {
@@ -315,6 +316,7 @@ const Supplier = (props: any): JSX.Element => {
   const errtxtFieldStyle: Partial<ITextFieldStyles> = {
     root: {
       width: "100%",
+      resize: "none",
     },
     fieldGroup: {
       border: "1px solid red",
@@ -498,6 +500,11 @@ const Supplier = (props: any): JSX.Element => {
           Operator: "eq",
           FilterValue: moment().format("YYYY"),
         },
+        {
+          FilterKey: "ApproveStatus",
+          Operator: "eq",
+          FilterValue: "Approved",
+        },
       ],
     })
       .then((res: any) => {
@@ -509,6 +516,7 @@ const Supplier = (props: any): JSX.Element => {
   };
 
   const getAllAreas = (datas: any, vendorDtls) => {
+    console.log("datas", datas);
     let allData = [...datas];
     let allArea = [];
     allData.forEach((value: any) => {
