@@ -2005,7 +2005,7 @@ const BudgetPlan = (props: any): JSX.Element => {
   const _addYear = (nextYear: string): void => {
     SPServices.SPAddItem({
       Listname: Config.ListNames.YearList,
-      RequestJSON: { Title: nextYear },
+      RequestJSON: { Title: nextYear, ManuallyCreated: true },
     })
       .then((res: any) => {
         setIsNextYearModal(false);
