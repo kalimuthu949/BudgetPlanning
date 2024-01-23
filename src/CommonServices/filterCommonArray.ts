@@ -23,19 +23,19 @@ const _filterArray = (
         CommentName == Config.Navigation.BudgetTrackingList
       ) {
         if (
-          isUser.isInfraManager &&
+          (isUser.isInfraManager || isUser.isInfraAdmin) &&
           _array[i].Area == Config.AreaName.InfraStructure
         ) {
           _arrValue.push(_array[i]);
         }
         if (
-          isUser.isEnterpricesManager &&
+          (isUser.isEnterpricesManager || isUser.isInfraAdmin) &&
           _array[i].Area == Config.AreaName.EnterpriseApplication
         ) {
           _arrValue.push(_array[i]);
         }
         if (
-          isUser.isSpecialManager &&
+          (isUser.isSpecialManager || isUser.isInfraAdmin) &&
           _array[i].Area == Config.AreaName.SpecialProject
         ) {
           _arrValue.push(_array[i]);
@@ -215,7 +215,7 @@ const _filAreaDrop = (user: IGroupUsers): IDrop[] => {
 
 const _areaVoiceFilter = (_area: IDrop[], _masArr: any[]): any[] => {
   let _filArray: any[] = [];
-  
+
   for (let i: number = 0; _area.length > i; i++) {
     for (let j: number = 0; _masArr.length > j; j++) {
       if (_area[i].text === _masArr[j].Area) {

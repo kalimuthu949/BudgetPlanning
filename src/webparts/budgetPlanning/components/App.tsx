@@ -213,7 +213,8 @@ const App = (props: any): JSX.Element => {
       allUsers.isInfraManager ||
       allUsers.isSpecialManager ||
       allUsers.isSuperAdmin ||
-      allUsers.isSuperAdminView
+      allUsers.isSuperAdminView ||
+      allUsers.isInfraAdmin
     ) {
       _isAreaAdmin = false;
     } else {
@@ -372,8 +373,50 @@ const App = (props: any): JSX.Element => {
                     //     _getErrorFunction(err);
                     //   });
 
-                    setDropValue({ ...dropValue });
-                    _getPageName();
+                    // get Vendor datas function Selva
+                    SPServices.SPReadItems({
+                      Listname: Config.ListNames.VendorDetails,
+                      // Filter: [
+                      //   {
+                      //     FilterKey: "isDeleted",
+                      //     Operator: "ne",
+                      //     FilterValue: "1",
+                      //   },
+                      // ],
+                      Topcount: 5000,
+                    })
+                      .then((resVend: any) => {
+                        let _strVendorArray: IDrop[] = [];
+                        let _typeVendor: IDrop[] = [];
+
+                        resVend.length &&
+                          resVend.forEach((e: any) => {
+                            _strVendorArray.push({
+                              key: e.ID,
+                              text: e.VendorName,
+                            });
+                          });
+
+                        if (resVend.length == _strVendorArray.length) {
+                          _typeVendor = _strVendorArray.sort((a, b) => {
+                            let _firstText: string = a.text.toLowerCase();
+                            let _secondText: string = b.text.toLowerCase();
+                            if (_firstText < _secondText) return -1;
+                            if (_firstText > _secondText) return 1;
+                          });
+                          // _typeVendor.unshift({ key: 0, text: "All" });
+                        }
+                        dropValue.Vendor = [..._typeVendor];
+
+                        setDropValue({ ...dropValue });
+                        _getPageName();
+                      })
+                      .catch((err: any) => {
+                        _getErrorFunction(err);
+                      });
+
+                    // setDropValue({ ...dropValue });
+                    // _getPageName();
                   })
                   .catch((err: any) => {
                     _getErrorFunction(err);

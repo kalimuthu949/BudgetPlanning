@@ -20,6 +20,7 @@ import {
   Label,
   Modal,
   SelectionMode,
+  SearchBox,
 } from "@fluentui/react";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
 import {
@@ -205,8 +206,13 @@ const VendorConfig = (props: any): JSX.Element => {
   const [filCountryDrop, setFilCountryDrop] = useState<string>("All");
   const [filTypeDrop, setFilTypeDrop] = useState<string>("All");
   const [filAreaDrop, setFilAreaDrop] = useState<string>("All");
+  const [filVendorDrop, setFilVendorDrop] = useState<string>("");
   const [MData, setMData] = useState<IVendorData[]>([]);
+  const [fData, setFData] = useState<IVendorData[]>([]);
   const [isModal, setIsModal] = useState<boolean>(false);
+  const [FilterValue, setFilterValue] = useState({
+    SearchFilter: "",
+  });
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -293,6 +299,36 @@ const VendorConfig = (props: any): JSX.Element => {
     },
   };
 
+  const searchBoxStyle = {
+    root: {
+      padding: "0 10px",
+      fontSize: 16,
+      border: "0.5px solid #605e5c !important",
+      ".ms-SearchBox": {
+        border: "none !important",
+      },
+      ":hover": {
+        borderColor: "none",
+      },
+      ".ms-SearchBox-icon": {
+        fontWeight: 900,
+        color: "#4f0974",
+      },
+      "::after": {
+        border: "none !important",
+        backgrounColor: "white",
+      },
+      ".ms-Button-flexContainer": {
+        background: "transparent",
+      },
+      ".ms-Button": {
+        ":hover": {
+          background: "transparent",
+        },
+      },
+    },
+  };
+
   /* function creation */
   const _getErrorFunction = (errMsg: any): void => {
     alertify.error("Error Message");
@@ -358,6 +394,7 @@ const VendorConfig = (props: any): JSX.Element => {
           }
         } else {
           setMData([]);
+          setFData([]);
           setIsLoader(false);
         }
       })
@@ -370,8 +407,8 @@ const VendorConfig = (props: any): JSX.Element => {
     SPServices.SPReadItems({
       Listname: Config.ListNames.BudgetList,
       Select:
-        "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title",
-      Expand: "Category, Year, Country",
+        "*, Category/ID, Category/Title, Year/ID, Year/Title, Country/ID, Country/Title, Vendors/ID, Vendors/VendorName",
+      Expand: "Category, Year, Country, Vendors",
       Filter: [
         {
           FilterKey: "isDeleted",
@@ -407,6 +444,7 @@ const VendorConfig = (props: any): JSX.Element => {
                 : 0,
               BudgetUsed: res[i].Used ? res[i].Used : 0,
               BudgetRemaining: res[i].RemainingCost ? res[i].RemainingCost : 0,
+              Vendors: [...res[i].VendorsId],
             });
 
             if (res.length === _budgetList.length) {
@@ -415,6 +453,7 @@ const VendorConfig = (props: any): JSX.Element => {
           }
         } else {
           setMData([]);
+          setFData([]);
           setIsLoader(false);
         }
       })
@@ -438,11 +477,11 @@ const VendorConfig = (props: any): JSX.Element => {
           Operator: "eq",
           FilterValue: moment().format("YYYY"),
         },
-        {
-          FilterKey: "Status",
-          Operator: "ne",
-          FilterValue: "Approved",
-        },
+        // {
+        //   FilterKey: "Status",
+        //   Operator: "ne",
+        //   FilterValue: "Approved",
+        // },
       ],
     })
       .then((res: any) => {
@@ -496,6 +535,7 @@ const VendorConfig = (props: any): JSX.Element => {
           }
         } else {
           setMData([]);
+          setFData([]);
           setIsLoader(false);
         }
       })
@@ -551,6 +591,7 @@ const VendorConfig = (props: any): JSX.Element => {
             CategoryAllocated: _masCategory[i].OverAllBudgetCost,
             CategoryUsed: _masCategory[i].OverAllUsedCost,
             CategoryRemaining: _masCategory[i].OverAllRemainingCost,
+            Vendors: _subCategory[j].Vendors,
           });
         }
 
@@ -563,6 +604,7 @@ const VendorConfig = (props: any): JSX.Element => {
 
   const _getPrepareMasterArr = (_drop: IVenDrop[]): void => {
     _masIteams = [];
+
     for (let i: number = 0; _vendDatas.length > i; i++) {
       _vendDatas[i].Budget = [];
 
@@ -572,7 +614,8 @@ const VendorConfig = (props: any): JSX.Element => {
         if (
           _vendDatas[i].Area === _drop[j].Area &&
           _vendDatas[i].Country === _drop[j].Country &&
-          _vendDatas[i].Type === _drop[j].Type
+          _vendDatas[i].Type === _drop[j].Type &&
+          !_drop[j].Vendors.includes(_vendDatas[i].ID)
         ) {
           _vendDatas[i].Budget.push({ ..._drop[j] });
         }
@@ -605,11 +648,44 @@ const VendorConfig = (props: any): JSX.Element => {
 
     if (_temp.length) {
       setMData([..._temp]);
+      setFData([..._temp]);
       setIsLoader(false);
     } else {
       setMData([]);
+      setFData([]);
       setIsLoader(false);
     }
+  };
+
+  const Filters = (
+    datas: any[],
+    Reset?: boolean,
+    key?: string,
+    option?: any
+  ) => {
+    let tempData: IVendorData[] = [...datas];
+    let keyValues: any = { ...FilterValue };
+
+    if (Reset) {
+      keyValues = {
+        SearchFilter: "",
+      };
+    }
+    keyValues[`${key}`] = option;
+
+    if (keyValues.SearchFilter != "") {
+      tempData = tempData.filter((value) => {
+        return (
+          value.VendorName &&
+          value.VendorName.toLowerCase().includes(
+            keyValues.SearchFilter.toLowerCase()
+          )
+        );
+      });
+    }
+    setFilterValue({ ...keyValues });
+    setMData([...tempData]);
+    setFData([...tempData]);
   };
 
   const _handleOnChange = (i: number, dropIndex: number): void => {
@@ -623,6 +699,7 @@ const VendorConfig = (props: any): JSX.Element => {
     _calArray = _filArray.filter((e: IVendorData) => e.Category);
 
     setMData([..._filArray]);
+    setFData([..._filArray]);
   };
 
   const _handleSubmit = (): void => {
@@ -679,6 +756,7 @@ const VendorConfig = (props: any): JSX.Element => {
     let _overAllUsed: number = 0;
     let _budgetAllocated: number = 0;
     let _budgetUsed: number = 0;
+    let _curVendorsId: number[] = [];
 
     for (let m: number = 0; _uniqueMas.length > m; m++) {
       _masUsed = 0;
@@ -720,13 +798,16 @@ const VendorConfig = (props: any): JSX.Element => {
       _subUsed = 0;
       _budgetAllocated = 0;
       _budgetUsed = 0;
+      _curVendorsId = _subCategory.filter(
+        (data: IVenSubCategory) => data.ID === _uniqueSub[s]
+      )[0].Vendors;
 
       for (let i: number = 0; _calArray.length > i; i++) {
         if (_uniqueSub[s] === _calArray[i].curDetailObj.key) {
           _budgetAllocated = _calArray[i].curDetailObj.BudgetAllocated;
           _budgetUsed = _calArray[i].curDetailObj.BudgetUsed;
-
           _subUsed = _subUsed + _calArray[i].Price;
+          _curVendorsId.push(_calArray[i].ID);
         }
 
         if (_calArray.length === i + 1) {
@@ -739,6 +820,7 @@ const VendorConfig = (props: any): JSX.Element => {
             ID: _uniqueSub[s],
             Used: _sum,
             RemainingCost: _subRemaining,
+            VendorsId: { results: [..._curVendorsId] },
           });
         }
 
@@ -901,6 +983,31 @@ const VendorConfig = (props: any): JSX.Element => {
             />
           </div>
 
+          {/* Search section */}
+          <div style={{ width: "25%" }}>
+            <Label>Vendor Name</Label>
+            <SearchBox
+              placeholder="Search"
+              styles={searchBoxStyle}
+              value={FilterValue.SearchFilter}
+              onChange={(e: any) => {
+                let searchName: string = e.target.value.toLowerCase();
+                setFilterValue({ SearchFilter: searchName });
+
+                let _tempData = [...MData].filter((e: IVendorData) =>
+                  e.VendorName.toLowerCase().includes(searchName)
+                );
+                setFData([..._tempData]);
+              }}
+              onClear={() => {
+                setFilterValue({
+                  SearchFilter: "",
+                });
+                setFData([...MData]);
+              }}
+            />
+          </div>
+
           {/* Over all refresh section */}
           <div
             className={styles.refIcon}
@@ -912,6 +1019,9 @@ const VendorConfig = (props: any): JSX.Element => {
               setFilTypeDrop("All");
               setFilAreaDrop("All");
               _getFilterFunction();
+              setFilterValue({
+                SearchFilter: "",
+              });
             }}
           >
             <Icon iconName="Refresh" style={{ color: "#ffff" }} />
@@ -936,7 +1046,7 @@ const VendorConfig = (props: any): JSX.Element => {
       {/* Dashboard Detail list section */}
       <DetailsList
         columns={_VendorColumn}
-        items={MData}
+        items={fData}
         styles={_DetailsListStyle}
         setKey="set"
         layoutMode={DetailsListLayoutMode.justified}
