@@ -200,10 +200,10 @@ const BudgetDistribution = (props: any): JSX.Element => {
     },
   ];
 
-  (isUserPermissions.isEnterpricesAdmin ||
-    isUserPermissions.isInfraAdmin ||
-    isUserPermissions.isSpecialAdmin) &&
-    _budgetPlanColumns.pop();
+  // (isUserPermissions.isEnterpricesAdmin ||
+  //   isUserPermissions.isInfraAdmin ||
+  //   isUserPermissions.isSpecialAdmin) &&
+  //   _budgetPlanColumns.pop();
 
   /* State creation */
   const [isLoader, setIsLoader] = useState<boolean>(true);
@@ -353,13 +353,14 @@ const BudgetDistribution = (props: any): JSX.Element => {
     setIsLoader(true);
     setIsVendorNave({ ...Config.VenNaveigation });
 
-    if (
-      isUserPermissions.isEnterpricesAdmin ||
-      isUserPermissions.isInfraAdmin ||
-      isUserPermissions.isSpecialAdmin
-    ) {
-      _budgetPlanColumns.pop();
-    } else if (filPeriodDrop === _curYear) {
+    // if (
+    //   isUserPermissions.isEnterpricesAdmin ||
+    //   isUserPermissions.isInfraAdmin ||
+    //   isUserPermissions.isSpecialAdmin
+    // ) {
+    //   _budgetPlanColumns.pop();
+    // } else
+    if (filPeriodDrop === _curYear) {
       _budgetPlanColumns;
     } else if (filPeriodDrop !== _curYear) {
       _budgetPlanColumns.pop();
@@ -925,7 +926,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
             isUserPermissions.isEnterpricesManager ||
             isUserPermissions.isSpecialManager ||
             isUserPermissions.isSuperAdmin) && (
-            <div style={{ display: "flex", alignItems: "end", width: "46%" }}>
+            <div style={{ display: "flex", alignItems: "end", width: "25%" }}>
               <div
                 style={{
                   display: "flex",
@@ -970,23 +971,36 @@ const BudgetDistribution = (props: any): JSX.Element => {
                 >
                   Send
                 </button>
-
-                {/* vendor config btn section */}
-                <DefaultButton
-                  text="Vendor Configuration"
-                  styles={VendorConfigBtnStyle}
-                  onClick={() => {
-                    _getVendorNave("vendorconfig", null);
-                  }}
-                />
               </div>
             </div>
+          )}
+
+        {/* vendor config btn section */}
+        {!_isAdminView &&
+          filPeriodDrop === _curYear &&
+          (isUserPermissions.isInfraManager ||
+            isUserPermissions.isEnterpricesManager ||
+            isUserPermissions.isSpecialManager ||
+            isUserPermissions.isInfraAdmin ||
+            isUserPermissions.isSpecialAdmin ||
+            isUserPermissions.isEnterpricesAdmin ||
+            isUserPermissions.isSuperAdmin) && (
+            <DefaultButton
+              text="Vendor Configuration"
+              styles={VendorConfigBtnStyle}
+              onClick={() => {
+                _getVendorNave("vendorconfig", null);
+              }}
+            />
           )}
 
         {/* vendor create btn section */}
         {!_isAdminView &&
           filPeriodDrop === _curYear &&
-          (isUserPermissions.isInfraAdmin ||
+          (isUserPermissions.isInfraManager ||
+            isUserPermissions.isEnterpricesManager ||
+            isUserPermissions.isSpecialManager ||
+            isUserPermissions.isInfraAdmin ||
             isUserPermissions.isEnterpricesAdmin ||
             isUserPermissions.isSpecialAdmin ||
             isUserPermissions.isSuperAdmin) && (

@@ -472,6 +472,7 @@ export interface IVenSubCategory {
   BudgetAllocated: number;
   BudgetUsed: number;
   BudgetRemaining: number;
+  Vendors: number[];
 }
 
 // Vendor data Attachment interface
@@ -522,6 +523,7 @@ export interface IVenDrop {
   CategoryAllocated: number;
   CategoryUsed: number;
   CategoryRemaining: number;
+  Vendors: number[];
 }
 
 // Category list update interface
@@ -536,6 +538,7 @@ export interface IBudList {
   ID: number;
   Used: number;
   RemainingCost: number;
+  VendorsId: any;
 }
 
 // Vendor list update interface

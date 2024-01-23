@@ -269,13 +269,44 @@ const BudgetPlan = (props: any): JSX.Element => {
       },
     },
     {
+      // Selva Changes
       key: "column6",
       name: "Budget Allocated",
       fieldName: Config.BudgetListColumns.BudgetAllocated,
       minWidth: 150,
       maxWidth: 150,
       onRender: (item: ICurBudgetItem): any => {
-        return item.isDummy && !item.isEdit ? null : (
+        return item.isDummy && !item.isEdit ? null : !item.isEdit ? (
+          <div style={{ color: "#E39C5A" }}>
+            {SPServices.format(Number(item.BudgetAllocated))}
+          </div>
+        ) : isUserPermissions.isSuperAdmin &&
+          item.ApproveStatus !== "Approved" ? (
+          <div>
+            <TextField
+              value={
+                curData.BudgetAllocated
+                  ? curData.BudgetAllocated.toString()
+                  : "0"
+              }
+              placeholder="Enter Here"
+              styles={
+                isValidation.isBudgetAllocated
+                  ? errtxtFieldStyle
+                  : textFieldStyle
+              }
+              onChange={(e: any, value: any) => {
+                if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+                  curData.BudgetAllocated = SPServices.numberFormat(value);
+                  let result: any =
+                    Number(curData.BudgetAllocated) - curData.Used;
+                  curData.RemainingCost = SPServices.numberFormat(result);
+                  setCurData({ ...curData });
+                }
+              }}
+            />
+          </div>
+        ) : (
           <div style={{ color: "#E39C5A" }}>
             {SPServices.format(Number(item.BudgetAllocated))}
           </div>
@@ -1497,9 +1528,10 @@ const BudgetPlan = (props: any): JSX.Element => {
       Number(_curItem.BudgetProposed)
     );
     curData.Used = SPServices.decimalCount(Number(_curItem.Used));
-    curData.RemainingCost = SPServices.decimalCount(
-      Number(_curItem.RemainingCost)
-    );
+    // curData.RemainingCost = SPServices.decimalCount(
+    //   Number(_curItem.RemainingCost)
+    // );
+    curData.RemainingCost = curData.BudgetAllocated - curData.Used;
     curData.isDeleted = false;
     curData.isEdit = false;
     curData.isApproved = _curItem.isApproved;
@@ -1700,8 +1732,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       _isBack = !curData.isEdit;
       data[columns.Description] = curData.Description;
       data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      // data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       // data[columns.RemainingCost] = Number(_curRemainingCost);
+      data[columns.RemainingCost] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
       _getEditData({ ...data }, "Updated");
@@ -1718,8 +1751,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.ApproveStatus] = curData.ApproveStatus;
       data[columns.CategoryType] = curData.Type;
       data[columns.BudgetProposed] = Number(curData.BudgetProposed);
-      // data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
+      data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
       // data[columns.RemainingCost] = Number(_curRemainingCost);
+      data[columns.RemainingCost] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
       _getAddData({ ...data });
@@ -1756,7 +1790,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           }
           if (_Items[i].ID === curData.ID) {
             _Items[i].CategoryType = "Sub Category";
-            _Items[i].RemainingCost = Number(_curRemainingCost);
+            // _Items[i].RemainingCost = Number(_curRemainingCost);
             _arrNewBudget.push(_Items[i]);
           } else if (_Items[i].ID) {
             _arrNewBudget.push(_Items[i]);
@@ -1814,7 +1848,7 @@ const BudgetPlan = (props: any): JSX.Element => {
           if (_Items[i].ID) {
             if (type == "Updated" && _Items[i].ID == curData.ID) {
               _message = type;
-              curData.RemainingCost = Number(_curRemainingCost);
+              // curData.RemainingCost = Number(_curRemainingCost);
               _arrNewBudget.push({ ...curData });
             } else if (type == "Deleted" && _Items[i].ID == curData.ID) {
               _message = type;
@@ -2148,45 +2182,60 @@ const BudgetPlan = (props: any): JSX.Element => {
           )}
 
           {/* import btn section */}
-          {filPeriodDrop == _curYear && !_isAdminView && (
-            <>
-              <input
-                id="fileUpload"
-                type="file"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  _getFileImport(e.target.files[0]);
-                }}
-              />
-              <label htmlFor="fileUpload" className={styles.uploadBtn}>
-                Import
-              </label>
-            </>
-          )}
+          {filPeriodDrop == _curYear &&
+            !_isAdminView &&
+            (isUserPermissions.isEnterpricesManager ||
+              isUserPermissions.isInfraManager ||
+              isUserPermissions.isSpecialManager ||
+              isUserPermissions.isSuperAdmin) && (
+              <>
+                <input
+                  id="fileUpload"
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    _getFileImport(e.target.files[0]);
+                  }}
+                />
+                <label htmlFor="fileUpload" className={styles.uploadBtn}>
+                  Import
+                </label>
+              </>
+            )}
 
           {/* export btn section */}
-          <button
-            className={styles.exportBtns}
-            style={{
-              cursor: items.length ? "pointer" : "not-allowed",
-            }}
-            onClick={() => items.length && _getGenerateExcel()}
-          >
-            Export
-          </button>
+          {(isUserPermissions.isEnterpricesManager ||
+            isUserPermissions.isInfraManager ||
+            isUserPermissions.isSpecialManager ||
+            isUserPermissions.isSuperAdmin) && (
+            <button
+              className={styles.exportBtns}
+              style={{
+                cursor: items.length ? "pointer" : "not-allowed",
+              }}
+              onClick={() => items.length && _getGenerateExcel()}
+            >
+              Export
+            </button>
+          )}
 
           {/* submit btn section */}
-          {filPeriodDrop == _curYear && !_isAdminView && (
-            <DefaultButton
-              text="Submit"
-              styles={btnStyle}
-              onClick={() => {
-                if (_isMasterSubmit && items.length) {
-                  setIsSubModal(true);
-                }
-              }}
-            />
-          )}
+          {filPeriodDrop == _curYear &&
+            !_isAdminView &&
+            (isUserPermissions.isEnterpricesManager ||
+              isUserPermissions.isInfraManager ||
+              isUserPermissions.isSpecialManager ||
+              isUserPermissions.isSuperAdmin) && (
+              <DefaultButton
+                text="Submit"
+                styles={btnStyle}
+                onClick={() => {
+                  if (_isMasterSubmit && items.length) {
+                    setIsSubModal(true);
+                  }
+                }}
+              />
+            )}
         </div>
       </div>
 

@@ -320,6 +320,7 @@ export namespace Config {
     CategoryAllocated: 0,
     CategoryUsed: 0,
     CategoryRemaining: 0,
+    Vendors: [],
   };
 
   export const SuplierDetails: ISuplierDetail = {
