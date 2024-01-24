@@ -291,7 +291,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
 
   const peoplePickerStyle: Partial<IPeoplePickerItemSelectedStyles> = {
     root: {
-      width: "48%",
+      width: "72%",
       ".ms-BasePicker-text": {
         "::after": {
           border: "1px solid rgb(96, 94, 92) !important",
@@ -328,9 +328,10 @@ const BudgetDistribution = (props: any): JSX.Element => {
       border: "none",
       background: "#2580e0 !important",
       height: 33,
-      width: "192px !important",
+      width: "232px !important",
       borderRadius: 5,
       cursor: "pointer",
+      marginLeft: "22px",
     },
     label: {
       fontWeight: 500,
@@ -926,7 +927,7 @@ const BudgetDistribution = (props: any): JSX.Element => {
             isUserPermissions.isEnterpricesManager ||
             isUserPermissions.isSpecialManager ||
             isUserPermissions.isSuperAdmin) && (
-            <div style={{ display: "flex", alignItems: "end", width: "25%" }}>
+            <div style={{ display: "flex", alignItems: "end", width: "24%" }}>
               <div
                 style={{
                   display: "flex",
