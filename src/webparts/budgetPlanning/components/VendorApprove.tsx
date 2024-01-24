@@ -302,7 +302,7 @@ const VendorApprove = (props: any): JSX.Element => {
         _masIteams = [];
         if (res.length) {
           for (let i: number = 0; res.length > i; i++) {
-            if (props._selID === res[i].BudgetId) {
+            if (res[i].BudgetId.includes(props._selID)) {
               let _Attach: IAttach[] = [];
 
               _isData = true;
@@ -332,7 +332,10 @@ const VendorApprove = (props: any): JSX.Element => {
                 Area: res[i].Area ? res[i].Area : "",
                 Country: res[i].CountryId ? res[i].Country.Title : "",
                 Category: res[i].CategoryId ? res[i].Category.Title : "",
-                subCategory: res[i].BudgetId ? res[i].Budget.Description : "",
+                subCategory: res[i].BudgetId.length
+                  ? res[i].Budget.filter((e: any) => e.ID === props._selID)[0]
+                      .Description
+                  : "",
                 CountryId: res[i].CountryId ? res[i].CountryId : 0,
                 Price: res[i].Price ? res[i].Price : 0,
                 LastYearCost: res[i].LastYearCost ? res[i].LastYearCost : 0,

@@ -40,6 +40,11 @@ import SPServices from "../../../CommonServices/SPServices";
 import { Config } from "../../../globals/Config";
 import { _areaVoiceFilter } from "../../../CommonServices/filterCommonArray";
 
+interface IVendorBudget {
+  ID: number;
+  BudgetId: number[];
+}
+
 let propDropValue: IDropdowns;
 let _isAdminView: boolean = false;
 let _categoryList: IVenMasCategory[] = [];
@@ -69,11 +74,13 @@ const VendorConfig = (props: any): JSX.Element => {
       onRender: (item: IVendorData, i: number): any => {
         return (
           <Dropdown
+            placeholder="Please select"
             styles={DropdownStyle}
+            multiSelect
             options={[...item.Budget]}
-            selectedKey={[...item.Budget][item.index].key}
+            selectedKeys={[...item.arrKeys]}
             onChange={(e: any, text: IVenDrop, j: number) => {
-              _handleOnChange(i, j);
+              _handleOnChange(i, text, j);
             }}
           />
         );
@@ -213,6 +220,8 @@ const VendorConfig = (props: any): JSX.Element => {
   const [FilterValue, setFilterValue] = useState({
     SearchFilter: "",
   });
+  const [arrId, setArrId] = useState<IVendorBudget[]>([]);
+  console.log("arrId > ", arrId);
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -486,6 +495,9 @@ const VendorConfig = (props: any): JSX.Element => {
     })
       .then((res: any) => {
         let _vendorDetailsList: IVendorData[] = [];
+        let _curBudgetId: IVendorBudget[] = [];
+        _curBudgetId = [];
+
         if (res.length) {
           for (let i: number = 0; res.length > i; i++) {
             let _Attach: IAttach[] = [];
@@ -499,6 +511,11 @@ const VendorConfig = (props: any): JSX.Element => {
                     : "",
                 });
               });
+
+            _curBudgetId.push({
+              ID: res[i].ID,
+              BudgetId: res[i].BudgetId,
+            });
 
             _vendorDetailsList.push({
               ID: res[i].ID,
@@ -522,10 +539,13 @@ const VendorConfig = (props: any): JSX.Element => {
                 ? res[i].RequestedAmount
                 : 0,
               Attachments: [..._Attach],
-              index: 0,
+              index: null,
+              curDetailsArr: [],
+              arrKeys: [],
             });
 
             if (res.length === _vendorDetailsList.length) {
+              setArrId([..._curBudgetId]);
               _getAreaVoiceFilter(
                 [..._categoryList],
                 [..._budgetList],
@@ -609,7 +629,7 @@ const VendorConfig = (props: any): JSX.Element => {
       _vendDatas[i].Budget = [];
 
       for (let j: number = 0; _drop.length > j; j++) {
-        j === 0 && _vendDatas[i].Budget.push({ ...Config.VenDrop });
+        // j === 0 && _vendDatas[i].Budget.push({ ...Config.VenDrop });
 
         if (
           _vendDatas[i].Area === _drop[j].Area &&
@@ -688,13 +708,40 @@ const VendorConfig = (props: any): JSX.Element => {
     setFData([...tempData]);
   };
 
-  const _handleOnChange = (i: number, dropIndex: number): void => {
+  const _handleOnChange = (
+    i: number,
+    _curObj: IVenDrop,
+    dropIndex: number
+  ): void => {
     let _filArray: IVendorData[] = [...MData];
+    let _isVal: boolean = false;
     _calArray = [];
 
-    _filArray[i].Category = _filArray[i].Budget[dropIndex].Category;
-    _filArray[i].curDetailObj = _filArray[i].Budget[dropIndex];
-    _filArray[i].index = dropIndex;
+    _isVal = !_filArray[i].arrKeys.includes(_curObj.key);
+
+    if (_isVal) {
+      _filArray[i].Category = _filArray[i].Budget[dropIndex].Category;
+      _filArray[i].curDetailsArr.push(_filArray[i].Budget[dropIndex]);
+      _filArray[i].arrKeys.push(_curObj.key);
+      _filArray[i].index = dropIndex;
+    } else {
+      let _curIndex: number = null;
+
+      if (_filArray[i].arrKeys.length === 1) {
+        _filArray[i].Category = "";
+        _filArray[i].curDetailsArr = [];
+        _filArray[i].index = null;
+        _filArray[i].arrKeys = [];
+      } else {
+        _filArray[i].Category = _filArray[i].Budget[dropIndex].Category;
+        _filArray[i].index = dropIndex;
+        _curIndex = _filArray[i].arrKeys.findIndex(
+          (_num: number) => _num === _curObj.key
+        );
+        _filArray[i].curDetailsArr.splice(_curIndex, 1);
+        _filArray[i].arrKeys.splice(_curIndex, 1);
+      }
+    }
 
     _calArray = _filArray.filter((e: IVendorData) => e.Category);
 
@@ -712,12 +759,11 @@ const VendorConfig = (props: any): JSX.Element => {
     let _uniqueSub: number[] = [];
 
     _calArray.forEach((obj: IVendorData) => {
-      obj.curDetailObj.CategoryID !== null &&
-        _masID.push(obj.curDetailObj.CategoryID);
+      _masID.push(obj.curDetailsArr[0].CategoryID);
     });
 
     _calArray.forEach((obj: IVendorData) => {
-      obj.curDetailObj.key !== 0 && _subID.push(obj.curDetailObj.key);
+      _subID.push(...obj.arrKeys);
     });
 
     for (const id of _masID) {
@@ -764,32 +810,44 @@ const VendorConfig = (props: any): JSX.Element => {
       _overAllUsed = 0;
 
       for (let i: number = 0; _calArray.length > i; i++) {
-        if (_uniqueMas[m] === _calArray[i].curDetailObj.CategoryID) {
-          _overAllAllocated = _calArray[i].curDetailObj.CategoryAllocated;
-          _overAllUsed = _calArray[i].curDetailObj.CategoryUsed;
+        for (let j: number = 0; _calArray[i].curDetailsArr.length > j; j++) {
+          if (_uniqueMas[m] === _calArray[i].curDetailsArr[j].CategoryID) {
+            _overAllAllocated =
+              _overAllAllocated +
+              _calArray[i].curDetailsArr[j].CategoryAllocated;
+            _overAllUsed =
+              _overAllUsed + _calArray[i].curDetailsArr[j].CategoryUsed;
 
-          _masUsed = _masUsed + _calArray[i].Price;
-        }
+            _masUsed = _masUsed + _calArray[i].Price;
+          }
 
-        if (_calArray.length === i + 1) {
-          let _sum: number = 0;
+          if (
+            _calArray.length === i + 1 &&
+            _calArray[i].curDetailsArr.length === j + 1
+          ) {
+            let _sum: number = 0;
 
-          _sum = _overAllUsed + _masUsed;
-          _masRemaining = _overAllAllocated - _sum;
+            _sum = _overAllUsed + _masUsed;
+            _masRemaining = _overAllAllocated - _sum;
 
-          _preCateList.push({
-            ID: _uniqueMas[m],
-            OverAllPOIssuedCost: _sum,
-            OverAllRemainingCost: _masRemaining,
-          });
-        }
+            _preCateList.push({
+              ID: _uniqueMas[m],
+              OverAllPOIssuedCost: _sum,
+              OverAllRemainingCost: _masRemaining,
+            });
+          }
 
-        if (_uniqueMas.length === m + 1 && _calArray.length === i + 1) {
-          _isCate = true;
-          _updateLists.push({
-            ListName: Config.ListNames.CategoryList,
-            CateList: [..._preCateList],
-          });
+          if (
+            _uniqueMas.length === m + 1 &&
+            _calArray.length === i + 1 &&
+            _calArray[i].curDetailsArr.length === j + 1
+          ) {
+            _isCate = true;
+            _updateLists.push({
+              ListName: Config.ListNames.CategoryList,
+              CateList: [..._preCateList],
+            });
+          }
         }
       }
     }
@@ -803,42 +861,57 @@ const VendorConfig = (props: any): JSX.Element => {
       )[0].Vendors;
 
       for (let i: number = 0; _calArray.length > i; i++) {
-        if (_uniqueSub[s] === _calArray[i].curDetailObj.key) {
-          _budgetAllocated = _calArray[i].curDetailObj.BudgetAllocated;
-          _budgetUsed = _calArray[i].curDetailObj.BudgetUsed;
-          _subUsed = _subUsed + _calArray[i].Price;
-          _curVendorsId.push(_calArray[i].ID);
-        }
+        for (let j: number = 0; _calArray[i].curDetailsArr.length > j; j++) {
+          if (_uniqueSub[s] === _calArray[i].curDetailsArr[j].key) {
+            _budgetAllocated =
+              _budgetAllocated + _calArray[i].curDetailsArr[j].BudgetAllocated;
+            _budgetUsed =
+              _budgetUsed + _calArray[i].curDetailsArr[j].BudgetUsed;
+            _subUsed = _subUsed + _calArray[i].Price;
+            _curVendorsId.push(_calArray[i].ID);
+          }
 
-        if (_calArray.length === i + 1) {
-          let _sum: number = 0;
+          if (
+            _calArray.length === i + 1 &&
+            _calArray[i].curDetailsArr.length === j + 1
+          ) {
+            let _sum: number = 0;
 
-          _sum = _budgetUsed + _subUsed;
-          _subRemaining = _budgetAllocated - _sum;
+            _sum = _budgetUsed + _subUsed;
+            _subRemaining = _budgetAllocated - _sum;
 
-          _preBudList.push({
-            ID: _uniqueSub[s],
-            Used: _sum,
-            RemainingCost: _subRemaining,
-            VendorsId: { results: [..._curVendorsId] },
-          });
-        }
+            _preBudList.push({
+              ID: _uniqueSub[s],
+              Used: _sum,
+              RemainingCost: _subRemaining,
+              VendorsId: { results: [..._curVendorsId] },
+            });
+          }
 
-        if (_uniqueSub.length === s + 1 && _calArray.length === i + 1) {
-          _isBud = true;
-          _updateLists.push({
-            ListName: Config.ListNames.BudgetList,
-            BudList: [..._preBudList],
-          });
+          if (
+            _uniqueSub.length === s + 1 &&
+            _calArray.length === i + 1 &&
+            _calArray[i].curDetailsArr.length === j + 1
+          ) {
+            _isBud = true;
+            _updateLists.push({
+              ListName: Config.ListNames.BudgetList,
+              BudList: [..._preBudList],
+            });
+          }
         }
       }
     }
 
     for (let i: number = 0; _calArray.length > i; i++) {
+      let _temp: number[] = arrId.filter(
+        (obj: IVendorBudget) => obj.ID === _calArray[i].ID
+      )[0].BudgetId;
+
       _preVenList.push({
         ID: _calArray[i].ID,
-        CategoryId: _calArray[i].curDetailObj.CategoryID,
-        BudgetId: _calArray[i].curDetailObj.key,
+        CategoryId: _calArray[i].curDetailsArr[0].CategoryID,
+        BudgetId: { results: _temp.concat([..._calArray[i].arrKeys]) },
         Status: "Approved",
       });
 
@@ -985,7 +1058,7 @@ const VendorConfig = (props: any): JSX.Element => {
 
           {/* Search section */}
           <div style={{ width: "25%" }}>
-            <Label>Vendor Name</Label>
+            <Label>Vendor</Label>
             <SearchBox
               placeholder="Search"
               styles={searchBoxStyle}

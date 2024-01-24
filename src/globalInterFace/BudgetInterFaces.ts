@@ -351,7 +351,7 @@ export interface IVendorProp {
 export interface IBudTrackDistribution {
   ID: Number;
   Cost: number | string;
-  BudgetId: Number;
+  BudgetId: Number[];
   isClick: boolean;
   isEdit: boolean;
   Vendor: string;
@@ -505,7 +505,8 @@ export interface IVendorData {
   Attachments: IAttach[];
   subCategory?: string;
   Budget?: IVenDrop[];
-  curDetailObj?: IVenDrop;
+  curDetailsArr?: IVenDrop[];
+  arrKeys?: number[];
 }
 
 // Vendor drop interface
@@ -545,7 +546,7 @@ export interface IBudList {
 export interface IVenList {
   ID: number;
   CategoryId: number;
-  BudgetId: number;
+  BudgetId: any;
   Status: string;
 }
 

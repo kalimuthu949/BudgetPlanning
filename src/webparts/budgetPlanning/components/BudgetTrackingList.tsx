@@ -428,7 +428,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           resDis.forEach((e: any) => {
             _arrDis.push({
               ID: e.ID,
-              BudgetId: e.BudgetId ? e.BudgetId : null,
+              // BudgetId: e.BudgetId ? e.BudgetId : null,
+              BudgetId: e.BudgetId,
               Cost: e.Price
                 ? SPServices.format(Number(e.Price))
                 : SPServices.format(0),
@@ -565,7 +566,8 @@ const BudgetTrackingList = (props: any): JSX.Element => {
           !_isTrack
         ) {
           for (let k: number = 0; _arrDistribution.length > k; k++) {
-            if (_arrBudget[j].ID === _arrDistribution[k].BudgetId) {
+            // if (_arrBudget[j].ID === _arrDistribution[k].BudgetId) {
+            if (_arrDistribution[k].BudgetId.includes(_arrBudget[j].ID)) {
               _isTrack = true;
               _arrDistribution[k].Item = _arrBudget[j].Description;
               _arrDistribution[k].Type = _arrBudget[j].Type;
