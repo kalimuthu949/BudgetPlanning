@@ -27,6 +27,7 @@ import {
   IBudgetListColumn,
   IBudgetValidation,
   IGroupUsers,
+  IMasterCategoryUpdate,
 } from "../../../globalInterFace/BudgetInterFaces";
 import { Config } from "../../../globals/Config";
 import { _getFilterDropValues } from "../../../CommonServices/DropFunction";
@@ -474,6 +475,9 @@ const BudgetPlan = (props: any): JSX.Element => {
   const [isSubmitModal, setIsSubmitModal] = useState<boolean>(false);
   const [isAllocateMSG, setIsAllocateMSG] = useState<boolean>(false);
   const [isNextYearModal, setIsNextYearModal] = useState<boolean>(false);
+  const [MCUpdate, setMCUpdate] = useState<IMasterCategoryUpdate>({
+    ...Config.MasterCategoryUpdate,
+  });
 
   /* Style Section */
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
@@ -1344,6 +1348,12 @@ const BudgetPlan = (props: any): JSX.Element => {
         TotalProposed: arr.TotalProposed ? arr.TotalProposed : null,
         indexValue: _recordsLength,
         isEdit: false,
+        OverAllPOIssuedCost: arr.OverAllPOIssuedCost
+          ? arr.OverAllPOIssuedCost
+          : 0,
+        OverAllRemainingCost: arr.OverAllRemainingCost
+          ? arr.OverAllRemainingCost
+          : 0,
       });
       _recordsLength += arr.subCategory.length;
     });
@@ -1384,89 +1394,43 @@ const BudgetPlan = (props: any): JSX.Element => {
               <div>
                 {ur.Category + " - " + ur.Country + " ( " + ur.Type + " ) ~ "}
               </div>
-              {ur.isEdit ? (
-                <div
+
+              <div
+                style={{
+                  marginLeft: 6,
+                }}
+              >
+                <span
                   style={{
-                    marginLeft: 6,
+                    marginRight: 6,
                   }}
                 >
-                  <TextField
-                    value={_totalAmount.toString()}
-                    placeholder="Enter Here"
-                    styles={textFieldStyle}
-                    onChange={(e: any, value: any) => {
-                      if (/^[0-9]*\.?[0-9]*$/.test(value)) {
-                      }
-                    }}
-                  />
-                </div>
-              ) : (
+                  AED
+                </span>
+                {SPServices.format(Number(_totalAmount))}
+              </div>
+
+              {isUserPermissions.isSuperAdmin && (
                 <div
                   style={{
-                    marginLeft: 6,
-                  }}
-                >
-                  <span
-                    style={{
-                      marginRight: 6,
-                    }}
-                  >
-                    AED
-                  </span>
-                  {SPServices.format(Number(_totalAmount))}
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                marginRight: 78,
-                display: "none",
-              }}
-            >
-              {!ur.isEdit ? (
-                <Icon
-                  iconName="Edit"
-                  style={{
-                    color: "blue",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    if (!_isBack) {
-                      _isBack = !ur.isEdit;
-                      _isAction = true;
-                      _masEdit(index, "edit");
-                    } else {
-                      _getPageErrorMSG(ur, "edit", index);
-                    }
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "6%",
+                    marginLeft: 10,
                   }}
                 >
                   <Icon
-                    iconName="CheckMark"
+                    iconName="Edit"
                     style={{
-                      color: "green",
-                      fontSize: "20px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {}}
-                  />
-                  <Icon
-                    iconName="Cancel"
-                    style={{
-                      color: "red",
-                      fontSize: "20px",
+                      color: "blue",
+                      fontSize: "16px",
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      _isBack = !ur.isEdit;
-                      _masEdit(index, "cancle");
+                      if (!_isBack) {
+                        _isBack = !ur.isEdit;
+                        _isAction = true;
+                        _masEdit(index, "edit");
+                      } else {
+                        _getPageErrorMSG(ur, "edit", index);
+                      }
                     }}
                   />
                 </div>
@@ -1500,9 +1464,25 @@ const BudgetPlan = (props: any): JSX.Element => {
     });
 
     if (type === "edit") {
+      MCUpdate.Status = Config.ApprovalStatus.Approved;
+      MCUpdate.ID = _currentArr[index].ID;
+      MCUpdate.TotalProposed = _currentArr[index].TotalProposed;
+      MCUpdate.OverAllBudgetCost = _currentArr[index].OverAllBudgetCost;
+      MCUpdate.OverAllPOIssuedCost = _currentArr[index].OverAllPOIssuedCost;
+      MCUpdate.OverAllRemainingCost = _currentArr[index].OverAllRemainingCost;
+      MCUpdate.Value = _currentArr[index].OverAllBudgetCost
+        ? _currentArr[index].OverAllBudgetCost
+        : _currentArr[index].TotalProposed
+        ? _currentArr[index].TotalProposed
+        : 0;
+      MCUpdate.isEdit = true;
+      MCUpdate.Index = index;
+
       _currentArr[index].isEdit = true;
+      setMCUpdate({ ...MCUpdate });
     } else {
       _currentArr[index].isEdit = false;
+      setMCUpdate({ ...Config.MasterCategoryUpdate });
     }
 
     _groupAcc([..._currentArr]);
@@ -1737,6 +1717,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       data[columns.RemainingCost] = Number(curData.BudgetAllocated);
       data[columns.Comments] = curData.Comments;
       data[columns.Area] = curData.Area;
+      data[columns.ApproveStatus] = isUserPermissions.isSuperAdmin
+        ? Config.ApprovalStatus.Pending
+        : curData.ApproveStatus;
       _getEditData({ ...data }, "Updated");
     } else {
       data[columns.CategoryId] = curData.CateId;
@@ -1748,7 +1731,9 @@ const BudgetPlan = (props: any): JSX.Element => {
       //     ? curData.ApproveStatus
       //     : "Pending"
       //   : "Not Started";
-      data[columns.ApproveStatus] = curData.ApproveStatus;
+      data[columns.ApproveStatus] = isUserPermissions.isSuperAdmin
+        ? Config.ApprovalStatus.Pending
+        : curData.ApproveStatus;
       data[columns.CategoryType] = curData.Type;
       data[columns.BudgetProposed] = Number(curData.BudgetProposed);
       data[columns.BudgetAllocated] = Number(curData.BudgetAllocated);
@@ -1963,9 +1948,11 @@ const BudgetPlan = (props: any): JSX.Element => {
         (e: ICurBudgetItem) => e.ID !== null
       );
 
-      _curNewBudgetArray = _curIdRemoveArray.filter(
-        (e: ICurBudgetItem) => e.ApproveStatus === "Not Started"
-      );
+      _curNewBudgetArray = !isUserPermissions.isSuperAdmin
+        ? _curIdRemoveArray.filter(
+            (e: ICurBudgetItem) => e.ApproveStatus === "Not Started"
+          )
+        : [];
 
       if (
         _curMasterArray[j].Status !== "Not Started" &&
@@ -2001,7 +1988,10 @@ const BudgetPlan = (props: any): JSX.Element => {
       }
     }
 
-    if (_curCateArray.length && _curSubArray.length && _isFunTriger) {
+    if (
+      (_curCateArray.length && _curSubArray.length && _isFunTriger) ||
+      isUserPermissions.isSuperAdmin
+    ) {
       _curArray = [
         { ListName: Config.ListNames.CategoryList, _Array: [..._curCateArray] },
         { ListName: Config.ListNames.BudgetList, _Array: [..._curSubArray] },
@@ -2044,6 +2034,34 @@ const BudgetPlan = (props: any): JSX.Element => {
       .then((res: any) => {
         setIsNextYearModal(false);
         alertify.success(`Please wait ${nextYear} year data's processing.`);
+      })
+      .catch((err: any) => {
+        _getErrorFunction(err);
+      });
+  };
+
+  const _handleUpdateJSON = (): void => {
+    MCUpdate.OverAllBudgetCost = MCUpdate.Value;
+    MCUpdate.OverAllRemainingCost =
+      MCUpdate.Value - MCUpdate.OverAllPOIssuedCost;
+
+    delete MCUpdate.Index;
+    delete MCUpdate.OverAllPOIssuedCost;
+    delete MCUpdate.TotalProposed;
+    delete MCUpdate.Value;
+    delete MCUpdate.isEdit;
+
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.CategoryList,
+      ID: MCUpdate.ID,
+      RequestJSON: { ...MCUpdate },
+    })
+      .then((res: any) => {
+        alertifyMSG = "";
+        _isBack = false;
+        setMCUpdate({ ...Config.MasterCategoryUpdate });
+        alertify.success(`Item updated successfully`);
+        _getDefaultFunction();
       })
       .catch((err: any) => {
         _getErrorFunction(err);
@@ -2536,6 +2554,68 @@ const BudgetPlan = (props: any): JSX.Element => {
               }}
             >
               Yes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Master Category Amount Calculate Modal Box */}
+      <Modal isOpen={MCUpdate.isEdit} isBlocking={false} styles={modalStyles}>
+        <div>
+          {/* Lable section */}
+          <div
+            style={{
+              display: "flex",
+              fontSize: "16px",
+              fontWeight: 600,
+              paddingBottom: "10px",
+            }}
+          >
+            Master Category ( AED )
+          </div>
+
+          {/* Text Feild section */}
+          <TextField
+            value={MCUpdate.Value ? MCUpdate.Value.toString() : "0"}
+            placeholder="Enter Here"
+            styles={textFieldStyle}
+            onChange={(e: any, value: any) => {
+              if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+                MCUpdate.Value = SPServices.numberFormat(value);
+                setMCUpdate({ ...MCUpdate });
+              }
+            }}
+          />
+
+          {/* btn section */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "6%",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              className={styles.noBTN}
+              onClick={() => {
+                _isBack = false;
+                _masEdit(MCUpdate.Index, "cancle");
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              style={{
+                cursor: MCUpdate.Value !== 0 ? "pointer" : "not-allowed",
+              }}
+              disabled={MCUpdate.Value !== 0 ? false : true}
+              className={styles.yesBTN}
+              onClick={() => {
+                _handleUpdateJSON();
+              }}
+            >
+              Update
             </button>
           </div>
         </div>
