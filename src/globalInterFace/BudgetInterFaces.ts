@@ -630,3 +630,16 @@ export interface ISupplierViewData {
   LastYearCost: number;
   Attachments: any[];
 }
+
+// Master Category Submit interface
+export interface IMasterCategoryUpdate {
+  ID: number;
+  TotalProposed: number;
+  OverAllBudgetCost: number;
+  OverAllPOIssuedCost: number;
+  OverAllRemainingCost: number;
+  Value: number;
+  Index: number;
+  Status: string;
+  isEdit: boolean;
+}

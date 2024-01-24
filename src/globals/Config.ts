@@ -29,6 +29,7 @@ import {
   ISuplierDetailValidation,
   ISupplierViewData,
   IUpdateValidation,
+  IMasterCategoryUpdate,
 } from "../globalInterFace/BudgetInterFaces";
 
 export namespace Config {
@@ -355,5 +356,17 @@ export namespace Config {
     CommentsValidate: false,
     AreaValidate: false,
     CountryValidate: false,
+  };
+
+  export const MasterCategoryUpdate: IMasterCategoryUpdate = {
+    ID: null,
+    TotalProposed: null,
+    OverAllBudgetCost: null,
+    OverAllPOIssuedCost: null,
+    OverAllRemainingCost: null,
+    Value: null,
+    Index: null,
+    Status: "",
+    isEdit: false,
   };
 }
