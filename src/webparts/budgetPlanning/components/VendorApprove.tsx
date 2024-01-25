@@ -319,19 +319,19 @@ const VendorApprove = (props: any): JSX.Element => {
 
               _masIteams.push({
                 ID: res[i].ID,
-                Description: res[i].Title ? res[i].Title : "",
-                Type: res[i].CategoryType ? res[i].CategoryType : "",
-                VendorName: res[i].VendorName ? res[i].VendorName : "",
-                Payment: res[i].Payment ? res[i].Payment : "",
-                Delivery: res[i].Delivery ? res[i].Delivery : "",
-                LastYearPO: res[i].LastYearPO ? res[i].LastYearPO : "",
-                Recommended: res[i].Recommended ? res[i].Recommended : "",
-                Year: res[i].Year ? res[i].Year : "",
-                Status: res[i].Status ? res[i].Status : "",
-                Comment: res[i].Comment ? res[i].Comment : "",
-                Area: res[i].Area ? res[i].Area : "",
-                Country: res[i].CountryId ? res[i].Country.Title : "",
-                Category: res[i].CategoryId ? res[i].Category.Title : "",
+                Description: res[i].Title ? res[i].Title : "-",
+                Type: res[i].CategoryType ? res[i].CategoryType : "-",
+                VendorName: res[i].VendorName ? res[i].VendorName : "-",
+                Payment: res[i].Payment ? res[i].Payment : "-",
+                Delivery: res[i].Delivery ? res[i].Delivery : "-",
+                LastYearPO: res[i].LastYearPO ? res[i].LastYearPO : "-",
+                Recommended: res[i].Recommended ? res[i].Recommended : "-",
+                Year: res[i].Year ? res[i].Year : "-",
+                Status: res[i].Status ? res[i].Status : "-",
+                Comment: res[i].Comment ? res[i].Comment : "-",
+                Area: res[i].Area ? res[i].Area : "-",
+                Country: res[i].CountryId ? res[i].Country.Title : "-",
+                Category: res[i].CategoryId ? res[i].Category.Title : "-",
                 subCategory: res[i].BudgetId.length
                   ? res[i].Budget.filter((e: any) => e.ID === props._selID)[0]
                       .Description
