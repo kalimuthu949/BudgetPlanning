@@ -180,8 +180,6 @@ const ViewSupplier = (props: any): JSX.Element => {
   const [isLoader, setIsLoader] = useState<boolean>(true);
   const [items, setItems] = useState<ISupplierViewData[]>([]);
 
-  console.log("items", items);
-
   const _DetailsListStyle: Partial<IDetailsListStyles> = {
     root: {
       marginTop: "20px",
@@ -260,18 +258,18 @@ const ViewSupplier = (props: any): JSX.Element => {
 
     data.forEach((value: any) => {
       itms.push({
-        Name: value.VendorName ? value.VendorName : "",
-        PaymentTerms: value.Payment ? value.Payment : "",
-        Delivery: value.Delivery ? value.Delivery : "",
-        RecomendedName: value.Recommended ? value.Recommended : "",
-        LastYearPO: value.LastYearPO ? value.LastYearPO : "",
-        Type: value.CategoryType ? value.CategoryType : "",
-        Description: value.Title ? value.Title : "",
-        NumberOfVendor: "",
-        Comments: value.Comment ? value.Comment : "",
-        Area: value.Area ? value.Area : "",
-        Country: value.CountryId ? value.Country.Title : "",
-        Status: value.Status ? value.Status : "",
+        Name: value.VendorName ? value.VendorName : "-",
+        PaymentTerms: value.Payment ? value.Payment : "-",
+        Delivery: value.Delivery ? value.Delivery : "-",
+        RecomendedName: value.Recommended ? value.Recommended : "-",
+        LastYearPO: value.LastYearPO ? value.LastYearPO : "-",
+        Type: value.CategoryType ? value.CategoryType : "-",
+        Description: value.Title ? value.Title : "-",
+        NumberOfVendor: "-",
+        Comments: value.Comment ? value.Comment : "-",
+        Area: value.Area ? value.Area : "-",
+        Country: value.CountryId ? value.Country.Title : "-",
+        Status: value.Status ? value.Status : "-",
         Pricing: value.Price ? value.Price : null,
         RequestAmount: value.RequestedAmount ? value.RequestedAmount : null,
         LastYearCost: value.LastYearCost ? value.LastYearCost : null,

@@ -1138,7 +1138,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               />
                             ) : data.StartDate ? (
                               moment(data.StartDate).format("DD/MM/YYYY")
-                            ) : null}
+                            ) : (
+                              "-"
+                            )}
                           </td>
                           <td style={{ width: 120 }}>
                             {data.isEdit ? (
@@ -1159,7 +1161,9 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                               />
                             ) : data.ToDate ? (
                               moment(data.ToDate).format("DD/MM/YYYY")
-                            ) : null}
+                            ) : (
+                              "-"
+                            )}
                           </td>
                           <td style={{ width: 120 }}>
                             {data.isEdit ? (
@@ -1172,8 +1176,10 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                   setCurEditItem({ ...curEditItem });
                                 }}
                               />
-                            ) : (
+                            ) : data.Po ? (
                               data.Po
+                            ) : (
+                              "-"
                             )}
                           </td>
                           <td style={{ width: 100 }}>
@@ -1188,8 +1194,10 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                   setCurEditItem({ ...curEditItem });
                                 }}
                               />
-                            ) : (
+                            ) : data.PoCurrency ? (
                               data.PoCurrency
+                            ) : (
+                              "-"
                             )}
                           </td>
                           <td style={{ width: 100 }}>
@@ -1204,8 +1212,10 @@ const BudgetTrackingList = (props: any): JSX.Element => {
                                   setCurEditItem({ ...curEditItem });
                                 }}
                               />
-                            ) : (
+                            ) : data.InvoiceNo ? (
                               data.InvoiceNo
+                            ) : (
+                              "-"
                             )}
                           </td>
                           {_isCurrentYear && !_isAdminView && (
